@@ -56,7 +56,7 @@
 
 ## Issue #11 材料包开发（2026-09-09，分支 calibration/issue-11-materials）
 
-AI 侧交付物落地：`specs/examples/negatives.jsonl`（17 条负例：未提及/否定/条件支持/推荐/对象串扰/替代-辅助/来源误识别/提到未核实/失败/截断/相反回答，全部 pending_owner_confirmation，含真实 trial 引用与逐字引文）、`scripts/check_calibration.py`（结构、逐字引文子串、trial 引用、kind 覆盖、27=24+3 分母口径机械核对，`--require-confirmed` 供定标完成后启用）+ `tests/test_check_calibration.py`、`specs/calibration/`（27 条标注工作表含 offline-rules-v1 机器预填与两人空白栏、分歧裁决记录模板、分母口径 draft）、`specs/examples/standard-finding.md` 骨架（OWNER_TO_CONFIRM/MACHINE_PREFILL 占位）、`specs/examples/README.md`、`scripts/gen_annotation_worksheet.py`（默认拒绝覆盖已有工作表）。四闸与测试全绿。在途文档已走 PR #14 合并。经两轮双谱系评审（GPT 系 codex + DeepSeek 系 opencode），第一轮 5P0+2P1、第二轮 4P0 均已修复闭环。人工环节（主人逐条确认负例、两人独立标注、裁决、示范确认）未开始；issue #11 保持 open。实现规格已评论回填 issue #11。
+AI 侧交付物落地：`specs/examples/negatives.jsonl`（17 条负例：未提及/否定/条件支持/推荐/对象串扰/替代-辅助/来源误识别/提到未核实/失败/截断/相反回答，全部 pending_owner_confirmation，含真实 trial 引用与逐字引文）、`scripts/check_calibration.py`（结构、逐字引文子串、trial 引用、kind 覆盖、27=24+3 分母口径机械核对，`--require-confirmed` 供定标完成后启用）+ `tests/test_check_calibration.py`、`specs/calibration/`（27 条标注工作表含 offline-rules-v1 机器预填与两人空白栏、分歧裁决记录模板、分母口径 draft）、`specs/examples/standard-finding.md` 骨架（OWNER_TO_CONFIRM/MACHINE_PREFILL 占位）、`specs/examples/README.md`、`scripts/gen_annotation_worksheet.py`（默认拒绝覆盖已有工作表）。四闸与测试全绿。在途文档已走 PR #14 合并。经三轮双谱系评审（GPT 系 codex + DeepSeek 系 opencode）：第一轮 codex 5P0+2P1、opencode 2P1+6P2+4P3，第二轮 codex 4P0+1P2、opencode 1P2+2P3，第三轮 codex 4P0、opencode 3P3 并判定收敛——两谱系全部发现均已处置。人工环节（主人逐条确认负例、两人独立标注、裁决、示范确认）未开始；issue #11 保持 open。实现规格已评论回填 issue #11。
 
 ## 开发队列已标识（2026-09-09）
 

@@ -116,7 +116,10 @@ def load_trials(paths: list[Path]) -> dict[str, dict[str, Any]]:
     for path in paths:
         for row in parse_jsonl(path, f"试次文件（{path.name}）"):
             tid = row.get("trial_id")
-            if not isinstance(tid, str):
+            if not isinstance(tid, str) or not tid:
+                err(
+                    f"试次文件 {path.name} 存在 trial_id 缺失或非字符串的记录——分母与引用核对均不可信"
+                )
                 continue
             if tid in index:
                 err(f"trial_id 重复：{tid}（{path.name}）")
@@ -147,7 +150,11 @@ def check_citations(
     expected: dict[str, Any], neg_id: str, text: str | None, trial: dict[str, Any] | None
 ) -> None:
     """引文字段必须是字符串，且逐字出现在负例 text 或所引 trial 正文中。"""
-    corpus = text if text is not None else (trial or {}).get("response", "")
+    raw = text if text is not None else (trial or {}).get("response", "")
+    if raw is not None and not isinstance(raw, str):
+        err(f"{neg_id}：正文必须是字符串，当前 {type(raw).__name__}——引文无从核对")
+        return
+    corpus = raw or ""
     quotes: list[tuple[str, Any]] = []
     paths = expected.get("paths", {})
     if isinstance(paths, dict):
@@ -176,6 +183,9 @@ def check_row(row: dict[str, Any], at: str, trials: dict[str, dict[str, Any]]) -
     neg_id = row["id"]
     if not isinstance(neg_id, str) or not neg_id.startswith("neg-"):
         err(f"{at}：id 须为 neg-NNN 格式，当前 {neg_id!r}")
+    rationale = row["rationale"]
+    if not isinstance(rationale, str) or not rationale.strip():
+        err(f"{neg_id}：rationale 必须是非空字符串")
     kind = row["kind"]
     if not isinstance(kind, str) or kind not in KINDS:
         err(f"{neg_id}：kind `{kind}` 不在枚举内或不是字符串")
@@ -221,11 +231,10 @@ def check_row(row: dict[str, Any], at: str, trials: dict[str, dict[str, Any]]) -
         return
     paths = expected.get("paths", {})
 
-    # 来源判定字段：出现即必须是布尔（防「一真掩一假」绕过）
+    # 来源判定字段：出现（含显式 null）即必须是布尔（防「一真掩一假」绕过）
     for field in ("identifiable_source", "evidence_mentioned"):
-        value = expected.get(field)
-        if value is not None and not isinstance(value, bool):
-            err(f"{neg_id}：expected.{field} 必须是布尔值，当前 {value!r}")
+        if field in expected and not isinstance(expected.get(field), bool):
+            err(f"{neg_id}：expected.{field} 必须是布尔值，当前 {expected.get(field)!r}")
 
     if kind in PATH_KINDS and not (isinstance(paths, dict) and paths):
         err(f"{neg_id}：kind={kind} 必须给出非空 paths 判定")
@@ -343,7 +352,13 @@ def check_denominator(baseline: Path, rows: list[dict[str, Any]], expect: dict[s
         err(
             f"失败与截断分类重叠（status≠success 且 finish=length）：{overlap}——口径未定义，须人工裁定"
         )
-    truncated_ids = {t["trial_id"] for t in trials if t.get("finish_reason") == "length"}
+    truncated_ids = {
+        t["trial_id"]
+        for t in trials
+        if t.get("finish_reason") == "length"
+        and isinstance(t.get("trial_id"), str)
+        and t["trial_id"]
+    }
     cited = {
         r["source"][len("trial:") :]
         for r in rows
@@ -390,7 +405,7 @@ def main() -> int:
     args = parser.parse_args()
 
     rows = parse_jsonl(resolve(args.negatives), "负例集")
-    ids = [r.get("id") for r in rows]
+    ids = [r.get("id") for r in rows if isinstance(r.get("id"), str)]
     dupes = {i for i in ids if ids.count(i) > 1}
     if dupes:
         err(f"负例 id 重复：{sorted(dupes)}")
