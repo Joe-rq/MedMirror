@@ -77,6 +77,64 @@ class CheckCalibrationTest(unittest.TestCase):
         ]
         self.assertTrue(all(row["status"] == "pending_owner_confirmation" for row in rows))
 
+    def test_non_object_line_reports_error(self):
+        """合法 JSON 但非对象（如数组）必须报错，不允许 traceback 崩溃。"""
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "negatives.jsonl"
+            path.write_text("[1, 2, 3]\n", encoding="utf-8")
+            result = self.run_script("--negatives", str(path))
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("不是 JSON 对象", result.stdout)
+
+    def test_denominator_mismatch_fails(self):
+        result = self.run_script("--expect-stop", "25")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("基线分母与口径不符", result.stdout)
+
+    def test_require_confirmed_fails_while_pending(self):
+        """全部条目 confirmed 之前，--require-confirmed 必须红。"""
+        result = self.run_script("--require-confirmed")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("人工定标尚未完成", result.stdout)
+
+    def test_truncation_requires_real_trial_ref(self):
+        """截断是数据状态考查：合成截断没有意义，必须引用真实 trial。"""
+        bad = {
+            "id": "neg-901",
+            "kind": "truncation",
+            "source": "synthetic",
+            "text": "一段被截断的合成文本。",
+            "expected": {"status_note": "合成截断探针"},
+            "rationale": "探针",
+            "status": "pending_owner_confirmation",
+        }
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "negatives.jsonl"
+            path.write_text(json.dumps(bad, ensure_ascii=False) + "\n", encoding="utf-8")
+            result = self.run_script("--negatives", str(path))
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("必须引用真实 trial", result.stdout)
+
+    def test_worksheet_generator_refuses_overwrite(self):
+        """已存在的工作表默认不被覆盖，防止抹掉人工标注。"""
+        with tempfile.TemporaryDirectory() as td:
+            target = Path(td) / "ws.md"
+            target.write_text("已有人工标注\n", encoding="utf-8")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "scripts/gen_annotation_worksheet.py",
+                    "-o",
+                    str(target),
+                ],
+                capture_output=True,
+                text=True,
+                cwd=ROOT,
+            )
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("已存在", result.stdout)
+            self.assertEqual(target.read_text(encoding="utf-8"), "已有人工标注\n")
+
 
 if __name__ == "__main__":
     unittest.main()

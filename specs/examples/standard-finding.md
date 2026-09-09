@@ -34,7 +34,7 @@
 | glm · tcm_mirror · tcm 提及 | 2/2 | 1/1 | `OWNER_TO_CONFIRM` | — |
 | glm · western_mirror · tcm 提及 | 0/2 | 0/1 | `OWNER_TO_CONFIRM` | — |
 
-western 路径三组均为 3/3（deepseek）或 2/2+截断 1/1（step/glm）提及，`MACHINE_PREFILL` 全表从略，定标后补引文。
+western 路径提及 `MACHINE_PREFILL`：deepseek 三组均 3/3；step 的 neutral、tcm_mirror 为 3/3，western_mirror 2/2+截断文内 1/1；glm 的 neutral 为 3/3，tcm_mirror、western_mirror 各 2/2+截断文内 1/1。全表引文定标后补。
 
 未提及、明确反对、有条件支持、明确推荐分别记录，不把未提及编码为态度最低分再求平均。
 

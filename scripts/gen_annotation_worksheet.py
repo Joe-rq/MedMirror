@@ -2,9 +2,10 @@
 """从基线提取结果生成人工定标标注工作表（issue #11 交付物之一）。
 
 机器预填列只供核对、不预填人工栏：两人独立标注后按 specs/calibration/adjudication-log.md
-登记分歧再裁决。重新生成会覆盖工作表——标注进行中不要重跑，需刷新预填时另存或先归档。
+登记分歧再裁决。输出已存在时默认拒绝覆盖（保护已填人工标注），确认覆盖须 --force。
 
-用法：uv run python scripts/gen_annotation_worksheet.py [-o specs/calibration/annotation-worksheet.md]
+用法：uv run python scripts/gen_annotation_worksheet.py [-o 输出路径] [--force]
+输出文件已存在时默认拒绝覆盖（防止抹掉已填的人工标注），须显式 --force。
 """
 
 from __future__ import annotations
@@ -18,6 +19,9 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 TRIALS = ROOT / "docs/experiments/exp003-baseline/result/trials.jsonl"
 EXTRACTIONS = ROOT / "docs/experiments/exp003-baseline/result/extractions.jsonl"
+# 示范组（主人可换）：该组在输出中显式标出，方便两人从同一条起步对齐理解
+DEMO_MODEL = "deepseek-v4-flash"
+DEMO_INDEX = 1
 
 HEADER = """# 27 条基线回答 · 人工定标标注工作表
 
@@ -36,11 +40,11 @@ HEADER = """# 27 条基线回答 · 人工定标标注工作表
 def machine_prefill(extraction: dict[str, Any]) -> str:
     parts = []
     for path in ("western", "tcm"):
-        entry = extraction["paths"][path]
-        term = f"（{entry['term']}）" if entry.get("term") else ""
-        parts.append(f"{path}={entry['state']}{term}")
-    parts.append(f"evidence_mentioned={str(extraction['evidence_mentioned']).lower()}")
-    parts.append(f"identifiable_source={str(extraction['identifiable_source']).lower()}")
+        entry = extraction.get("paths", {}).get(path, {})
+        term = f"（{entry.get('term')}）" if entry.get("term") else ""
+        parts.append(f"{path}={entry.get('state', '?')}{term}")
+    parts.append(f"evidence_mentioned={str(extraction.get('evidence_mentioned', '?')).lower()}")
+    parts.append(f"identifiable_source={str(extraction.get('identifiable_source', '?')).lower()}")
     return "；".join(parts)
 
 
@@ -60,7 +64,10 @@ def render(trials: list[dict[str, Any]], extractions: dict[str, dict[str, Any]])
         for t in sorted(by_group[(model, variant)], key=lambda r: r["trial_index"]):
             e = extractions[t["trial_id"]]
             truncated = "（**截断**）" if t.get("finish_reason") == "length" else ""
-            lines.append(f"### {t['trial_id']}{truncated}\n")
+            demo = (
+                "（**示范组**）" if model == DEMO_MODEL and t["trial_index"] == DEMO_INDEX else ""
+            )
+            lines.append(f"### {t['trial_id']}{truncated}{demo}\n")
             lines.append(
                 f"- 元信息：{model} · {variant} · 第 {t['trial_index']} 次重复 · finish={t.get('finish_reason')}"
             )
@@ -82,7 +89,20 @@ def main() -> int:
         default="specs/calibration/annotation-worksheet.md",
         help="输出路径（相对仓库根）",
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="输出文件已存在时仍覆盖（会抹掉已填的人工标注）",
+    )
     args = parser.parse_args()
+
+    out = ROOT / args.output
+    if out.exists() and not args.force:
+        shown = out.relative_to(ROOT) if out.is_relative_to(ROOT) else out
+        print(
+            f"✗ {shown} 已存在：重生成会抹掉已填的人工标注。确认覆盖用 --force，或 -o 指定新路径。"
+        )
+        return 1
 
     trials = [
         json.loads(line) for line in TRIALS.read_text(encoding="utf-8").splitlines() if line.strip()
@@ -97,11 +117,11 @@ def main() -> int:
         print(f"✗ {len(missing)} 条 trial 缺少提取结果：{missing[:5]}…")
         return 1
 
-    out = ROOT / args.output
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(render(trials, extractions), encoding="utf-8")
+    shown = out.relative_to(ROOT) if out.is_relative_to(ROOT) else out
     print(
-        f"✓ 已生成 {out.relative_to(ROOT)}（{len(trials)} 条，机器预填 {extractions[trials[0]['trial_id']]['extractor_version']}）"
+        f"✓ 已生成 {shown}（{len(trials)} 条，机器预填 {extractions[trials[0]['trial_id']]['extractor_version']}）"
     )
     return 0
 

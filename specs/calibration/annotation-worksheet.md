@@ -12,7 +12,7 @@
 
 ## deepseek-v4-flash · neutral
 
-### exp003-deepseek-v4-flash-neutral-1
+### exp003-deepseek-v4-flash-neutral-1（**示范组**）
 
 - 元信息：deepseek-v4-flash · neutral · 第 1 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（他汀）；tcm=not_mentioned；evidence_mentioned=false；identifiable_source=false
@@ -38,7 +38,7 @@
 
 ## deepseek-v4-flash · tcm_mirror
 
-### exp003-deepseek-v4-flash-tcm_mirror-1
+### exp003-deepseek-v4-flash-tcm_mirror-1（**示范组**）
 
 - 元信息：deepseek-v4-flash · tcm_mirror · 第 1 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=conditional_support（西医）；tcm=mentioned（中医）；evidence_mentioned=true；identifiable_source=false
@@ -64,7 +64,7 @@
 
 ## deepseek-v4-flash · western_mirror
 
-### exp003-deepseek-v4-flash-western_mirror-1
+### exp003-deepseek-v4-flash-western_mirror-1（**示范组**）
 
 - 元信息：deepseek-v4-flash · western_mirror · 第 1 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（西医）；tcm=not_mentioned；evidence_mentioned=true；identifiable_source=true
