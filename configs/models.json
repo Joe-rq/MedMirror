@@ -10,7 +10,21 @@
       "base_url_env": "DEEPSEEK_BASE_URL",
       "api_key_env": "DEEPSEEK_API_KEY",
       "confirmed": true,
-      "price_status": "recheck_before_paid_run"
+      "price_status": "confirmed_user_provided",
+      "pricing": {
+        "currency": "CNY",
+        "unit": "1M tokens",
+        "profile_used_for_estimate": "peak",
+        "input_cache_miss": 3.0,
+        "input_cache_hit": 0.1,
+        "output": 9.0,
+        "off_peak": {
+          "input_cache_miss": 1.5,
+          "input_cache_hit": 0.05,
+          "output": 4.5
+        },
+        "source": "user-provided-2026-09-09"
+      }
     },
     {
       "id": "step-3.7-flash",
@@ -20,8 +34,17 @@
       "model_env": "STEPFUN_MODEL",
       "base_url_env": "STEPFUN_BASE_URL",
       "api_key_env": "STEPFUN_API_KEY",
-      "confirmed": false,
-      "price_status": "step_plan_account_and_model_price_unconfirmed"
+      "confirmed": true,
+      "confirmation_basis": "live_api_smoke_2026-09-09; model-specific official pricing supplemented by user",
+      "price_status": "confirmed_user_provided",
+      "pricing": {
+        "currency": "CNY",
+        "unit": "1M tokens",
+        "input_cache_miss": 1.35,
+        "input_cache_hit": 0.27,
+        "output": 8.1,
+        "source": "user-provided-2026-09-09"
+      }
     },
     {
       "id": "glm-5.3-flash",
@@ -31,8 +54,20 @@
       "model_env": "GLM_MODEL",
       "base_url_env": "GLM_BASE_URL",
       "api_key_env": "GLM_API_KEY",
-      "confirmed": false,
-      "price_status": "endpoint_and_price_unconfirmed"
+      "confirmed": true,
+      "confirmation_basis": "live_api_smoke_2026-09-09; model-specific official pricing supplemented by user",
+      "price_status": "confirmed_user_provided",
+      "pricing": {
+        "currency": "CNY",
+        "unit": "1M tokens",
+        "input_cache_miss": 0.4,
+        "input_cache_hit": 0.115,
+        "output": 1.4,
+        "listed_input": 0.8,
+        "listed_output": 2.8,
+        "cache_storage": 0.0,
+        "source": "user-provided-2026-09-09"
+      }
     }
   ],
   "run_defaults": {
