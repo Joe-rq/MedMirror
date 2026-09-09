@@ -11,7 +11,11 @@
 
 ## 现状
 
-协议 v1.3 已冻结；三家官方 API 已接通；`exp003-baseline` 27/27 条真实回答已落盘（含 usage），离线提取与描述性报告可复现。**人工定标尚未完成，不输出医学 Bias 结论。**
+协议 v1.3 已冻结；三家官方 API 已接通；`exp003-baseline` 27 条真实回答已落盘（含 usage，其中 3 条长度截断）；已有离线提取报告，分组统计与提取语义缺口见 [纠偏交接计划](docs/plan/002_prototype-calibration-handoff.md)。**人工定标尚未完成，不输出医学 Bias 结论。**
+
+## 接下来做什么
+
+伙伴先认领 [#10【阶段1】报告与截断修复](https://cnb.cool/joe-rq/MedMirror/-/issues/10)；主人同步推进 #11 人工定标与 #5 复核人员安排。完整阶段、分工和前置条件见 [接手开发队列](docs/onboarding/README.md#开发队列按阶段与依赖不按-issue-编号)。Issue 编号是稳定标识，按阶段与依赖开发。
 
 ## 环境与四闸
 
@@ -24,7 +28,7 @@ uv run pytest                            # 闸3 逻辑（13 用例）
 uv run python scripts/check-manifests.py # 闸4 包清单冒烟
 ```
 
-这四条就是 CI 跑的四闸，定义见 [.cnb.yml](.cnb.yml)。本地全绿 = 推送后不会红。
+这四条就是 CI 跑的四闸，定义见 [.cnb.yml](.cnb.yml)。本地通过是提交前检查；远程 CI 仍需实际确认，研究语义与医学判断另行验收。
 
 ## 协作流程
 
