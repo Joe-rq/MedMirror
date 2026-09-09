@@ -17,11 +17,21 @@ def main() -> int:
     for item in config_status():
         key = "present" if item["key_present"] else "missing"
         confirmation = "confirmed" if item["confirmed"] else "needs verification"
-        print(f"{item['model']}: key={key}; catalog={confirmation}; endpoint={item['endpoint']}; price={item['price_status']}")
-        if item["key_present"] and not item["confirmed"]:
+        print(
+            f"{item['model']}: key={key}; catalog={confirmation}; endpoint={item['endpoint']}; price={item['price_status']}"
+        )
+        if (
+            not item["key_present"]
+            or not item["confirmed"]
+            or not item["price_status"].startswith("confirmed")
+        ):
             ready = False
     print("No network request was made.")
-    print("Paid batch run: BLOCKED until every model price and account availability is verified.")
+    print(
+        "Paid batch run: READY for an explicit run command."
+        if ready
+        else "Paid batch run: BLOCKED until every model price and account availability is verified."
+    )
     return 0 if ready else 2
 
 
