@@ -1,0 +1,22 @@
+# CI 四闸 —— 课程 cargo fmt/clippy/test 的 Python 版，外加一份包清单冒烟
+# ruff format --check 查格式 · ruff check 查写法 · pytest 查逻辑 · check-manifests 查包清单
+# 对应 .42cog/intent.md 的「规则层」：能用规则判的，绝不留给人判。
+main:
+  push:
+    - &ci
+      name: ci
+      docker:
+        image: python:3.13
+      stages:
+        - name: install
+          script: python -m pip install --quiet uv && uv sync --frozen
+        - name: ruff-format
+          script: uv run ruff format --check .
+        - name: ruff-check
+          script: uv run ruff check .
+        - name: pytest
+          script: uv run pytest
+        - name: smoke
+          script: uv run python scripts/check-manifests.py
+  pull_request:
+    - *ci

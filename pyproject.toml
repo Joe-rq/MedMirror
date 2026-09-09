@@ -1,0 +1,41 @@
+[project]
+name = "medmirror"
+version = "0.1.0"
+description = "医疗模型治疗路径呈现差异评测系统"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.9",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/medmirror"]
+
+[tool.uv]
+package = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["resources", "_tmp", "_build", "_archive", "runs", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+# E501 交给 ruff format 管，长字符串不强行折行
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# scripts/ 要能 `python3 scripts/xxx.py` 直接跑，路径注入必然在 import 之前
+"scripts/*" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "scripts"]

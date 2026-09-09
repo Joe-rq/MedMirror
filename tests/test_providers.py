@@ -1,11 +1,7 @@
 import os
-import sys
 import tempfile
 import unittest
 from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
 
 from medmirror.providers import build_chat_payload, load_local_env, model_registry
 
@@ -59,12 +55,16 @@ class ProviderConfigTest(unittest.TestCase):
 
     def test_payload_can_set_thinking_mode(self):
         config = model_registry()["deepseek-v4-flash"]
-        payload = build_chat_payload(config, [{"role": "user", "content": "test"}], thinking_mode="disabled")
+        payload = build_chat_payload(
+            config, [{"role": "user", "content": "test"}], thinking_mode="disabled"
+        )
         self.assertEqual(payload["thinking"], {"type": "disabled"})
 
     def test_payload_can_set_reasoning_effort(self):
         config = model_registry()["step-3.7-flash"]
-        payload = build_chat_payload(config, [{"role": "user", "content": "test"}], reasoning_effort="low")
+        payload = build_chat_payload(
+            config, [{"role": "user", "content": "test"}], reasoning_effort="low"
+        )
         self.assertEqual(payload["reasoning_effort"], "low")
 
     def test_endpoint_is_derived_without_double_slash(self):

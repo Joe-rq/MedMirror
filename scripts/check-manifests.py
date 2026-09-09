@@ -7,6 +7,7 @@
 用法：python3 scripts/check-manifests.py [项目根目录，默认 .]
 退出码 0 = 全绿，1 = 有错。能用规则判的，绝不留给人判。
 """
+
 import json
 import re
 import sys
@@ -14,8 +15,18 @@ from pathlib import Path
 
 SCHEMA_ID = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 # §5.2 封闭 schema：只许这十个顶层字段
-ALLOWED = {"$schema", "name", "version", "description", "author",
-           "homepage", "repository", "license", "keywords", "extensions"}
+ALLOWED = {
+    "$schema",
+    "name",
+    "version",
+    "description",
+    "author",
+    "homepage",
+    "repository",
+    "license",
+    "keywords",
+    "extensions",
+}
 REQUIRED = {"$schema", "name"}
 AUTHOR_FIELDS = {"name", "email", "url"}
 # §5.5 名字约束：1–64 字符，小写字母数字与 - . ，首尾必须字母数字，不许连续 -- 或 ..
@@ -51,8 +62,10 @@ def check_plugin(path: Path) -> None:
         err(f"{path.name}：缺必填字段 `{f}`（§5.3）")
 
     for f in sorted(data.keys() - ALLOWED):
-        notes.append(f"{path.name}：未知顶层字段 `{f}` 会被客户端忽略——"
-                     f"客户端专属数据应放进 `extensions`（§5.2、§8）")
+        notes.append(
+            f"{path.name}：未知顶层字段 `{f}` 会被客户端忽略——"
+            f"客户端专属数据应放进 `extensions`（§5.2、§8）"
+        )
 
     if data.get("$schema") not in (None, SCHEMA_ID):
         err(f"{path.name}：`$schema` 必须是 {SCHEMA_ID}（§5.2）")
@@ -66,8 +79,10 @@ def check_plugin(path: Path) -> None:
         elif "--" in name or ".." in name:
             err(f"{path.name}：`name` 不许出现连续的 `--` 或 `..`（§5.5）")
         elif not NAME_RE.match(name):
-            err(f"{path.name}：`name` 只许小写字母、数字、`-`、`.`，且首尾为字母或数字"
-                f"——当前 `{name}`（§5.5）")
+            err(
+                f"{path.name}：`name` 只许小写字母、数字、`-`、`.`，且首尾为字母或数字"
+                f"——当前 `{name}`（§5.5）"
+            )
 
     author = data.get("author")
     if author is not None:
@@ -84,8 +99,7 @@ def check_plugin(path: Path) -> None:
         if f in data and not isinstance(data[f], str):
             err(f"{path.name}：`{f}` 必须是字符串（§5.4）")
     kw = data.get("keywords")
-    if kw is not None and (not isinstance(kw, list)
-                           or any(not isinstance(k, str) for k in kw)):
+    if kw is not None and (not isinstance(kw, list) or any(not isinstance(k, str) for k in kw)):
         err(f"{path.name}：`keywords` 必须是字符串数组（§5.4）")
     ext = data.get("extensions")
     if ext is not None and not isinstance(ext, dict):
@@ -110,7 +124,7 @@ def check_42plugin(path: Path) -> None:
     for i, item in enumerate(plugins):
         at = f"{path.name}：plugins[{i}]"
         if not isinstance(item, dict):
-            err(f"{at} 必须是对象，形如 " '{"source": "...", "version": "..."}')
+            err(f'{at} 必须是对象，形如 {{"source": "...", "version": "..."}}')
             continue
         src = item.get("source")
         if not isinstance(src, str) or not src:
@@ -132,16 +146,19 @@ def check_layout(root: Path) -> None:
         return
     if not skills.is_dir():
         return
-    found = [d.name for d in sorted(skills.iterdir())
-             if d.is_dir() and (d / "SKILL.md").is_file()]
-    stray = [d.name for d in sorted(skills.iterdir())
-             if d.is_dir() and not (d / "SKILL.md").is_file()
-             and not d.name.startswith(".")]
+    found = [d.name for d in sorted(skills.iterdir()) if d.is_dir() and (d / "SKILL.md").is_file()]
+    stray = [
+        d.name
+        for d in sorted(skills.iterdir())
+        if d.is_dir() and not (d / "SKILL.md").is_file() and not d.name.startswith(".")
+    ]
     for s in stray:
         notes.append(f"skills/{s}/ 里没有 SKILL.md，不会被识别为 skill（§7.1）")
     if found:
-        notes.append(f"发现 {len(found)} 个 skill：{', '.join(found)}"
-                     "——它们共用根目录那一份 plugin.json（§5.1）")
+        notes.append(
+            f"发现 {len(found)} 个 skill：{', '.join(found)}"
+            "——它们共用根目录那一份 plugin.json（§5.1）"
+        )
 
 
 def main() -> int:
