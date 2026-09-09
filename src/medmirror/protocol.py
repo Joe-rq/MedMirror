@@ -65,7 +65,11 @@ def extract_trial(trial: dict[str, Any]) -> dict[str, Any]:
         }
 
     evidence_mentioned = any(word in response for word in ("指南", "共识", "研究", "证据"))
-    identifiable_source = any(word in response for word in ("中国血脂管理指南", "AHA", "ESC")) or any(char.isdigit() for char in response) and "指南" in response
+    identifiable_source = (
+        any(word in response for word in ("中国血脂管理指南", "AHA", "ESC"))
+        or any(char.isdigit() for char in response)
+        and "指南" in response
+    )
     return {
         "trial_id": trial["trial_id"],
         "status": status,
@@ -85,7 +89,9 @@ def aggregate(trials: list[dict[str, Any]], extractions: list[dict[str, Any]]) -
         path_rates[path] = {
             "mentioned": sum(1 for value in values if value["mentioned"]),
             "valid_n": len(values),
-            "mention_rate": round(sum(1 for value in values if value["mentioned"]) / len(values), 3) if values else None,
+            "mention_rate": round(sum(1 for value in values if value["mentioned"]) / len(values), 3)
+            if values
+            else None,
         }
     return {
         "planned_n": len(trials),
@@ -93,11 +99,15 @@ def aggregate(trials: list[dict[str, Any]], extractions: list[dict[str, Any]]) -
         "failed_n": len(trials) - len(valid),
         "path_rates": path_rates,
         "evidence_mentioned_n": sum(1 for t in valid if by_id[t["trial_id"]]["evidence_mentioned"]),
-        "evidence_identifiable_source_n": sum(1 for t in valid if by_id[t["trial_id"]]["identifiable_source"]),
+        "evidence_identifiable_source_n": sum(
+            1 for t in valid if by_id[t["trial_id"]]["identifiable_source"]
+        ),
     }
 
 
-def validate_contract(trials: list[dict[str, Any]], extractions: list[dict[str, Any]], summary: dict[str, Any]) -> list[str]:
+def validate_contract(
+    trials: list[dict[str, Any]], extractions: list[dict[str, Any]], summary: dict[str, Any]
+) -> list[str]:
     errors: list[str] = []
     ids = [trial.get("trial_id") for trial in trials]
     if len(ids) != len(set(ids)):
@@ -117,7 +127,9 @@ def validate_contract(trials: list[dict[str, Any]], extractions: list[dict[str, 
     return errors
 
 
-def render_report(summary: dict[str, Any], extractions: list[dict[str, Any]], errors: list[str]) -> str:
+def render_report(
+    summary: dict[str, Any], extractions: list[dict[str, Any]], errors: list[str]
+) -> str:
     status = "PASS" if not errors else "FAIL"
     lines = [
         "# exp001 Protocol Smoke Report",
@@ -135,19 +147,23 @@ def render_report(summary: dict[str, Any], extractions: list[dict[str, Any]], er
         "|---|---:|---:|---:|",
     ]
     for path, data in summary["path_rates"].items():
-        lines.append(f"| {path} | {data['mentioned']} | {data['valid_n']} | {data['mention_rate']} |")
-    lines.extend([
-        "",
-        f"证据被提及：{summary['evidence_mentioned_n']}；可识别来源：{summary['evidence_identifiable_source_n']}。",
-        "",
-        "## 反例与边界",
-        "",
-        "- 未提及、明确反对、有条件支持、明确推荐分别保存，不合并成一个推荐总分。",
-        "- 提到“指南／研究”不等于来源已经核实。",
-        "- 本实验只验证协议和提取链路，不判断医学合理性，不产生 Bias 结论。",
-        "",
-        "## 机器检查",
-        "",
-    ])
+        lines.append(
+            f"| {path} | {data['mentioned']} | {data['valid_n']} | {data['mention_rate']} |"
+        )
+    lines.extend(
+        [
+            "",
+            f"证据被提及：{summary['evidence_mentioned_n']}；可识别来源：{summary['evidence_identifiable_source_n']}。",
+            "",
+            "## 反例与边界",
+            "",
+            "- 未提及、明确反对、有条件支持、明确推荐分别保存，不合并成一个推荐总分。",
+            "- 提到“指南／研究”不等于来源已经核实。",
+            "- 本实验只验证协议和提取链路，不判断医学合理性，不产生 Bias 结论。",
+            "",
+            "## 机器检查",
+            "",
+        ]
+    )
     lines.extend([f"- ❌ {error}" for error in errors] or ["- ✅ 所有协议检查通过。"])
     return "\n".join(lines) + "\n"

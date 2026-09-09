@@ -27,7 +27,9 @@ def run_one(config) -> dict[str, object]:
         temperature=0,
         max_tokens=int(__import__("os").getenv("MEDMIRROR_MAX_TOKENS", "8")),
         thinking_mode=__import__("os").getenv(f"MEDMIRROR_{config.vendor.upper()}_THINKING_MODE"),
-        reasoning_effort=__import__("os").getenv(f"MEDMIRROR_{config.vendor.upper()}_REASONING_EFFORT"),
+        reasoning_effort=__import__("os").getenv(
+            f"MEDMIRROR_{config.vendor.upper()}_REASONING_EFFORT"
+        ),
     )
     request = urllib.request.Request(
         config.endpoint,

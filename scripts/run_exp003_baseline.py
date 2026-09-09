@@ -11,7 +11,7 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -83,7 +83,10 @@ def call_model(config: Any, messages: list[dict[str, str]], timeout: int) -> dic
     request = urllib.request.Request(
         config.endpoint,
         data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-        headers={"Authorization": f"Bearer {os.environ[config.api_key_env]}", "Content-Type": "application/json"},
+        headers={
+            "Authorization": f"Bearer {os.environ[config.api_key_env]}",
+            "Content-Type": "application/json",
+        },
         method="POST",
     )
     started = time.perf_counter()
@@ -95,13 +98,20 @@ def call_model(config: Any, messages: list[dict[str, str]], timeout: int) -> dic
         content = message.get("content") if isinstance(message, dict) else None
         if isinstance(content, list):
             content = "".join(
-                part.get("text", "") if isinstance(part, dict) else str(part)
-                for part in content
+                part.get("text", "") if isinstance(part, dict) else str(part) for part in content
             )
         if not isinstance(content, str):
             content = ""
-        reasoning_fields = [field for field in ("reasoning", "reasoning_content") if isinstance(message, dict) and message.get(field)]
-        reasoning_chars = sum(len(message.get(field, "")) for field in reasoning_fields if isinstance(message.get(field), str))
+        reasoning_fields = [
+            field
+            for field in ("reasoning", "reasoning_content")
+            if isinstance(message, dict) and message.get(field)
+        ]
+        reasoning_chars = sum(
+            len(message.get(field, ""))
+            for field in reasoning_fields
+            if isinstance(message.get(field), str)
+        )
         status = "success" if content else "no_final_content"
         return {
             "status": status,
@@ -115,11 +125,24 @@ def call_model(config: Any, messages: list[dict[str, str]], timeout: int) -> dic
             "elapsed_ms": round((time.perf_counter() - started) * 1000),
         }
     except urllib.error.HTTPError as error:
-        return {"status": "failed", "http_status": error.code, "error_type": "HTTPError", "elapsed_ms": round((time.perf_counter() - started) * 1000)}
+        return {
+            "status": "failed",
+            "http_status": error.code,
+            "error_type": "HTTPError",
+            "elapsed_ms": round((time.perf_counter() - started) * 1000),
+        }
     except (urllib.error.URLError, TimeoutError) as error:
-        return {"status": "failed", "error_type": type(error).__name__, "elapsed_ms": round((time.perf_counter() - started) * 1000)}
+        return {
+            "status": "failed",
+            "error_type": type(error).__name__,
+            "elapsed_ms": round((time.perf_counter() - started) * 1000),
+        }
     except (json.JSONDecodeError, KeyError, UnicodeDecodeError) as error:
-        return {"status": "failed", "error_type": type(error).__name__, "elapsed_ms": round((time.perf_counter() - started) * 1000)}
+        return {
+            "status": "failed",
+            "error_type": type(error).__name__,
+            "elapsed_ms": round((time.perf_counter() - started) * 1000),
+        }
 
 
 def summarize(rows: list[dict[str, Any]], planned_n: int, run_id: str) -> dict[str, Any]:
@@ -159,7 +182,9 @@ def render_report(summary: dict[str, Any], rows: list[dict[str, Any]]) -> str:
         "|---|---|---|---|---|",
     ]
     for row in rows:
-        lines.append(f"| {row['trial_id']} | {row['model']} | {row['prompt_variant']} | {row['status']} | {'yes' if row.get('usage') else 'no'} |")
+        lines.append(
+            f"| {row['trial_id']} | {row['model']} | {row['prompt_variant']} | {row['status']} | {'yes' if row.get('usage') else 'no'} |"
+        )
     return "\n".join(lines) + "\n"
 
 
@@ -177,11 +202,13 @@ def main() -> int:
     load_local_env()
     registry = model_registry()
     planned = planned_trials(registry, args.repeats)
-    missing = [config.api_key_env for config in registry.values() if not os.getenv(config.api_key_env)]
+    missing = [
+        config.api_key_env for config in registry.values() if not os.getenv(config.api_key_env)
+    ]
     if missing:
         parser.error("缺少密钥变量：" + ", ".join(missing))
 
-    run_id = "exp003-baseline-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    run_id = "exp003-baseline-" + datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     output_dir = ROOT / "docs/experiments/exp003-baseline"
     result_dir = output_dir / "result"
     trials_path = result_dir / "trials.jsonl"
@@ -189,7 +216,12 @@ def main() -> int:
 
     for spec in planned:
         old = existing.get(spec["trial_id"])
-        if old and old.get("status") == "success" and old.get("response") and old.get("protocol_version") == PROTOCOL_VERSION:
+        if (
+            old
+            and old.get("status") == "success"
+            and old.get("response")
+            and old.get("protocol_version") == PROTOCOL_VERSION
+        ):
             continue
         config = registry[spec["model_catalog_id"]]
         outcome = call_model(config, spec["messages"], args.timeout)
@@ -199,15 +231,20 @@ def main() -> int:
             "run_id": run_id,
             "protocol_version": PROTOCOL_VERSION,
             "case_id": CASE_ID,
-            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "completed_at": datetime.now(UTC).isoformat(),
         }
-        atomic_write_jsonl(trials_path, [existing[item["trial_id"]] for item in planned if item["trial_id"] in existing])
+        atomic_write_jsonl(
+            trials_path,
+            [existing[item["trial_id"]] for item in planned if item["trial_id"] in existing],
+        )
         print(f"{spec['trial_id']}: {outcome['status']}", flush=True)
 
     rows = [existing[item["trial_id"]] for item in planned if item["trial_id"] in existing]
     summary = summarize(rows, len(planned), run_id)
     result_dir.mkdir(parents=True, exist_ok=True)
-    (result_dir / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (result_dir / "summary.json").write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     (result_dir / "report.md").write_text(render_report(summary, rows), encoding="utf-8")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0 if summary["completed_n"] == summary["planned_n"] and summary["failed_n"] == 0 else 1

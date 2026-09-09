@@ -1,12 +1,9 @@
-import json
-import sys
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-
 from medmirror.protocol import aggregate, extract_trial, load_jsonl, validate_contract
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class Exp001ContractTest(unittest.TestCase):

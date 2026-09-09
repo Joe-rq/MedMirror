@@ -10,7 +10,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from medmirror.protocol import aggregate, extract_trial, load_jsonl, render_report, validate_contract
+from medmirror.protocol import (
+    aggregate,
+    extract_trial,
+    load_jsonl,
+    render_report,
+    validate_contract,
+)
 
 
 def main() -> int:
@@ -22,8 +28,12 @@ def main() -> int:
     extractions = [extract_trial(trial) for trial in trials]
     summary = aggregate(trials, extractions)
     errors = validate_contract(trials, extractions, summary)
-    (output_dir / "extractions.jsonl").write_text("\n".join(json.dumps(row, ensure_ascii=False) for row in extractions) + "\n")
-    (output_dir / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n")
+    (output_dir / "extractions.jsonl").write_text(
+        "\n".join(json.dumps(row, ensure_ascii=False) for row in extractions) + "\n"
+    )
+    (output_dir / "summary.json").write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2) + "\n"
+    )
     (output_dir / "report.md").write_text(render_report(summary, extractions, errors))
     print(render_report(summary, extractions, errors), end="")
     return 0 if not errors else 1
