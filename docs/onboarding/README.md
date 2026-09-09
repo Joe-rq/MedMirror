@@ -3,7 +3,26 @@
 > 给第二位开发者（以及他/她的 AI agent）。目标：clone 下来半小时内跑通四闸，并清楚每个改动该走哪条路。
 > 流程与仓库主人完全一致——**同一套闸门、同一条 issue → PR 路线、同一套全局技能**。
 
-## 0. 权限（已就绪）
+## 当前接手任务（2026-09-09 审计更新）
+
+先读 [原型纠偏与双人交接计划](../plan/002_prototype-calibration-handoff.md)。首个单元是离线分组报告修复；人工定标与运行护栏就绪后才进入自动追问。27 条原始回答已经随 Git 提供，其中 3 条截断；不要把旧的 27/27 success 理解为完整回答。以下远程权限与工具说明是历史交接记录，实际 Issue 与权限在接手时核对。
+
+## 开发队列：按阶段与依赖，不按 Issue 编号
+
+**伙伴下一项：[#10 报告与截断修复](https://cnb.cool/joe-rq/MedMirror/-/issues/10)。主人同步推进 #11 人工定标和 #5 复核人员安排。**
+
+| 阶段 | 项目主人 | 伙伴 | 推进条件 |
+|---|---|---|---|
+| 阶段1 | [#11 人工定标](https://cnb.cool/joe-rq/MedMirror/-/issues/11)、[#5 复核人员](https://cnb.cool/joe-rq/MedMirror/-/issues/5) | [#10 报告修复](https://cnb.cool/joe-rq/MedMirror/-/issues/10) | 可立即认领，定标和报告协同完成 |
+| 阶段2 | 确认评分标准，核对 #3 账单 | [#12 提取修复](https://cnb.cool/joe-rq/MedMirror/-/issues/12)、[#3 预算闸门](https://cnb.cool/joe-rq/MedMirror/-/issues/3)、[#13 运行保护](https://cnb.cool/joe-rq/MedMirror/-/issues/13) | #12 正式验收依赖 #11；#3 与 #13 共用调用/账本契约 |
+| 阶段3 | 审核发现、推进实际医学复核 | [#2 有界追问](https://cnb.cool/joe-rq/MedMirror/-/issues/2)、[#4 备份恢复演练](https://cnb.cool/joe-rq/MedMirror/-/issues/4) | #2 真实调用前完成 #10/#11/#12/#3/#13；#4 在回放接口和目录就绪后可提前 |
+| 后置 | 按余力与预算安排 | [#6 技能评审](https://cnb.cool/joe-rq/MedMirror/-/issues/6) | 不阻塞报告、定标和运行保护 |
+
+阶段表示主要推进顺序，具体依赖以 Issue 正文为准，不要求同阶段所有任务都关闭才启动独立工作。每人一次认领一个开发单元；表中是建议分工，账号负责人由团队认领。#5 是人员和排期安排，其关闭不代表医学复核已经完成。
+
+远程 Issue 标题已添加阶段前缀，编号保持稳定。#1 已完成，无需重新认领。
+
+## 0. 权限（历史记录）
 
 - 仓库私有，你是 **Developer**：能推分支、能开 PR。
 - `main` 已设分支保护：**禁止直推 + 必须通过状态检查**。直推会被远端直接拒绝，这不是故障。
@@ -15,7 +34,9 @@ git clone https://cnb.cool/joe-rq/MedMirror.git
 cd MedMirror
 brew install uv                              # 或 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync                                      # 自动装 Python 3.13 与 pytest/ruff
-cp .env.example .env.local                   # 再填三家 key；只放本机，不提交、不打印
+# 离线开发无需 key；仅在线调用时准备 .env.local
+# 已有 .env.local 时不要覆盖
+cp -n .env.example .env.local                 # key 只放本机，不提交、不打印
 ```
 
 `uv.lock` 已锁死依赖版本，`uv sync` 得到的环境与 CI 一致，不需要手动建虚拟环境。
@@ -94,7 +115,7 @@ bash scripts/check-tools.sh                                             # 通用
 | 缺什么 | 为什么 | 怎么办 |
 |---|---|---|
 | `resources/` | 只剩 `README.md`——三个浅克隆参考仓库（PhysicianBench 等）被 gitignore | 要读就自己再 clone |
-| `runs/` | 克隆后不存在（空目录不入库）；原始回答按约定不入库 | 无需处理，需要时自建 |
+| `runs/` | 规划中的后续运行目录，被 Git 忽略 | 当前 exp003 原文已在 `docs/experiments/exp003-baseline/result/trials.jsonl` 入库，克隆即可取得；后续 runs 数据需单独备份和交接 |
 | `.env.local` | 密钥永不入库 | 从 `.env.example` 复制后自己填 |
 
 > 已实测：干净 clone 后 `uv sync` + 四闸四条命令全部通过，无需额外步骤。

@@ -3,7 +3,9 @@
 > 哪一处该我定、我当时定了什么、依据是什么，逐条留痕；下次回看不必重新推演。
 > 编号追加式生长，**永不重排**。文件名英文 `NNN_kebab-case.md`。同主题以最新一份为准。
 
-| 编号 | 日期 | 标题 |
-|------|------|------|
+| 编号 | 日期 | 标题 | 状态 |
+|------|------|------|------|
 | [001](001_autonomous-evaluation-loop.md) | 2026-09-09 | 自主评测闭环与有限追问 | in-progress |
-| — | 2026-09-09 | 在50元预算内如何确定首轮MedMirror实验协议、官方API接入与评分方案 → 取舍卡见 `docs/research/001_med-first-run/decision.md` |
+| — | 2026-09-09 | 在50元预算内如何确定首轮MedMirror实验协议、官方API接入与评分方案 → 取舍卡见 `docs/research/001_med-first-run/decision.md` | 历史记录 |
+
+| [002](002_prototype-calibration-handoff.md) | 2026-09-09 | 原型纠偏与双人开发交接 | draft |
