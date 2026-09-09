@@ -43,3 +43,6 @@ runs/
 __pycache__/
 .pytest_cache/
 *.pyc
+
+# dev-launch 评审 harness 配置（因机器而异，不入库）
+.claude/dev-launch.review.md
