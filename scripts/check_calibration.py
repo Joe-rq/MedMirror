@@ -131,8 +131,8 @@ def check_path_entry(entry: Any, key: str, neg_id: str) -> None:
     if not isinstance(entry["mentioned"], bool):
         err(f"{neg_id}：paths.{key}.mentioned 必须是布尔值，当前 {entry['mentioned']!r}")
         return
-    if entry["state"] not in STATES:
-        err(f"{neg_id}：paths.{key}.state `{entry['state']}` 不在枚举内")
+    if not isinstance(entry["state"], str) or entry["state"] not in STATES:
+        err(f"{neg_id}：paths.{key}.state `{entry['state']}` 不在枚举内或不是字符串")
     if entry["mentioned"] is False:
         if entry["state"] != "not_mentioned":
             err(f"{neg_id}：paths.{key} mentioned=false 时 state 必须为 not_mentioned")
@@ -177,10 +177,10 @@ def check_row(row: dict[str, Any], at: str, trials: dict[str, dict[str, Any]]) -
     if not isinstance(neg_id, str) or not neg_id.startswith("neg-"):
         err(f"{at}：id 须为 neg-NNN 格式，当前 {neg_id!r}")
     kind = row["kind"]
-    if kind not in KINDS:
-        err(f"{neg_id}：kind `{kind}` 不在枚举内")
+    if not isinstance(kind, str) or kind not in KINDS:
+        err(f"{neg_id}：kind `{kind}` 不在枚举内或不是字符串")
         return
-    if row["status"] not in STATUS_VALUES:
+    if not isinstance(row["status"], str) or row["status"] not in STATUS_VALUES:
         err(f"{neg_id}：status `{row['status']}` 须为 pending_owner_confirmation 或 confirmed")
 
     source = row["source"]
@@ -221,6 +221,12 @@ def check_row(row: dict[str, Any], at: str, trials: dict[str, dict[str, Any]]) -
         return
     paths = expected.get("paths", {})
 
+    # 来源判定字段：出现即必须是布尔（防「一真掩一假」绕过）
+    for field in ("identifiable_source", "evidence_mentioned"):
+        value = expected.get(field)
+        if value is not None and not isinstance(value, bool):
+            err(f"{neg_id}：expected.{field} 必须是布尔值，当前 {value!r}")
+
     if kind in PATH_KINDS and not (isinstance(paths, dict) and paths):
         err(f"{neg_id}：kind={kind} 必须给出非空 paths 判定")
     if kind == "failure" and paths:
@@ -246,8 +252,11 @@ def check_row(row: dict[str, Any], at: str, trials: dict[str, dict[str, Any]]) -
             err(f"{neg_id}：kind=substitution_vs_adjunct 须在 paths.tcm 给出替代/辅助判定")
         else:
             for role in ("substitution", "adjunct"):
-                if tcm.get(role) not in STATES:
-                    err(f"{neg_id}：paths.tcm.{role} 须为 STATES 枚举（替代与辅助分开编码的落点）")
+                value = tcm.get(role)
+                if not isinstance(value, str) or value not in STATES:
+                    err(
+                        f"{neg_id}：paths.tcm.{role} 须为 STATES 枚举字符串（替代与辅助分开编码的落点）"
+                    )
 
     # 分母归属：失败/截断的排除规则结构化，不靠 status_note 散文
     if (
@@ -271,7 +280,7 @@ def check_row(row: dict[str, Any], at: str, trials: dict[str, dict[str, Any]]) -
 
 
 def check_coverage(rows: list[dict[str, Any]], require_confirmed: bool) -> None:
-    present = {r.get("kind") for r in rows}
+    present = {r["kind"] for r in rows if isinstance(r.get("kind"), str)}
     missing = REQUIRED_KINDS - present
     if missing:
         err(f"负例集缺少 issue #11 要求的 kind：{sorted(missing)}")
@@ -293,10 +302,14 @@ def check_denominator(baseline: Path, rows: list[dict[str, Any]], expect: dict[s
     """
     trials = parse_jsonl(baseline, "基线文件")
     if not trials:
+        err(f"基线文件无有效记录：{baseline}")
         return
     finish: dict[str, int] = {}
     for t in trials:
         reason = t.get("finish_reason")
+        if not isinstance(reason, str):
+            err(f"{t.get('trial_id')}：finish_reason 必须是字符串，当前 {reason!r}")
+            continue
         finish[reason] = finish.get(reason, 0) + 1
     planned, stop, length = len(trials), finish.get("stop", 0), finish.get("length", 0)
     if planned != expect["planned"] or stop != expect["stop"] or length != expect["length"]:
@@ -307,14 +320,29 @@ def check_denominator(baseline: Path, rows: list[dict[str, Any]], expect: dict[s
     other = {k: v for k, v in finish.items() if k not in ("stop", "length")}
     if other:
         err(f"基线出现 stop/length 之外的 finish_reason：{other}——先确认口径再扩展枚举")
+
+    def has_body(t: dict[str, Any]) -> bool:
+        response = t.get("response")
+        return isinstance(response, str) and bool(response.strip())
+
     inconsistent = [
         t.get("trial_id")
         for t in trials
-        if t.get("finish_reason") == "stop"
-        and (t.get("status") != "success" or not t.get("response"))
+        if t.get("finish_reason") == "stop" and (t.get("status") != "success" or not has_body(t))
     ]
     if inconsistent:
-        err(f"finish=stop 但 status 非 success 或正文为空，不满足完整回答定义：{inconsistent}")
+        err(
+            f"finish=stop 但 status 非 success 或正文为空/纯空白，不满足完整回答定义：{inconsistent}"
+        )
+    overlap = [
+        t.get("trial_id")
+        for t in trials
+        if t.get("status") != "success" and t.get("finish_reason") == "length"
+    ]
+    if overlap:
+        err(
+            f"失败与截断分类重叠（status≠success 且 finish=length）：{overlap}——口径未定义，须人工裁定"
+        )
     truncated_ids = {t["trial_id"] for t in trials if t.get("finish_reason") == "length"}
     cited = {
         r["source"][len("trial:") :]

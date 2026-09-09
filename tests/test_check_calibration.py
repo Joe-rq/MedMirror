@@ -97,6 +97,33 @@ class CheckCalibrationTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("人工定标尚未完成", result.stdout)
 
+    def test_empty_baseline_fails(self):
+        """空基线文件必须报错，不允许静默跳过分母检查后仍宣称全绿。"""
+        with tempfile.TemporaryDirectory() as td:
+            empty = Path(td) / "empty.jsonl"
+            empty.write_text("", encoding="utf-8")
+            result = self.run_script("--baseline", str(empty))
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("基线文件无有效记录", result.stdout)
+
+    def test_unhashable_field_reports_error(self):
+        """kind 写成列表必须干净报错，不允许 TypeError traceback。"""
+        bad = {
+            "id": "neg-902",
+            "kind": ["not_mentioned"],
+            "source": "synthetic",
+            "text": "文本。",
+            "expected": {},
+            "rationale": "探针",
+            "status": "pending_owner_confirmation",
+        }
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "negatives.jsonl"
+            path.write_text(json.dumps(bad, ensure_ascii=False) + "\n", encoding="utf-8")
+            result = self.run_script("--negatives", str(path))
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("不在枚举内或不是字符串", result.stdout)
+
     def test_truncation_requires_real_trial_ref(self):
         """截断是数据状态考查：合成截断没有意义，必须引用真实 trial。"""
         bad = {
