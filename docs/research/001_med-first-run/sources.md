@@ -72,9 +72,9 @@
 | 是什么 | 在哪 | 协议 | 角色 | 读多深 | 还活着吗 |
 |---|---|---|---|---|---|
 | | `resources/…` | MIT / Apache / GPL… | 要比的 / 要学的 / 零件 | 逐条核查 / 只读架构 / 一两行 | 最近提交时间 |
-| DeepSeek 官方 API 文档 | `https://api-docs.deepseek.com/quick_start/pricing/`、`https://api-docs.deepseek.com/guides/thinking_mode/` | 官方文档 | 接入、思考参数与价格核查 | 逐条核查 | 2026-09-09；型号、base URL、thinking 开关已核实，费率执行前重核 |
-| StepFun 官方 API 文档 | `https://platform.stepfun.com/docs/zh/api-reference/chat/chat-completion-create`、`https://platform.stepfun.com/docs/zh/step-plan/integrations/reasoning-api`、`https://platform.stepfun.com/docs/zh/guides/pricing/details`、用户提供的 `https://api.stepfun.com/step_plan/v1` | 官方文档 + 用户配置 | 接入、推理参数与价格核查 | 逐条核查 | 2026-09-09；Step Plan Base URL 与接口路径已核实；官方价目表明确列出 `step-3.5-flash`，`step-3.7-flash` 具体计费仍待账户侧核对 |
-| GLM/Z.ai 官方 API 文档 | `https://docs.bigmodel.cn/cn/guide/capabilities/thinking-mode`、`https://docs.bigmodel.cn/api-reference/模型-api/对话补全` | 官方文档 | 接入与思考参数核查 | 逐条核查 | 2026-09-09；endpoint 与实际请求已打通，当前模型可用但价格和关闭思考参数仍待账户侧核对 |
+| DeepSeek 官方 API 文档 | `https://api-docs.deepseek.com/quick_start/pricing/`、`https://api-docs.deepseek.com/guides/thinking_mode/` | 官方文档 + 用户价格补充 | 接入、思考参数与价格核查 | 逐条核查 | 2026-09-09；用户补充高峰/闲时价格，已登记高峰价用于保守估算 |
+| StepFun 官方 API 文档 | `https://platform.stepfun.com/docs/zh/api-reference/chat/chat-completion-create`、`https://platform.stepfun.com/docs/zh/step-plan/integrations/reasoning-api`、`https://platform.stepfun.com/docs/zh/guides/pricing/details`、用户提供的 `https://api.stepfun.com/step_plan/v1` | 官方文档 + 用户配置 | 接入、推理参数与价格核查 | 逐条核查 | 2026-09-09；Step Plan Base URL 与接口路径已核实；用户补充 `step-3.7-flash` 价格：输入未命中 1.35 元/M、命中 0.27 元/M、输出 8.1 元/M；按用户提供信息登记，执行前仍以账户账单为准 |
+| GLM/Z.ai 官方 API 文档 | `https://docs.bigmodel.cn/cn/guide/capabilities/thinking-mode`、`https://docs.bigmodel.cn/api-reference/模型-api/对话补全` | 官方文档 + 用户价格补充 | 接入、思考参数与价格核查 | 逐条核查 | 2026-09-09；endpoint 与实际请求已打通，用户补充当前 GLM-5.3-Flash 输入/输出价格，已登记；模型目录状态仍保留待官方型号表核对 |
 | MedPerturb / HealthBench / PatientAgentBench | 待补源码与官方资料 | 各自协议待核 | 只学 trial、trace、grader 和复核方法 | 只读架构 | 尚未本地取材 |
 | HealthRex/PhysicianBench | `resources/PhysicianBench`；`https://github.com/HealthRex/PhysicianBench` | Apache-2.0；commit `c7efa8f` | 要学：任务、长程轨迹、resume、pass@k | 读 README 与目录，不引入 EHR | 2026-09-09；浅克隆完成 |
 | CAS-SIAT-XinHai/RxSafeBench | `resources/RxSafeBench`；`https://github.com/CAS-SIAT-XinHai/RxSafeBench` | CC0-1.0；commit `a25f9a1` | 要学：药物风险、交互与禁忌的测试维度 | 读数据结构与指标，不把其医学标签当本项目真相 | 2026-09-09；浅克隆完成 |

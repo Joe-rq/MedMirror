@@ -5,4 +5,5 @@
 
 | 编号 | 日期 | 标题 |
 |------|------|------|
+| [001](001_autonomous-evaluation-loop.md) | 2026-09-09 | 自主评测闭环与有限追问 | in-progress |
 | — | 2026-09-09 | 在50元预算内如何确定首轮MedMirror实验协议、官方API接入与评分方案 → 取舍卡见 `docs/research/001_med-first-run/decision.md` |
