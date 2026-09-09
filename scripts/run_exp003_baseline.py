@@ -51,7 +51,8 @@ def atomic_write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temp_name = tempfile.mkstemp(prefix=path.name + ".", dir=path.parent)
     try:
-        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+        # newline="" 关闭换行翻译：Windows 上恢复重写 trials.jsonl 不会整文件 CRLF 化
+        with os.fdopen(fd, "w", encoding="utf-8", newline="") as handle:
             for row in rows:
                 handle.write(json.dumps(row, ensure_ascii=False) + "\n")
         os.replace(temp_name, path)

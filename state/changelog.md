@@ -32,6 +32,8 @@
 
 2026-09-09：按用户确认保留 Issue 编号，以【阶段1】/【阶段2】/【阶段3】/【后置】标记九条开放任务的标题。回读验证只改标题；README 与接手入口增加统一开发队列。未提交或推送本地文档。
 
+2026-09-09：Issue #10 分组聚合与截断统计修复（分支 `feat/issue-10-offline-report`）。变了什么：报告逻辑移入 `src/medmirror/reporting.py`（试次分完整/截断/失败/未执行/原因未知五类；分组骨架由协议计划与输入求差，恒定 9 组；截断观察单列不进语义分母；失败不计为未提及；计划外 trial_id 显式暴露），`scripts/report_exp003.py` 增加 `--input/--output/--repeats`，拒绝输出到原始数据目录，派生产物改写 `derived-v2/` 新目录且相同输入字节一致。为什么变：审计确认 `report_exp003.py:64` 每轮覆盖分组 paths、3 条 length 截断被计入 27/27 success，且旧脚本固定覆写 `result/` 旧报告。对你意味着什么：`uv run python scripts/report_exp003.py` 成为只读安全的离线重放入口；`result/` 原始数据与旧报告不再被脚本触碰；语义分母默认"计划内完整试次"，待 #11 定标确认后版本化，提取器本身未动（#12 处理）。
+
 2026-09-09：issue #11 发车（dev-launch）。AI/人工分工按 issue 正文执行：AI 交付材料与工具（负例集、check 脚本、标注工作表、发现包骨架），语义判定全部留 pending_owner_confirmation 待主人确认，不冒充已确认标准。在途 plan/002 文档经用户授权走 PR #14 合并。分母口径定为 planned=27、完整=24（stop）、截断=3（length 单列，不算未提及、不进完整分母），draft 待主人确认后并入 specs/calibration.md。全程离线零 API 调用。
 
 2026-09-09：PR #15 经五轮双谱系评审收敛（GPT 系 codex 共 15P0+3P1+2P2+1P3，DeepSeek 系 opencode 共 2P1+8P2+9P3，后者两轮独立判定收敛并逐项核验引文/统计/预填无事实错误、无越界冒充人工定标）。修复要点：check 脚本类型闸全链路（引文/来源字段/mentioned/state/kind/status/trial_id/finish_reason）、--baseline 独立身份校验、失败×截断重叠报错、工作表覆盖保护、denominator_effect 与 substitution/adjunct 结构化落点。人工定标护栏（全 pending、require-confirmed 全量）已在测试与文档注明流转语义。

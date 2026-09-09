@@ -61,3 +61,7 @@ AI 侧交付物落地：`specs/examples/negatives.jsonl`（17 条负例：未提
 ## 开发队列已标识（2026-09-09）
 
 用户确认后已为九条远程开放 Issue 添加标题前缀并逐条回读：阶段1 #10/#11/#5；阶段2 #12/#3/#13；阶段3 #2/#4；后置 #6。编号、正文、优先级、状态及负责人未改。统一队列写入 docs/onboarding/README.md，项目 README 增加开工入口；伙伴先 #10，主人同步 #11/#5。阶段为推进顺序，具体依赖按正文；#4 可在回放与目录就绪后提前。远程标题已生效，本地交接文档仍待提交。
+
+## Issue #10 实现完成（2026-09-09，分支 feat/issue-10-offline-report）
+
+离线分组报告修复落地：新增 `src/medmirror/reporting.py`（试次五类分类、分组聚合、md/json 渲染，复用 protocol 提取，不改提取器），`scripts/report_exp003.py` 重写为 `--input/--output/--repeats` CLI；派生产物写新目录 `docs/experiments/exp003-baseline/derived-v2/`（27 计划／24 完整／3 截断单列／0 失败／0 未执行／9 组，LF 换行跨平台字节一致），输出指向原始数据目录本身/子目录/祖先目录或换 input 绕过均拒绝执行；`result/` 原始数据与旧报告零改动（CLI 测试含目录哈希校验）。新增 `tests/test_report_exp003.py` 23 例（相反结果 fixture 顺序无关、截断/失败/未执行/空与空白正文/计划外/词表与路径集漂移/元数据与 vendor 不一致分类、真实 27 条回归、CLI 防覆盖与重复运行字节一致、成本数值钉死、md 表格列一致性），四闸 36/36 全绿。语义分母默认"计划内完整试次"并标注待 #11 定标确认；截断观察单列不进分母。已回填 issue #10 认领与实现规格评论；/simplify 与 pr-ready 三审计通过；双谱系评审（codex/gpt-5.6-luna + opencode/deepseek-v4-pro）三轮收敛：第一轮 3 P1 + 8 P2、第二轮 4 P2 全部闭环，DeepSeek 第二轮已给"可合并"，codex 第三轮定向核验中。附带修复：`protocol.load_jsonl` 与 `providers.load_catalog` 补 utf-8 读取（纯 I/O，非提取器语义）、`atomic_write_jsonl` 换行固定 LF（保护未来 trials.jsonl 不被 CRLF 化）、根 README 用例数更正。

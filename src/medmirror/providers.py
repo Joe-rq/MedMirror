@@ -52,7 +52,7 @@ def load_local_env(path: Path | None = None) -> None:
 
 def load_catalog(path: Path | None = None) -> dict[str, Any]:
     path = path or Path(__file__).resolve().parents[2] / "configs/models.json"
-    return json.loads(path.read_text())
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def model_registry(path: Path | None = None) -> dict[str, ModelConfig]:

@@ -24,7 +24,7 @@ uv sync                                  # 自动装 Python 3.13 与 pytest/ruff
 cp .env.example .env.local               # 再填三家 key，禁止提交
 uv run ruff format --check .             # 闸1 格式
 uv run ruff check .                      # 闸2 写法
-uv run pytest                            # 闸3 逻辑（13 用例）
+uv run pytest                            # 闸3 逻辑（36 用例）
 uv run python scripts/check-manifests.py # 闸4 包清单冒烟
 ```
 
