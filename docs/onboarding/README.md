@@ -84,9 +84,11 @@ bash scripts/check-tools.sh                                             # 通用
 
 | 缺什么 | 为什么 | 怎么办 |
 |---|---|---|
-| `resources/` | 三个浅克隆参考仓库（PhysicianBench 等），被 gitignore | 要读就自己再 clone |
-| `runs/` | 空目录且被忽略；原始回答按约定不入库 | 无需处理 |
+| `resources/` | 只剩 `README.md`——三个浅克隆参考仓库（PhysicianBench 等）被 gitignore | 要读就自己再 clone |
+| `runs/` | 克隆后不存在（空目录不入库）；原始回答按约定不入库 | 无需处理，需要时自建 |
 | `.env.local` | 密钥永不入库 | 从 `.env.example` 复制后自己填 |
+
+> 已实测：干净 clone 后 `uv sync` + 四闸四条命令全部通过，无需额外步骤。
 
 ## 7. 边界（越线要担责）
 
