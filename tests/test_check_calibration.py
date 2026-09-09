@@ -124,6 +124,18 @@ class CheckCalibrationTest(unittest.TestCase):
             self.assertEqual(result.returncode, 1)
             self.assertIn("不在枚举内或不是字符串", result.stdout)
 
+    def test_baseline_identity_checked_independently(self):
+        """--baseline 独立于 --trials 指定时，trial_id 缺失/重复必须报错。"""
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "baseline.jsonl"
+            row = {"finish_reason": "stop", "status": "success", "response": "正文"}
+            path.write_text(json.dumps(row, ensure_ascii=False) + "\n", encoding="utf-8")
+            result = self.run_script(
+                "--baseline", str(path), "--expect-planned", "1", "--expect-stop", "1"
+            )
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("trial_id 缺失或非字符串", result.stdout)
+
     def test_truncation_requires_real_trial_ref(self):
         """截断是数据状态考查：合成截断没有意义，必须引用真实 trial。"""
         bad = {

@@ -217,8 +217,12 @@ def check_row(row: dict[str, Any], at: str, trials: dict[str, dict[str, Any]]) -
         err(f"{neg_id}：kind={kind} 必须引用真实 trial（source=trial:…）")
 
     # 负例 kind 与所引 trial 的真实状态对得上
-    if kind == "failure" and trial is not None and trial.get("status") == "success":
-        err(f"{neg_id}：kind=failure 但 trial {trial['trial_id']} 的 status 是 success")
+    if kind == "failure" and trial is not None:
+        t_status = trial.get("status")
+        if not isinstance(t_status, str) or not t_status:
+            err(f"{neg_id}：kind=failure 但 trial {trial['trial_id']} 的 status 缺失或非字符串")
+        elif t_status == "success":
+            err(f"{neg_id}：kind=failure 但 trial {trial['trial_id']} 的 status 是 success")
     if kind == "truncation" and trial is not None and trial.get("finish_reason") != "length":
         err(
             f"{neg_id}：kind=truncation 但 trial {trial['trial_id']} 的 finish_reason 是 "
@@ -313,6 +317,16 @@ def check_denominator(baseline: Path, rows: list[dict[str, Any]], expect: dict[s
     if not trials:
         err(f"基线文件无有效记录：{baseline}")
         return
+    # --baseline 可独立于 --trials 指定，身份校验不依赖 load_trials
+    seen_ids: set[str] = set()
+    for t in trials:
+        tid = t.get("trial_id")
+        if not isinstance(tid, str) or not tid:
+            err(f"基线文件存在 trial_id 缺失或非字符串的记录：{baseline}")
+        elif tid in seen_ids:
+            err(f"基线文件 trial_id 重复：{tid}")
+        else:
+            seen_ids.add(tid)
     finish: dict[str, int] = {}
     for t in trials:
         reason = t.get("finish_reason")
