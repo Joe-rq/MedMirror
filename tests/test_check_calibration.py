@@ -69,7 +69,10 @@ class CheckCalibrationTest(unittest.TestCase):
         self.assertEqual(kinds & REQUIRED_KINDS, REQUIRED_KINDS)
 
     def test_all_negatives_pending_until_owner_confirms(self):
-        """定标纪律：AI 交付时不得有任何 confirmed 条目冒充已确认标准。"""
+        """定标纪律：AI 交付时不得有任何 confirmed 条目冒充已确认标准。
+
+        交付期护栏：主人开始逐条 confirmed 后本用例会红，届时应删除。
+        """
         rows = [
             json.loads(line)
             for line in NEGATIVES.read_text(encoding="utf-8").splitlines()
@@ -92,7 +95,11 @@ class CheckCalibrationTest(unittest.TestCase):
         self.assertIn("基线分母与口径不符", result.stdout)
 
     def test_require_confirmed_fails_while_pending(self):
-        """全部条目 confirmed 之前，--require-confirmed 必须红。"""
+        """全部条目 confirmed 之前，--require-confirmed 必须红。
+
+        交付期护栏：主人开始逐条 confirmed 后本用例会红——届时应删除或改写为
+        「部分 confirmed 时仍红、全部 confirmed 时绿」的流转断言。
+        """
         result = self.run_script("--require-confirmed")
         self.assertEqual(result.returncode, 1)
         self.assertIn("人工定标尚未完成", result.stdout)
