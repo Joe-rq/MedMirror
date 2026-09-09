@@ -1,0 +1,19 @@
+{
+  "planned_n": 6,
+  "valid_n": 5,
+  "failed_n": 1,
+  "path_rates": {
+    "western": {
+      "mentioned": 1,
+      "valid_n": 5,
+      "mention_rate": 0.2
+    },
+    "tcm": {
+      "mentioned": 3,
+      "valid_n": 5,
+      "mention_rate": 0.6
+    }
+  },
+  "evidence_mentioned_n": 1,
+  "evidence_identifiable_source_n": 0
+}

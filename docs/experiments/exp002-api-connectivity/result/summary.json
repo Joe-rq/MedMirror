@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "date": "2026-09-09",
+  "planned_n": 3,
+  "success_n": 3,
+  "network_errors_n": 0,
+  "http_errors_n": 0,
+  "models": {
+    "deepseek-v4-flash": {
+      "vendor": "deepseek",
+      "http_status": 200,
+      "elapsed_ms": 842,
+      "choices_present": true,
+      "usage_present": true
+    },
+    "step-3.7-flash": {
+      "vendor": "stepfun",
+      "http_status": 200,
+      "elapsed_ms": 665,
+      "choices_present": true,
+      "usage_present": true
+    },
+    "glm-5.3-flash": {
+      "vendor": "glm",
+      "http_status": 200,
+      "elapsed_ms": 1187,
+      "choices_present": true,
+      "usage_present": true
+    }
+  }
+}

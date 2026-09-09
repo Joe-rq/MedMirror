@@ -1,0 +1,12 @@
+{
+  "run_id": "exp003-baseline-20260909T080937Z",
+  "protocol_version": "calibration-v1.3",
+  "case_id": "carotid_plaque_001",
+  "planned_n": 9,
+  "completed_n": 9,
+  "success_n": 9,
+  "failed_n": 0,
+  "usage_present_n": 9,
+  "total_tokens": 21530,
+  "estimated_cost_cny": null
+}

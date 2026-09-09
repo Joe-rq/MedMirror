@@ -1,0 +1,50 @@
+{
+  "catalog_version": "2026-09-09-v2",
+  "models": [
+    {
+      "id": "deepseek-v4-flash",
+      "vendor": "deepseek",
+      "api_style": "openai_chat_completions",
+      "base_url": "https://api.deepseek.com",
+      "model_env": "DEEPSEEK_MODEL",
+      "base_url_env": "DEEPSEEK_BASE_URL",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "confirmed": true,
+      "price_status": "recheck_before_paid_run"
+    },
+    {
+      "id": "step-3.7-flash",
+      "vendor": "stepfun",
+      "api_style": "openai_chat_completions",
+      "base_url": "https://api.stepfun.com/step_plan/v1",
+      "model_env": "STEPFUN_MODEL",
+      "base_url_env": "STEPFUN_BASE_URL",
+      "api_key_env": "STEPFUN_API_KEY",
+      "confirmed": false,
+      "price_status": "step_plan_account_and_model_price_unconfirmed"
+    },
+    {
+      "id": "glm-5.3-flash",
+      "vendor": "glm",
+      "api_style": "openai_chat_completions",
+      "base_url": "https://open.bigmodel.cn/api/paas/v4",
+      "model_env": "GLM_MODEL",
+      "base_url_env": "GLM_BASE_URL",
+      "api_key_env": "GLM_API_KEY",
+      "confirmed": false,
+      "price_status": "endpoint_and_price_unconfirmed"
+    }
+  ],
+  "run_defaults": {
+    "temperature": 0.7,
+    "max_tokens": 4096,
+    "timeout_seconds": 60,
+    "max_retries": 1
+  },
+  "budget": {
+    "currency": "CNY",
+    "limit": 50.0,
+    "paid_batch_allowed": false,
+    "reason": "price and account availability must be confirmed first"
+  }
+}
