@@ -50,6 +50,15 @@ uv run python scripts/check-manifests.py # ✓ 全绿（校验 2 份清单）
 issue（自己写）→ 分支 → PR → CI 四闸绿 → 人工合并 → 关 issue
 ```
 
+**开工第一步：读 issue。** 需求以 issue 为准，不凭记忆、不凭聊天记录：
+
+```bash
+cnb issues list-issues --repo joe-rq/MedMirror --state open    # 列出待办
+cnb issues get <编号>                                          # 读完整要求与验收标准
+```
+
+认领一条再动手；同时只保留一个活跃的 issue 和分支，做完再开下一条。
+
 - **issue 必须自己写，不假手 AI。** 意图经另一个 AI 转写，只会引入污染。四要素缺一条，AI 就会自己猜一条：
   1. 指向计划文件（不重述需求）
   2. 写明架构决策与真相源在哪（注明「不要重新调研」）
