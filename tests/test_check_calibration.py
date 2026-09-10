@@ -68,17 +68,18 @@ class CheckCalibrationTest(unittest.TestCase):
         kinds = {row["kind"] for row in rows}
         self.assertEqual(kinds & REQUIRED_KINDS, REQUIRED_KINDS)
 
-    def test_all_negatives_pending_until_owner_confirms(self):
-        """定标纪律：AI 交付时不得有任何 confirmed 条目冒充已确认标准。
+    def test_all_negatives_confirmed_after_owner_calibration(self):
+        """定标流转断言（2026-09-10 主人批改后启用）：负例集全部 confirmed。
 
-        交付期护栏：主人开始逐条 confirmed 后本用例会红，届时应删除。
+        若未来新增负例，新条目从 pending 起步——届时本用例红灯是提醒，
+        待主人确认后才会再次转绿。
         """
         rows = [
             json.loads(line)
             for line in NEGATIVES.read_text(encoding="utf-8").splitlines()
             if line.strip()
         ]
-        self.assertTrue(all(row["status"] == "pending_owner_confirmation" for row in rows))
+        self.assertTrue(all(row["status"] == "confirmed" for row in rows))
 
     def test_non_object_line_reports_error(self):
         """合法 JSON 但非对象（如数组）必须报错，不允许 traceback 崩溃。"""
@@ -94,15 +95,10 @@ class CheckCalibrationTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("基线分母与口径不符", result.stdout)
 
-    def test_require_confirmed_fails_while_pending(self):
-        """全部条目 confirmed 之前，--require-confirmed 必须红。
-
-        交付期护栏：主人开始逐条 confirmed 后本用例会红——届时应删除或改写为
-        「部分 confirmed 时仍红、全部 confirmed 时绿」的流转断言。
-        """
+    def test_require_confirmed_green_after_owner_calibration(self):
+        """定标流转断言（2026-09-10 主人批改后启用）：全部 confirmed 后收口闸转绿。"""
         result = self.run_script("--require-confirmed")
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("人工定标尚未完成", result.stdout)
+        self.assertEqual(result.returncode, 0, result.stdout)
 
     def test_empty_baseline_fails(self):
         """空基线文件必须报错，不允许静默跳过分母检查后仍宣称全绿。"""
