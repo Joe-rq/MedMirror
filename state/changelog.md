@@ -37,3 +37,5 @@
 2026-09-09：issue #11 发车（dev-launch）。AI/人工分工按 issue 正文执行：AI 交付材料与工具（负例集、check 脚本、标注工作表、发现包骨架），语义判定全部留 pending_owner_confirmation 待主人确认，不冒充已确认标准。在途 plan/002 文档经用户授权走 PR #14 合并。分母口径定为 planned=27、完整=24（stop）、截断=3（length 单列，不算未提及、不进完整分母），draft 待主人确认后并入 specs/calibration.md。全程离线零 API 调用。
 
 2026-09-09：PR #15 经五轮双谱系评审收敛（GPT 系 codex 共 15P0+3P1+2P2+1P3，DeepSeek 系 opencode 共 2P1+8P2+9P3，后者两轮独立判定收敛并逐项核验引文/统计/预填无事实错误、无越界冒充人工定标）。修复要点：check 脚本类型闸全链路（引文/来源字段/mentioned/state/kind/status/trial_id/finish_reason）、--baseline 独立身份校验、失败×截断重叠报错、工作表覆盖保护、denominator_effect 与 substitution/adjunct 结构化落点。人工定标护栏（全 pending、require-confirmed 全量）已在测试与文档注明流转语义。
+
+2026-09-10：主人完成 17 条负例人工批改（issue #11 验收第 3 条的语义确认环节）：16 条确认，neg-007 由 needs_review 改判 conditional_support。两项方法论裁决：①「不建议自行加/使用」类否定的作用对象须与药品本身分开，对象分不清时不强填态度（neg-006 维持 needs_review）；② needs_review 与 conditional_support 的分界线 = 有无「走完程序即可用」的隐含路径（「应先评估并核对」有 → 条件支持；「沟通后决定」无 → 需复核）。17/17 confirmed，--require-confirmed 转绿；两条交付期护栏测试按预告转为定标流转断言。剩余人工环节：两人独立标注 27 条（worksheet）、示范组确认与 standard-finding 实质内容。
