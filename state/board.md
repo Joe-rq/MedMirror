@@ -65,3 +65,16 @@ AI 侧交付物落地：`specs/examples/negatives.jsonl`（17 条负例：未提
 ## Issue #10 实现完成（2026-09-09，分支 feat/issue-10-offline-report）
 
 离线分组报告修复落地：新增 `src/medmirror/reporting.py`（试次五类分类、分组聚合、md/json 渲染，复用 protocol 提取，不改提取器），`scripts/report_exp003.py` 重写为 `--input/--output/--repeats` CLI；派生产物写新目录 `docs/experiments/exp003-baseline/derived-v2/`（27 计划／24 完整／3 截断单列／0 失败／0 未执行／9 组，LF 换行跨平台字节一致），输出指向原始数据目录本身/子目录/祖先目录或换 input 绕过均拒绝执行；`result/` 原始数据与旧报告零改动（CLI 测试含目录哈希校验）。新增 `tests/test_report_exp003.py` 23 例（相反结果 fixture 顺序无关、截断/失败/未执行/空与空白正文/计划外/词表与路径集漂移/元数据与 vendor 不一致分类、真实 27 条回归、CLI 防覆盖与重复运行字节一致、成本数值钉死、md 表格列一致性），四闸 36/36 全绿。语义分母默认"计划内完整试次"并标注待 #11 定标确认；截断观察单列不进分母。已回填 issue #10 认领与实现规格评论；/simplify 与 pr-ready 三审计通过；双谱系评审（codex/gpt-5.6-luna + opencode/deepseek-v4-pro）三轮收敛：第一轮 3 P1 + 8 P2、第二轮 4 P2 全部闭环，DeepSeek 第二轮已给"可合并"，codex 第三轮定向核验中。附带修复：`protocol.load_jsonl` 与 `providers.load_catalog` 补 utf-8 读取（纯 I/O，非提取器语义）、`atomic_write_jsonl` 换行固定 LF（保护未来 trials.jsonl 不被 CRLF 化）、根 README 用例数更正。
+
+## Issue #12 实现完成（2026-09-10，分支 feat/issue-12-extractor-v2）
+
+提取器升级 offline-rules-v2：`protocol.py` 改子句级关系分析（元描述过滤、自服行为否定→needs_review、替代/辅助分离编码、引语回声抑制、条件子句并入引文、多子句异向→needs_review），来源识别收紧为书名号/机构名/年份紧邻（年龄+泛指南不再命中）。新增 `tests/test_protocol_v2.py` 17 例（负例 harness：严格类逐字段断言+引文子串；truncation/failure/contradicted 为信息类；自由文本字段仅验原文性）；`test_exp001.py` 的 smoke-002 期望按 neg-007 改为 needs_review；reporting 词表扩 needs_review。新增 `scripts/diff_extractions.py` 与 `derived-v3/`（v2 提取+report+逐字段差异）：27/27 条实质变化（含来源识别 6 处 True→False、六值状态与替代/辅助/对象/条件新字段）、9 条进需人工复核清单（自服否定/混合方向/强度不一致，交 #11 裁决）。derived-v2 冻结为 v1 快照，result/ 零改动。正式语义验收待 #11 人工定标（负例集全部 pending_owner_confirmation，主人批改 negatives-review.md 后回流）。
+
+
+## Issue #12 双谱系评审收尾（2026-09-10）
+
+三轮收敛：R1 codex 1P0+5P1+2P2（不可合并）、DeepSeek 1P1+3P2+2P3（需修改后合并）→ 全部闭环（derived-v2 冻结守卫、元描述片段剥离、条件邻接绑定、裸机构名剔除、告知句与"需"字推荐修复、冒号条件切分、引语回声闭合可选、冲突态双引文、diff 全字段+实质/新增分计+单元格清洗）；R2 复核 DeepSeek 判可合并（11/11 关闭）、codex 新提 4 项（冲突引文丢失 P1 等）亦已闭环（含元描述连宾语剥离与回声片段分层处理）。四闸 78/78 + check_calibration 全绿；negatives 严格 16/16、neg-016 分歧钉死为信息类。正式语义验收仍待 #11。
+
+## Issue #12 定标回流微调（2026-09-10，主人批改后）
+
+PR #19 落地主人裁决（17/17 confirmed，neg-007 改判 conditional_support）后，#12 分支按裁决实现自服否定分界：条件含「评估/核对」类程序表述（隐含走完程序即可用）→ conditional_support；「沟通后决定」类开放表述或无条件 → needs_review（attitude_target 标注"结果开放，交人工裁决"）。test_exp001 的 smoke-002 期望与负例 harness 随裁决更新；check_calibration --require-confirmed 全绿。derived-v3 重生成：needs_review 队列 9 条 = 5 开放性自服否定 + 3 方向相反 + 1 强度不一致，均有真实语义依据。

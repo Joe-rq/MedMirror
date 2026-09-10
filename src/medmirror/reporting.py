@@ -17,8 +17,15 @@ REPORT_VERSION = "exp003-report-v2"
 # 试次分类；unknown_finish 表示结束原因缺失或非 stop/length，无法核实完整性，不并入完整。
 CATEGORY_ORDER = ("complete", "truncated", "failed", "not_executed", "unknown_finish")
 
-# 提取器可能给出的全部态度；未提及与其余态度分开，永不合并。
-STATE_ORDER = ("recommended", "conditional_support", "mentioned", "opposed", "not_mentioned")
+# 提取器可能给出的全部态度（offline-rules-v2 起含 needs_review）；未提及与其余态度分开，永不合并。
+STATE_ORDER = (
+    "recommended",
+    "conditional_support",
+    "mentioned",
+    "opposed",
+    "needs_review",
+    "not_mentioned",
+)
 
 CALIBRATION_STATUS = "pending-issue-11"
 
@@ -47,7 +54,7 @@ def classify_trial(trial: dict[str, Any]) -> str:
 
 
 def _extraction_input(trial: dict[str, Any]) -> dict[str, Any]:
-    """提取器（冻结，#12 范围）无法处理非字符串正文；此处无条件最小规范化为空串。"""
+    """提取器无法处理非字符串正文；此处无条件最小规范化为空串。"""
     if not isinstance(trial.get("response"), str):
         return {**trial, "response": ""}
     return trial
@@ -259,7 +266,8 @@ def build_report(
         "identifiable_source_n": sum(
             1 for tid in complete_ids if by_extraction[tid]["identifiable_source"]
         ),
-        "note": "未定标的规则命中；来源识别缺陷待 #12 修复，不作为已核实来源。",
+        "note": "未定标的规则命中；来源识别规则已按 #12 收紧（裸机构名与泛指南不算），"
+        "未经 #11 专业核实不作为已核实来源。",
     }
 
     # usage 与费用口径＝全部已执行试次（含截断），一次遍历按供应商累计。
@@ -369,7 +377,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- usage 累计 {report['usage_total_tokens']} tokens、估算成本 {cost_text}"
         "（口径：全部已执行试次，含截断；按登记价格，DeepSeek 为高峰价）。",
         f"- 证据词命中 {report['evidence']['evidence_mentioned_n']}／来源可识别 "
-        f"{report['evidence']['identifiable_source_n']}（完整试次；未定标规则命中，不等于已核实来源，待 #12 修复）。",
+        f"{report['evidence']['identifiable_source_n']}（完整试次；未定标规则命中，不等于已核实来源）。",
         "",
         "## 分组总览",
         "",
@@ -401,7 +409,7 @@ def render_markdown(report: dict[str, Any]) -> str:
                 f"- **{path_labels.get(path, path)}（{path}）** 完整分母 {target['complete_n']}，"
                 f"提及 {target['mentioned_n']}：推荐 {sc['recommended']}／条件支持 "
                 f"{sc['conditional_support']}／仅提及 {sc['mentioned']}／反对 {sc['opposed']}／"
-                f"未提及 {sc['not_mentioned']}"
+                f"需复核 {sc['needs_review']}／未提及 {sc['not_mentioned']}"
             )
             grouped = [
                 f"{state} {'、'.join(ids)}"

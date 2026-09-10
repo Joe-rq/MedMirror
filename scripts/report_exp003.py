@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """对 exp003 已保存回答做离线提取与分组汇总（report-v2）。
 
-默认读取 Git 中的原始 trials.jsonl，派生产物写入独立目录（默认 derived-v2/），
-绝不写回原始数据目录；无密钥、无网络即可运行。相同版本与输入产出字节一致。
+默认读取 Git 中的原始 trials.jsonl，派生产物写入独立目录（默认 derived-v3/，
+随提取器版本演进；旧快照目录被冻结不可写），绝不写回原始数据目录；
+无密钥、无网络即可运行。相同版本与输入产出字节一致。
 """
 
 from __future__ import annotations
@@ -24,7 +25,10 @@ from medmirror.providers import load_catalog, model_registry
 from medmirror.reporting import build_report, extract_sorted, render_markdown
 
 DEFAULT_INPUT = ROOT / "docs/experiments/exp003-baseline/result/trials.jsonl"
-DEFAULT_OUTPUT = ROOT / "docs/experiments/exp003-baseline/derived-v2"
+# derived-v2 冻结为 offline-rules-v1 提取快照（issue #12 起当前版本写 derived-v3）；
+# 提取器再升级时把旧输出目录并入 FROZEN_DERIVED 集
+DEFAULT_OUTPUT = ROOT / "docs/experiments/exp003-baseline/derived-v3"
+FROZEN_DERIVED = (ROOT / "docs/experiments/exp003-baseline/derived-v2",)
 MAX_REPEATS = 999
 
 
@@ -62,8 +66,12 @@ def main(argv: list[str] | None = None) -> int:
     if output_dir.exists() and not output_dir.is_dir():
         parser.error(f"--output 已存在且不是目录：{output_dir}")
     # 守卫锚定两处：本次输入所在目录 + 仓内原始数据目录（防止换 --input 绕过守卫覆写 result/）；
-    # 同时拒绝这些目录的子目录与祖先目录（祖先目录会把派生文件散落到 result/ 同层或仓库根）。
+    # 同时拒绝这些目录的子目录与祖先目录（祖先目录会把派生文件散落到 result/ 同层或仓库根），
+    # 并拒绝任何冻结的历史派生快照目录（derived-v2 等旧版本产物不可覆写）。
     protected = {input_path.parent, DEFAULT_INPUT.resolve().parent}
+    frozen_hits = [
+        d for d in FROZEN_DERIVED if output_dir == d.resolve() or d.resolve() in output_dir.parents
+    ]
     hit = next(
         (
             d
@@ -76,7 +84,13 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(
             f"拒绝执行：--output（{output_dir}）是原始数据与旧版报告所在目录（{hit}）"
             "本身、其子目录或其祖先目录，派生产物必须写入独立目录，"
-            "例如 docs/experiments/exp003-baseline/derived-v2/"
+            "例如 docs/experiments/exp003-baseline/derived-v3/"
+        )
+    if frozen_hits:
+        parser.error(
+            f"拒绝执行：--output（{output_dir}）落在冻结的历史派生快照（{frozen_hits[0]}）内，"
+            "旧版本产物不可覆写；当前版本请输出到 "
+            "docs/experiments/exp003-baseline/derived-v3/"
         )
 
     trials = load_jsonl(input_path)

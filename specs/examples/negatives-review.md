@@ -10,6 +10,8 @@
 
 **本表是翻译辅助，回填一律以 `negatives.jsonl` 为准**；条件的完整措辞见 JSONL 原文，表中为求可读有压缩时已尽量保留原句。
 
+**机器核对边界**：#12 回归只断言 `expected` 里**列出的**字段（如 neg-008 未列 `western.substitution/adjunct` 即不核对）。批改时若认为某条还应判定未列出的字段，请把它补进该条 `expected` 再置 confirmed。
+
 **状态速查（六值，分三组——「没提」不是态度，不许当态度最低档去平均）**：
 
 - 提及状态：`not_mentioned` 没提｜`mentioned` 提了但没表态

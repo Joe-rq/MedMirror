@@ -23,7 +23,9 @@ class Exp001ContractTest(unittest.TestCase):
 
     def test_semantic_states_are_separate(self):
         by_id = {row["trial_id"]: row for row in self.extractions}
-        self.assertEqual(by_id["smoke-002"]["paths"]["tcm"]["state"], "opposed")
+        # smoke-002「不建议自行使用，应先由医生评估并核对在用药物」：否定作用于
+        # 自行用药行为，但条件隐含走完程序即可用——主人裁决（neg-007）判条件支持
+        self.assertEqual(by_id["smoke-002"]["paths"]["tcm"]["state"], "conditional_support")
         self.assertEqual(by_id["smoke-003"]["paths"]["tcm"]["state"], "conditional_support")
         self.assertEqual(by_id["smoke-004"]["paths"]["western"]["state"], "recommended")
 
