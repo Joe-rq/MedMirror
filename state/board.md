@@ -74,3 +74,7 @@ AI 侧交付物落地：`specs/examples/negatives.jsonl`（17 条负例：未提
 ## Issue #12 双谱系评审收尾（2026-09-10）
 
 三轮收敛：R1 codex 1P0+5P1+2P2（不可合并）、DeepSeek 1P1+3P2+2P3（需修改后合并）→ 全部闭环（derived-v2 冻结守卫、元描述片段剥离、条件邻接绑定、裸机构名剔除、告知句与"需"字推荐修复、冒号条件切分、引语回声闭合可选、冲突态双引文、diff 全字段+实质/新增分计+单元格清洗）；R2 复核 DeepSeek 判可合并（11/11 关闭）、codex 新提 4 项（冲突引文丢失 P1 等）亦已闭环（含元描述连宾语剥离与回声片段分层处理）。四闸 78/78 + check_calibration 全绿；negatives 严格 16/16、neg-016 分歧钉死为信息类。正式语义验收仍待 #11。
+
+## Issue #12 定标回流微调（2026-09-10，主人批改后）
+
+PR #19 落地主人裁决（17/17 confirmed，neg-007 改判 conditional_support）后，#12 分支按裁决实现自服否定分界：条件含「评估/核对」类程序表述（隐含走完程序即可用）→ conditional_support；「沟通后决定」类开放表述或无条件 → needs_review（attitude_target 标注"结果开放，交人工裁决"）。test_exp001 的 smoke-002 期望与负例 harness 随裁决更新；check_calibration --require-confirmed 全绿。derived-v3 重生成：needs_review 队列 9 条 = 5 开放性自服否定 + 3 方向相反 + 1 强度不一致，均有真实语义依据。

@@ -284,6 +284,21 @@ def _path_extraction(text: str, path: str, terms: list[str]) -> dict[str, Any]:
                 hit_paths = families if len(families) == 1 else set()
             self_admin_hit = path in hit_paths
         self_admin_index = clauses.index(self_admin_clause) if self_admin_clause else -1
+        # 主人裁决分界（2026-09-10，neg-007 vs neg-006）：自服否定的条件里有
+        # 「评估/核对」类程序表述（隐含走完程序即可用）→ conditional_support；
+        # 「沟通后决定」类结果开放表述或无条件 → needs_review，不强填态度
+        self_admin_outcome = "needs_review"
+        if self_admin_clause:
+            condition_clauses = [
+                c
+                for i in (self_admin_index - 1, self_admin_index + 1)
+                if 0 <= i < len(clauses)
+                for c in [clauses[i]]
+                if CONDITION_HINT_RE.search(c)
+            ]
+            hint_text = condition_clauses[0] if condition_clauses else ""
+            if hint_text and re.search(r"评估|核对", hint_text) and "决定" not in hint_text:
+                self_admin_outcome = "conditional_support"
 
         sub_clause, replacers, baselines, adjuncts = _sentence_relations(clauses, sentence)
 
@@ -298,8 +313,8 @@ def _path_extraction(text: str, path: str, terms: list[str]) -> dict[str, Any]:
 
             evidence_index = index
             if self_admin_hit:
-                # 否定指向「自行用药」行为而非药品本身 → 交人工，不强填态度
-                state = "needs_review"
+                # 否定指向「自行用药」行为而非药品本身：按裁决分界给条件支持或交人工
+                state = self_admin_outcome
                 evidence = self_admin_clause
                 evidence_index = self_admin_index
             elif raw_clause == sub_clause:
@@ -339,7 +354,7 @@ def _path_extraction(text: str, path: str, terms: list[str]) -> dict[str, Any]:
     distinct = [s for s in _DIRECT_STATES if s in direct_states]
     if "needs_review" in direct_states:
         result["state"] = "needs_review"
-        result["attitude_target"] = "自行用药行为（否定作用于行为，非药品本身）"
+        result["attitude_target"] = "自行用药行为（否定作用于行为，结果开放，交人工裁决）"
     elif "opposed" in distinct and len(distinct) > 1:
         result["state"] = "needs_review"
         result["attitude_target"] = "同一回答内出现方向相反的直接态度"

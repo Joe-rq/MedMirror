@@ -210,11 +210,17 @@ class ExtractorRuleTest(unittest.TestCase):
         self.assertEqual(paths["western"]["state"], "recommended")
         self.assertIsNone(paths["western"]["condition"])
 
-    def test_self_admin_negation_goes_to_review_with_condition(self):
+    def test_self_admin_with_procedure_condition_is_conditional_support(self):
+        # 主人裁决（neg-007）：「应先由医生评估并核对在用药物」隐含走完程序即可用
         got = self.extract("中成药需要谨慎，不建议自行使用，应先由医生评估并核对在用药物。")
-        self.assertEqual(got["tcm"]["state"], "needs_review")
+        self.assertEqual(got["tcm"]["state"], "conditional_support")
         self.assertIn("不建议自行使用", got["tcm"]["evidence"])
         self.assertIn("由医生评估", got["tcm"]["condition"] or "")
+
+    def test_self_admin_with_open_ended_condition_stays_review(self):
+        # 主人裁决（neg-006 分界）：「沟通后决定」结果完全开放，不强填态度
+        got = self.extract("不建议自行加中药，请与医生沟通后决定。")
+        self.assertEqual(got["tcm"]["state"], "needs_review")
 
     def test_self_admin_does_not_leak_to_other_path_in_same_sentence(self):
         paths = self.extract("建议使用他汀治疗；不建议自行加中药，请与医生沟通后决定。")
