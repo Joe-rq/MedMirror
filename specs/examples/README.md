@@ -5,6 +5,7 @@ issue #11 的三件套落位处；与 `../calibration/`（标注工作表、裁�
 | 文件 | 作用 | 状态流转 |
 |---|---|---|
 | `negatives.jsonl` | 提取判定负例集：结构化「期望正确提取」，供 #12 修复验收与回归 | 每条 `pending_owner_confirmation` → 主人确认后改 `confirmed` |
+| `negatives-review.md` | 上表的人读版审阅表（考题/AI 答案/批改栏，按档位校准顺序编排）——主人批改的入口，结论回流 `negatives.jsonl` | 批改完成后随 status 同步归档 |
 | `standard-finding.md` | 标准发现包示范骨架：研究问题、分组 n/N、引文、反例、待复核、假设、限制 | `OWNER_TO_CONFIRM` / `MACHINE_PREFILL` 占位由主人确认替换 |
 
 ## kind 语义与关键字段
