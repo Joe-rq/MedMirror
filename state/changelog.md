@@ -37,3 +37,5 @@
 2026-09-09：issue #11 发车（dev-launch）。AI/人工分工按 issue 正文执行：AI 交付材料与工具（负例集、check 脚本、标注工作表、发现包骨架），语义判定全部留 pending_owner_confirmation 待主人确认，不冒充已确认标准。在途 plan/002 文档经用户授权走 PR #14 合并。分母口径定为 planned=27、完整=24（stop）、截断=3（length 单列，不算未提及、不进完整分母），draft 待主人确认后并入 specs/calibration.md。全程离线零 API 调用。
 
 2026-09-09：PR #15 经五轮双谱系评审收敛（GPT 系 codex 共 15P0+3P1+2P2+1P3，DeepSeek 系 opencode 共 2P1+8P2+9P3，后者两轮独立判定收敛并逐项核验引文/统计/预填无事实错误、无越界冒充人工定标）。修复要点：check 脚本类型闸全链路（引文/来源字段/mentioned/state/kind/status/trial_id/finish_reason）、--baseline 独立身份校验、失败×截断重叠报错、工作表覆盖保护、denominator_effect 与 substitution/adjunct 结构化落点。人工定标护栏（全 pending、require-confirmed 全量）已在测试与文档注明流转语义。
+
+2026-09-10：Issue #12 提取器 v2（分支 feat/issue-12-extractor-v2）。变了什么：提取从"整句首个否定命中"改为子句级关系分析（六值状态含 needs_review、substitution/adjunct 分离、attitude_target/condition/source_evidence 新字段），来源识别收紧；新产物写 derived-v3 并附 v1→v2 差异报告。为什么变：v1 存在否定对象串扰、替代/辅助混淆、年龄数字冒充来源、元描述误判（plan/002 §3 与 negatives.jsonl 逐条钉死）。对你意味着什么：提及率口径不变但态度分布更细（需复核单列交人工）；旧结果在 derived-v2 完整保留可对比；负例集仍是 pending_owner_confirmation，主人批改 negatives-review.md 前 v2 只是工程规格不是已确认标准。

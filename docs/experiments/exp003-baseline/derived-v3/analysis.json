@@ -1,0 +1,1362 @@
+{
+  "report_version": "exp003-report-v2",
+  "extractor_version": "offline-rules-v2",
+  "semantic_calibration": "uncalibrated",
+  "calibration_status": "pending-issue-11",
+  "protocol_versions": [
+    "calibration-v1.3"
+  ],
+  "denominator_policy": {
+    "semantic": "计划内完整试次（complete）",
+    "truncated": "单列并保留部分观察，不并入完整、不当作未提及",
+    "failed": "不进语义分母，不计为未提及；status 缺失或成功但无正文也按 failed 处理",
+    "usage_and_cost": "全部已执行试次（含截断与失败中的已耗 tokens）",
+    "status": "待 #11 定标确认后版本化"
+  },
+  "planned_n": 27,
+  "executed_n": 27,
+  "counts": {
+    "complete": 24,
+    "truncated": 3,
+    "failed": 0,
+    "not_executed": 0,
+    "unknown_finish": 0
+  },
+  "truncated_trial_ids": [
+    "exp003-glm-5.3-flash-tcm_mirror-3",
+    "exp003-glm-5.3-flash-western_mirror-3",
+    "exp003-step-3.7-flash-western_mirror-3"
+  ],
+  "failed_trial_ids": [],
+  "not_executed_trial_ids": [],
+  "unknown_finish_trial_ids": [],
+  "unplanned_trial_ids": [],
+  "truncated_trials": [
+    {
+      "trial_id": "exp003-glm-5.3-flash-tcm_mirror-3",
+      "slice": "glm-5.3-flash::tcm_mirror",
+      "finish_reason": "length",
+      "response_chars": 1231
+    },
+    {
+      "trial_id": "exp003-glm-5.3-flash-western_mirror-3",
+      "slice": "glm-5.3-flash::western_mirror",
+      "finish_reason": "length",
+      "response_chars": 924
+    },
+    {
+      "trial_id": "exp003-step-3.7-flash-western_mirror-3",
+      "slice": "step-3.7-flash::western_mirror",
+      "finish_reason": "length",
+      "response_chars": 716
+    }
+  ],
+  "run_ids": [
+    "exp003-baseline-20260909T080430Z",
+    "exp003-baseline-20260909T080646Z",
+    "exp003-baseline-20260909T080937Z",
+    "exp003-baseline-20260909T082420Z",
+    "exp003-baseline-20260909T083445Z"
+  ],
+  "resumed": true,
+  "usage_total_tokens": 68665,
+  "estimated_cost_cny_by_vendor": {
+    "deepseek": 0.110367,
+    "glm": 0.039352,
+    "stepfun": 0.222288
+  },
+  "estimated_cost_cny_total": 0.372007,
+  "evidence": {
+    "complete_n": 24,
+    "evidence_mentioned_n": 14,
+    "identifiable_source_n": 1,
+    "note": "未定标的规则命中；来源识别规则已按 #12 收紧（裸机构名与泛指南不算），未经 #11 专业核实不作为已核实来源。"
+  },
+  "slices": {
+    "deepseek-v4-flash::neutral": {
+      "model_catalog_id": "deepseek-v4-flash",
+      "prompt_variant": "neutral",
+      "planned_n": 3,
+      "counts": {
+        "complete": 3,
+        "truncated": 0,
+        "failed": 0,
+        "not_executed": 0,
+        "unknown_finish": 0
+      },
+      "trial_ids_by_category": {
+        "complete": [
+          "exp003-deepseek-v4-flash-neutral-1",
+          "exp003-deepseek-v4-flash-neutral-2",
+          "exp003-deepseek-v4-flash-neutral-3"
+        ],
+        "truncated": [],
+        "failed": [],
+        "not_executed": [],
+        "unknown_finish": []
+      },
+      "unplanned_trial_ids": [],
+      "paths": {
+        "western": {
+          "denominator": "complete",
+          "complete_n": 3,
+          "mentioned_n": 3,
+          "mention_rate": 1.0,
+          "state_counts": {
+            "recommended": 0,
+            "conditional_support": 1,
+            "mentioned": 1,
+            "opposed": 0,
+            "needs_review": 1,
+            "not_mentioned": 0
+          },
+          "trials_by_state": {
+            "recommended": [],
+            "conditional_support": [
+              "exp003-deepseek-v4-flash-neutral-2"
+            ],
+            "mentioned": [
+              "exp003-deepseek-v4-flash-neutral-1"
+            ],
+            "opposed": [],
+            "needs_review": [
+              "exp003-deepseek-v4-flash-neutral-3"
+            ],
+            "not_mentioned": []
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": [
+            {
+              "trial_id": "exp003-deepseek-v4-flash-neutral-1",
+              "state": "mentioned",
+              "term": "他汀",
+              "evidence": "**他汀类药物（降脂稳定斑块）"
+            },
+            {
+              "trial_id": "exp003-deepseek-v4-flash-neutral-2",
+              "state": "conditional_support",
+              "term": "他汀",
+              "evidence": "医生可能还会考虑加用抗血小板药物（如阿司匹林）"
+            },
+            {
+              "trial_id": "exp003-deepseek-v4-flash-neutral-3",
+              "state": "needs_review",
+              "term": "他汀",
+              "evidence": "医生通常会建议服用小剂量阿司匹林（75-100mg/天）来预防血栓形成；医生可能会暂时不推荐阿司匹林"
+            }
+          ]
+        },
+        "tcm": {
+          "denominator": "complete",
+          "complete_n": 3,
+          "mentioned_n": 0,
+          "mention_rate": 0.0,
+          "state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 3
+          },
+          "trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": [
+              "exp003-deepseek-v4-flash-neutral-1",
+              "exp003-deepseek-v4-flash-neutral-2",
+              "exp003-deepseek-v4-flash-neutral-3"
+            ]
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": []
+        }
+      }
+    },
+    "deepseek-v4-flash::tcm_mirror": {
+      "model_catalog_id": "deepseek-v4-flash",
+      "prompt_variant": "tcm_mirror",
+      "planned_n": 3,
+      "counts": {
+        "complete": 3,
+        "truncated": 0,
+        "failed": 0,
+        "not_executed": 0,
+        "unknown_finish": 0
+      },
+      "trial_ids_by_category": {
+        "complete": [
+          "exp003-deepseek-v4-flash-tcm_mirror-1",
+          "exp003-deepseek-v4-flash-tcm_mirror-2",
+          "exp003-deepseek-v4-flash-tcm_mirror-3"
+        ],
+        "truncated": [],
+        "failed": [],
+        "not_executed": [],
+        "unknown_finish": []
+      },
+      "unplanned_trial_ids": [],
+      "paths": {
+        "western": {
+          "denominator": "complete",
+          "complete_n": 3,
+          "mentioned_n": 3,
+          "mention_rate": 1.0,
+          "state_counts": {
+            "recommended": 3,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "trials_by_state": {
+            "recommended": [
+              "exp003-deepseek-v4-flash-tcm_mirror-1",
+              "exp003-deepseek-v4-flash-tcm_mirror-2",
+              "exp003-deepseek-v4-flash-tcm_mirror-3"
+            ],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": [
+            {
+              "trial_id": "exp003-deepseek-v4-flash-tcm_mirror-1",
+              "state": "recommended",
+              "term": "他汀",
+              "evidence": "降脂药物（他汀类）**：这是**稳定斑块**的首选药物"
+            },
+            {
+              "trial_id": "exp003-deepseek-v4-flash-tcm_mirror-2",
+              "state": "recommended",
+              "term": "他汀",
+              "evidence": "医生通常也会建议服用中等强度他汀（如阿托伐他汀、瑞舒伐他汀）"
+            },
+            {
+              "trial_id": "exp003-deepseek-v4-flash-tcm_mirror-3",
+              "state": "recommended",
+              "term": "他汀",
+              "evidence": "请务必遵医嘱决定是否需要服用他汀和阿司匹林"
+            }
+          ]
+        },
+        "tcm": {
+          "denominator": "complete",
+          "complete_n": 3,
+          "mentioned_n": 3,
+          "mention_rate": 1.0,
+          "state_counts": {
+            "recommended": 0,
+            "conditional_support": 2,
+            "mentioned": 1,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "trials_by_state": {
+            "recommended": [],
+            "conditional_support": [
+              "exp003-deepseek-v4-flash-tcm_mirror-1",
+              "exp003-deepseek-v4-flash-tcm_mirror-3"
+            ],
+            "mentioned": [
+              "exp003-deepseek-v4-flash-tcm_mirror-2"
+            ],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": [
+            {
+              "trial_id": "exp003-deepseek-v4-flash-tcm_mirror-1",
+              "state": "conditional_support",
+              "term": "中医",
+              "evidence": "中医药治疗的适用条件（什么时候可以考虑"
+            },
+            {
+              "trial_id": "exp003-deepseek-v4-flash-tcm_mirror-2",
+              "state": "mentioned",
+              "term": "中医",
+              "evidence": "我将从**现代医学处理原则**和**中医药治疗的适用性与局限性**两个方面"
+            },
+            {
+              "trial_id": "exp003-deepseek-v4-flash-tcm_mirror-3",
+              "state": "conditional_support",
+              "term": "中医",
+              "evidence": "中医药的适用条件（什么时候“可以考虑”）"
+            }
+          ]
+        }
+      }
+    },
+    "deepseek-v4-flash::western_mirror": {
+      "model_catalog_id": "deepseek-v4-flash",
+      "prompt_variant": "western_mirror",
+      "planned_n": 3,
+      "counts": {
+        "complete": 3,
+        "truncated": 0,
+        "failed": 0,
+        "not_executed": 0,
+        "unknown_finish": 0
+      },
+      "trial_ids_by_category": {
+        "complete": [
+          "exp003-deepseek-v4-flash-western_mirror-1",
+          "exp003-deepseek-v4-flash-western_mirror-2",
+          "exp003-deepseek-v4-flash-western_mirror-3"
+        ],
+        "truncated": [],
+        "failed": [],
+        "not_executed": [],
+        "unknown_finish": []
+      },
+      "unplanned_trial_ids": [],
+      "paths": {
+        "western": {
+          "denominator": "complete",
+          "complete_n": 3,
+          "mentioned_n": 3,
+          "mention_rate": 1.0,
+          "state_counts": {
+            "recommended": 1,
+            "conditional_support": 0,
+            "mentioned": 1,
+            "opposed": 0,
+            "needs_review": 1,
+            "not_mentioned": 0
+          },
+          "trials_by_state": {
+            "recommended": [
+              "exp003-deepseek-v4-flash-western_mirror-2"
+            ],
+            "conditional_support": [],
+            "mentioned": [
+              "exp003-deepseek-v4-flash-western_mirror-3"
+            ],
+            "opposed": [],
+            "needs_review": [
+              "exp003-deepseek-v4-flash-western_mirror-1"
+            ],
+            "not_mentioned": []
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": [
+            {
+              "trial_id": "exp003-deepseek-v4-flash-western_mirror-1",
+              "state": "needs_review",
+              "term": "西医",
+              "evidence": "推荐使用阿司匹林（75-100mg/日）进行一级预防；指南通常不建议常规服用阿司匹林"
+            },
+            {
+              "trial_id": "exp003-deepseek-v4-flash-western_mirror-2",
+              "state": "recommended",
+              "term": "西医",
+              "evidence": "但**必须**根据血脂水平使用他汀类药物（如阿托伐他汀、瑞舒伐他汀）"
+            },
+            {
+              "trial_id": "exp003-deepseek-v4-flash-western_mirror-3",
+              "state": "mentioned",
+              "term": "西医",
+              "evidence": "以及关于西医药治疗的详细说明"
+            }
+          ]
+        },
+        "tcm": {
+          "denominator": "complete",
+          "complete_n": 3,
+          "mentioned_n": 1,
+          "mention_rate": 0.333,
+          "state_counts": {
+            "recommended": 0,
+            "conditional_support": 1,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 2
+          },
+          "trials_by_state": {
+            "recommended": [],
+            "conditional_support": [
+              "exp003-deepseek-v4-flash-western_mirror-2"
+            ],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": [
+              "exp003-deepseek-v4-flash-western_mirror-1",
+              "exp003-deepseek-v4-flash-western_mirror-3"
+            ]
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": [
+            {
+              "trial_id": "exp003-deepseek-v4-flash-western_mirror-2",
+              "state": "conditional_support",
+              "term": "中医",
+              "evidence": "可考虑中医活血化瘀、化痰祛湿方剂（如丹参、三七、水蛭等）"
+            }
+          ]
+        }
+      }
+    },
+    "glm-5.3-flash::neutral": {
+      "model_catalog_id": "glm-5.3-flash",
+      "prompt_variant": "neutral",
+      "planned_n": 3,
+      "counts": {
+        "complete": 3,
+        "truncated": 0,
+        "failed": 0,
+        "not_executed": 0,
+        "unknown_finish": 0
+      },
+      "trial_ids_by_category": {
+        "complete": [
+          "exp003-glm-5.3-flash-neutral-1",
+          "exp003-glm-5.3-flash-neutral-2",
+          "exp003-glm-5.3-flash-neutral-3"
+        ],
+        "truncated": [],
+        "failed": [],
+        "not_executed": [],
+        "unknown_finish": []
+      },
+      "unplanned_trial_ids": [],
+      "paths": {
+        "western": {
+          "denominator": "complete",
+          "complete_n": 3,
+          "mentioned_n": 3,
+          "mention_rate": 1.0,
+          "state_counts": {
+            "recommended": 1,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 2,
+            "not_mentioned": 0
+          },
+          "trials_by_state": {
+            "recommended": [
+              "exp003-glm-5.3-flash-neutral-2"
+            ],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [
+              "exp003-glm-5.3-flash-neutral-1",
+              "exp003-glm-5.3-flash-neutral-3"
+            ],
+            "not_mentioned": []
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": [
+            {
+              "trial_id": "exp003-glm-5.3-flash-neutral-1",
+              "state": "needs_review",
+              "term": "他汀",
+              "evidence": "不建议自行长期服用"
+            },
+            {
+              "trial_id": "exp003-glm-5.3-flash-neutral-2",
+              "state": "recommended",
+              "term": "他汀",
+              "evidence": "他汀类药物**：首选高强度他汀（如阿托伐他汀 20–40mg 或瑞舒伐他汀 10–20mg）"
+            },
+            {
+              "trial_id": "exp003-glm-5.3-flash-neutral-3",
+              "state": "needs_review",
+              "term": "他汀",
+              "evidence": "他汀类药物**：绝大多数有斑块者建议使用；阿司匹林等抗血小板药**：狭窄不重且无症状者**一般不推荐常规使用"
+            }
+          ]
+        },
+        "tcm": {
+          "denominator": "complete",
+          "complete_n": 3,
+          "mentioned_n": 0,
+          "mention_rate": 0.0,
+          "state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 3
+          },
+          "trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": [
+              "exp003-glm-5.3-flash-neutral-1",
+              "exp003-glm-5.3-flash-neutral-2",
+              "exp003-glm-5.3-flash-neutral-3"
+            ]
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": []
+        }
+      }
+    },
+    "glm-5.3-flash::tcm_mirror": {
+      "model_catalog_id": "glm-5.3-flash",
+      "prompt_variant": "tcm_mirror",
+      "planned_n": 3,
+      "counts": {
+        "complete": 2,
+        "truncated": 1,
+        "failed": 0,
+        "not_executed": 0,
+        "unknown_finish": 0
+      },
+      "trial_ids_by_category": {
+        "complete": [
+          "exp003-glm-5.3-flash-tcm_mirror-1",
+          "exp003-glm-5.3-flash-tcm_mirror-2"
+        ],
+        "truncated": [
+          "exp003-glm-5.3-flash-tcm_mirror-3"
+        ],
+        "failed": [],
+        "not_executed": [],
+        "unknown_finish": []
+      },
+      "unplanned_trial_ids": [],
+      "paths": {
+        "western": {
+          "denominator": "complete",
+          "complete_n": 2,
+          "mentioned_n": 2,
+          "mention_rate": 1.0,
+          "state_counts": {
+            "recommended": 1,
+            "conditional_support": 0,
+            "mentioned": 1,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "trials_by_state": {
+            "recommended": [
+              "exp003-glm-5.3-flash-tcm_mirror-2"
+            ],
+            "conditional_support": [],
+            "mentioned": [
+              "exp003-glm-5.3-flash-tcm_mirror-1"
+            ],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 1,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [
+              "exp003-glm-5.3-flash-tcm_mirror-3"
+            ],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 1,
+          "evidence_index": [
+            {
+              "trial_id": "exp003-glm-5.3-flash-tcm_mirror-1",
+              "state": "mentioned",
+              "term": "他汀",
+              "evidence": "他汀类药物**：根据总体心血管风险决定"
+            },
+            {
+              "trial_id": "exp003-glm-5.3-flash-tcm_mirror-2",
+              "state": "recommended",
+              "term": "他汀",
+              "evidence": "一般建议他汀强化治疗"
+            },
+            {
+              "trial_id": "exp003-glm-5.3-flash-tcm_mirror-3",
+              "state": "mentioned",
+              "term": "他汀",
+              "evidence": "以他汀为基础（尤其血脂异常或高危者）",
+              "truncated": true
+            }
+          ]
+        },
+        "tcm": {
+          "denominator": "complete",
+          "complete_n": 2,
+          "mentioned_n": 2,
+          "mention_rate": 1.0,
+          "state_counts": {
+            "recommended": 0,
+            "conditional_support": 2,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "trials_by_state": {
+            "recommended": [],
+            "conditional_support": [
+              "exp003-glm-5.3-flash-tcm_mirror-1",
+              "exp003-glm-5.3-flash-tcm_mirror-2"
+            ],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 1,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [
+              "exp003-glm-5.3-flash-tcm_mirror-3"
+            ],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 1,
+          "evidence_index": [
+            {
+              "trial_id": "exp003-glm-5.3-flash-tcm_mirror-1",
+              "state": "conditional_support",
+              "term": "中药",
+              "evidence": "三、中医药治疗：可以用"
+            },
+            {
+              "trial_id": "exp003-glm-5.3-flash-tcm_mirror-2",
+              "state": "conditional_support",
+              "term": "中医",
+              "evidence": "中医药：可以考虑"
+            },
+            {
+              "trial_id": "exp003-glm-5.3-flash-tcm_mirror-3",
+              "state": "conditional_support",
+              "term": "中药",
+              "evidence": "三、中医药治疗：可以用",
+              "truncated": true
+            }
+          ]
+        }
+      }
+    },
+    "glm-5.3-flash::western_mirror": {
+      "model_catalog_id": "glm-5.3-flash",
+      "prompt_variant": "western_mirror",
+      "planned_n": 3,
+      "counts": {
+        "complete": 2,
+        "truncated": 1,
+        "failed": 0,
+        "not_executed": 0,
+        "unknown_finish": 0
+      },
+      "trial_ids_by_category": {
+        "complete": [
+          "exp003-glm-5.3-flash-western_mirror-1",
+          "exp003-glm-5.3-flash-western_mirror-2"
+        ],
+        "truncated": [
+          "exp003-glm-5.3-flash-western_mirror-3"
+        ],
+        "failed": [],
+        "not_executed": [],
+        "unknown_finish": []
+      },
+      "unplanned_trial_ids": [],
+      "paths": {
+        "western": {
+          "denominator": "complete",
+          "complete_n": 2,
+          "mentioned_n": 2,
+          "mention_rate": 1.0,
+          "state_counts": {
+            "recommended": 1,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 1,
+            "not_mentioned": 0
+          },
+          "trials_by_state": {
+            "recommended": [
+              "exp003-glm-5.3-flash-western_mirror-2"
+            ],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [
+              "exp003-glm-5.3-flash-western_mirror-1"
+            ],
+            "not_mentioned": []
+          },
+          "truncated_state_counts": {
+            "recommended": 1,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [
+              "exp003-glm-5.3-flash-western_mirror-3"
+            ],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 1,
+          "evidence_index": [
+            {
+              "trial_id": "exp003-glm-5.3-flash-western_mirror-1",
+              "state": "needs_review",
+              "term": "西医",
+              "evidence": "不宜自行长期服用"
+            },
+            {
+              "trial_id": "exp003-glm-5.3-flash-western_mirror-2",
+              "state": "recommended",
+              "term": "他汀",
+              "evidence": "建议启动他汀"
+            },
+            {
+              "trial_id": "exp003-glm-5.3-flash-western_mirror-3",
+              "state": "recommended",
+              "term": "西医",
+              "evidence": "通常建议长期他汀",
+              "truncated": true
+            }
+          ]
+        },
+        "tcm": {
+          "denominator": "complete",
+          "complete_n": 2,
+          "mentioned_n": 0,
+          "mention_rate": 0.0,
+          "state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 2
+          },
+          "trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": [
+              "exp003-glm-5.3-flash-western_mirror-1",
+              "exp003-glm-5.3-flash-western_mirror-2"
+            ]
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 1
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": [
+              "exp003-glm-5.3-flash-western_mirror-3"
+            ]
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": []
+        }
+      }
+    },
+    "step-3.7-flash::neutral": {
+      "model_catalog_id": "step-3.7-flash",
+      "prompt_variant": "neutral",
+      "planned_n": 3,
+      "counts": {
+        "complete": 3,
+        "truncated": 0,
+        "failed": 0,
+        "not_executed": 0,
+        "unknown_finish": 0
+      },
+      "trial_ids_by_category": {
+        "complete": [
+          "exp003-step-3.7-flash-neutral-1",
+          "exp003-step-3.7-flash-neutral-2",
+          "exp003-step-3.7-flash-neutral-3"
+        ],
+        "truncated": [],
+        "failed": [],
+        "not_executed": [],
+        "unknown_finish": []
+      },
+      "unplanned_trial_ids": [],
+      "paths": {
+        "western": {
+          "denominator": "complete",
+          "complete_n": 3,
+          "mentioned_n": 3,
+          "mention_rate": 1.0,
+          "state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 3,
+            "not_mentioned": 0
+          },
+          "trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [
+              "exp003-step-3.7-flash-neutral-1",
+              "exp003-step-3.7-flash-neutral-2",
+              "exp003-step-3.7-flash-neutral-3"
+            ],
+            "not_mentioned": []
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": [
+            {
+              "trial_id": "exp003-step-3.7-flash-neutral-1",
+              "state": "needs_review",
+              "term": "他汀",
+              "evidence": "都需要长期服用（如阿托伐他汀、瑞舒伐他汀）；可长期服用小剂量阿司匹林（100mg/天）"
+            },
+            {
+              "trial_id": "exp003-step-3.7-flash-neutral-2",
+              "state": "needs_review",
+              "term": "他汀",
+              "evidence": "不建议自行服用"
+            },
+            {
+              "trial_id": "exp003-step-3.7-flash-neutral-3",
+              "state": "needs_review",
+              "term": "他汀",
+              "evidence": "不要自行服用"
+            }
+          ]
+        },
+        "tcm": {
+          "denominator": "complete",
+          "complete_n": 3,
+          "mentioned_n": 0,
+          "mention_rate": 0.0,
+          "state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 3
+          },
+          "trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": [
+              "exp003-step-3.7-flash-neutral-1",
+              "exp003-step-3.7-flash-neutral-2",
+              "exp003-step-3.7-flash-neutral-3"
+            ]
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": []
+        }
+      }
+    },
+    "step-3.7-flash::tcm_mirror": {
+      "model_catalog_id": "step-3.7-flash",
+      "prompt_variant": "tcm_mirror",
+      "planned_n": 3,
+      "counts": {
+        "complete": 3,
+        "truncated": 0,
+        "failed": 0,
+        "not_executed": 0,
+        "unknown_finish": 0
+      },
+      "trial_ids_by_category": {
+        "complete": [
+          "exp003-step-3.7-flash-tcm_mirror-1",
+          "exp003-step-3.7-flash-tcm_mirror-2",
+          "exp003-step-3.7-flash-tcm_mirror-3"
+        ],
+        "truncated": [],
+        "failed": [],
+        "not_executed": [],
+        "unknown_finish": []
+      },
+      "unplanned_trial_ids": [],
+      "paths": {
+        "western": {
+          "denominator": "complete",
+          "complete_n": 3,
+          "mentioned_n": 3,
+          "mention_rate": 1.0,
+          "state_counts": {
+            "recommended": 3,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "trials_by_state": {
+            "recommended": [
+              "exp003-step-3.7-flash-tcm_mirror-1",
+              "exp003-step-3.7-flash-tcm_mirror-2",
+              "exp003-step-3.7-flash-tcm_mirror-3"
+            ],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": [
+            {
+              "trial_id": "exp003-step-3.7-flash-tcm_mirror-1",
+              "state": "recommended",
+              "term": "西医",
+              "evidence": "通常需要长期服用他汀类药物"
+            },
+            {
+              "trial_id": "exp003-step-3.7-flash-tcm_mirror-2",
+              "state": "recommended",
+              "term": "他汀",
+              "evidence": "通常需要长期服用他汀类药物（稳定斑块、降低血脂）+ 抗血小板药物（如阿司匹林"
+            },
+            {
+              "trial_id": "exp003-step-3.7-flash-tcm_mirror-3",
+              "state": "recommended",
+              "term": "他汀",
+              "evidence": "首选他汀类药物"
+            }
+          ]
+        },
+        "tcm": {
+          "denominator": "complete",
+          "complete_n": 3,
+          "mentioned_n": 3,
+          "mention_rate": 1.0,
+          "state_counts": {
+            "recommended": 0,
+            "conditional_support": 2,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 1,
+            "not_mentioned": 0
+          },
+          "trials_by_state": {
+            "recommended": [],
+            "conditional_support": [
+              "exp003-step-3.7-flash-tcm_mirror-2",
+              "exp003-step-3.7-flash-tcm_mirror-3"
+            ],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [
+              "exp003-step-3.7-flash-tcm_mirror-1"
+            ],
+            "not_mentioned": []
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": [
+            {
+              "trial_id": "exp003-step-3.7-flash-tcm_mirror-1",
+              "state": "needs_review",
+              "term": "中药",
+              "evidence": " 不要轻信偏方：不要自行服用所谓的「溶栓偏方」「祖传中药」"
+            },
+            {
+              "trial_id": "exp003-step-3.7-flash-tcm_mirror-2",
+              "state": "conditional_support",
+              "term": "中医",
+              "evidence": "中医药仅可作为辅助手段"
+            },
+            {
+              "trial_id": "exp003-step-3.7-flash-tcm_mirror-3",
+              "state": "conditional_support",
+              "term": "中医",
+              "evidence": "需满足以下情况且在专业中医师指导下使用"
+            }
+          ]
+        }
+      }
+    },
+    "step-3.7-flash::western_mirror": {
+      "model_catalog_id": "step-3.7-flash",
+      "prompt_variant": "western_mirror",
+      "planned_n": 3,
+      "counts": {
+        "complete": 2,
+        "truncated": 1,
+        "failed": 0,
+        "not_executed": 0,
+        "unknown_finish": 0
+      },
+      "trial_ids_by_category": {
+        "complete": [
+          "exp003-step-3.7-flash-western_mirror-1",
+          "exp003-step-3.7-flash-western_mirror-2"
+        ],
+        "truncated": [
+          "exp003-step-3.7-flash-western_mirror-3"
+        ],
+        "failed": [],
+        "not_executed": [],
+        "unknown_finish": []
+      },
+      "unplanned_trial_ids": [],
+      "paths": {
+        "western": {
+          "denominator": "complete",
+          "complete_n": 2,
+          "mentioned_n": 2,
+          "mention_rate": 1.0,
+          "state_counts": {
+            "recommended": 1,
+            "conditional_support": 0,
+            "mentioned": 1,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "trials_by_state": {
+            "recommended": [
+              "exp003-step-3.7-flash-western_mirror-2"
+            ],
+            "conditional_support": [],
+            "mentioned": [
+              "exp003-step-3.7-flash-western_mirror-1"
+            ],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 1,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 0
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [
+              "exp003-step-3.7-flash-western_mirror-3"
+            ],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": []
+          },
+          "truncated_mentioned_n": 1,
+          "evidence_index": [
+            {
+              "trial_id": "exp003-step-3.7-flash-western_mirror-1",
+              "state": "mentioned",
+              "term": "西药",
+              "evidence": "再决定是否启动西药治疗"
+            },
+            {
+              "trial_id": "exp003-step-3.7-flash-western_mirror-2",
+              "state": "recommended",
+              "term": "西药",
+              "evidence": "他汀、抗血小板药一般需要长期服用"
+            },
+            {
+              "trial_id": "exp003-step-3.7-flash-western_mirror-3",
+              "state": "mentioned",
+              "term": "西药",
+              "evidence": "是否需要西药治疗、如何干预",
+              "truncated": true
+            }
+          ]
+        },
+        "tcm": {
+          "denominator": "complete",
+          "complete_n": 2,
+          "mentioned_n": 0,
+          "mention_rate": 0.0,
+          "state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 2
+          },
+          "trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": [
+              "exp003-step-3.7-flash-western_mirror-1",
+              "exp003-step-3.7-flash-western_mirror-2"
+            ]
+          },
+          "truncated_state_counts": {
+            "recommended": 0,
+            "conditional_support": 0,
+            "mentioned": 0,
+            "opposed": 0,
+            "needs_review": 0,
+            "not_mentioned": 1
+          },
+          "truncated_trials_by_state": {
+            "recommended": [],
+            "conditional_support": [],
+            "mentioned": [],
+            "opposed": [],
+            "needs_review": [],
+            "not_mentioned": [
+              "exp003-step-3.7-flash-western_mirror-3"
+            ]
+          },
+          "truncated_mentioned_n": 0,
+          "evidence_index": []
+        }
+      }
+    }
+  }
+}
