@@ -18,11 +18,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from run_exp003_baseline import atomic_write_jsonl, planned_trials
-
 from medmirror.protocol import load_jsonl
 from medmirror.providers import load_catalog, model_registry
 from medmirror.reporting import build_report, extract_sorted, render_markdown
+from medmirror.runner import atomic_write_jsonl, planned_trials
 
 DEFAULT_INPUT = ROOT / "docs/experiments/exp003-baseline/result/trials.jsonl"
 # derived-v2 冻结为 offline-rules-v1 提取快照（issue #12 起当前版本写 derived-v3）；

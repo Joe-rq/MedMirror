@@ -31,9 +31,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from run_exp003_baseline import VARIANTS  # noqa: E402
-
 from medmirror.protocol import load_jsonl  # noqa: E402
+from medmirror.runner import VARIANTS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 REVIEW_DIR_NAME = "specs/review"
@@ -101,9 +100,13 @@ def load_trials(path: Path) -> dict[str, dict]:
 
 
 def read_texts(review: Path) -> dict[str, str]:
-    """一次读齐全部 md，后续检查复用同一份文本。"""
+    """一次读齐全部 md，后续检查复用同一份文本。
+
+    相对路径统一用正斜杠：Windows 的 Path.relative_to 产生反斜杠，
+    会让 startswith("attachments/") 类判断在 CI（Linux）与本地（Windows）分叉。
+    """
     return {
-        str(p.relative_to(review)): p.read_text(encoding="utf-8")
+        str(p.relative_to(review)).replace("\\", "/"): p.read_text(encoding="utf-8")
         for p in sorted(review.rglob("*.md"))
     }
 
