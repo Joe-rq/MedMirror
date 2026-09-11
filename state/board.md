@@ -86,3 +86,7 @@ AI 侧交付物落地：`specs/review/`（README/background/case-card/form-open 
 ## Issue #13 实现完成（2026-09-11，分支 feat/issue-13-runner-protection）
 
 运行记录保护落地：新增 `src/medmirror/runner.py`（独立 run 目录 runs/exp003-baseline/<时间戳-指纹>/、plan.json 完整计划+脱敏配置快照+配置指纹、attempts.jsonl 追加式两行制、trials.jsonl 物化视图兼容 #10 报告 CLI、恢复跳过=同指纹+success+有正文、换配置拒绝同目录、pending_reconciliation 态、max_attempts 跨恢复累计）与 `src/medmirror/budget.py`（reserve→settle/refund 三段账本、预算不足拒绝、价格未知拒绝、超支入账不拒）。`scripts/run_exp003_baseline.py` 重写为薄 CLI（--plan-only 离线生成计划、--allow-paid 付费闸门、--run-dir/--resume、--budget、--max-attempts；拒绝写入历史原件目录）。新增 `tests/test_runner.py` 17 例（假网络全场景：全新跑/同配置恢复/换配置拒绝/减 repeats 保留历史/失败重试上限/崩溃 pending/预算拒绝与超额/截断三态区分/报告 CLI 兼容）。四闸 118/118 全绿。顺手修复：check_review_pack.py 的 Windows 路径分隔符 bug（CI Linux 绿、本地 Windows 红）与三个脚本的 sibling import 漂移（run_exp003_baseline → medmirror.runner）。
+
+## Issue #3 实现完成（2026-09-12，分支 feat/issue-3-budget-gate）
+
+预算硬闸门补齐 + 账单核对工具：新增 `scripts/reconcile_budget.py`（读 run 目录 budget.jsonl 逐笔 settle 复算期望成本并输出差异报告；或对历史 trials 按登记价格复算——实测 0.372007 元与已登记估算精确一致）；`specs/calibration/bill-check.md`（主人核对三家实际账单的模板，含核对口径、差额归因栏、关闭勾选项）；`tests/test_budget_gate.py` 7 例（并发预留不透支、部分结算后额度复用、崩溃恢复保留已结算+在途预留、截断尾行容忍、重复加载幂等、init 事件锁定总额）。四闸 + check_calibration = 125/125 全绿。工程硬闸核心在 #13 已交付（reserve→settle/refund/pending_charge 四段、价格未知零调用、超时不释放预留、预算锁定 init），本件补齐 #3 专属三个缺口。issue #3 的关闭条件 = 主人填 bill-check.md + 本工程验收 → 人工关闭。
