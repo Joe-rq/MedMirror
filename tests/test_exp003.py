@@ -1,8 +1,7 @@
 import unittest
 
-from run_exp003_baseline import VARIANTS, planned_trials
-
 from medmirror.providers import model_registry
+from medmirror.runner import VARIANTS, planned_trials
 
 
 class Exp003PlanTest(unittest.TestCase):

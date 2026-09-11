@@ -8,11 +8,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from run_exp003_baseline import planned_trials
-
 from medmirror.protocol import load_jsonl
 from medmirror.providers import model_registry
 from medmirror.reporting import build_report, classify_trial, extract_sorted, render_markdown
+from medmirror.runner import planned_trials
 
 ROOT = Path(__file__).resolve().parents[1]
 REAL_TRIALS = ROOT / "docs/experiments/exp003-baseline/result/trials.jsonl"

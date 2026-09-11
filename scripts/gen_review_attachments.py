@@ -23,9 +23,8 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from run_exp003_baseline import CASE_TEXT, VARIANTS  # noqa: E402
-
 from medmirror.protocol import load_jsonl  # noqa: E402
+from medmirror.runner import CASE_TEXT, VARIANTS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT = ROOT / "docs/experiments/exp003-baseline/result/trials.jsonl"
