@@ -40,7 +40,7 @@ western 路径提及 `MACHINE_PREFILL`：deepseek 三组均 3/3；step 的 neutr
 
 ## 待复核医学问题
 
-`OWNER_TO_CONFIRM`——示范格式：
+`OWNER_TO_CONFIRM`——候选问题池与复核材料见 `specs/review/`（issue #20 材料包：两层复核表 + 27 条原文附件 + 候选池 DRAFT）。必核子集由主人从候选池挑选定稿后回填至此；以下为早期示范格式：
 
 - 本轮回答中「他汀用于颈动脉斑块管理」的适用条件与目标值（LDL-C < 1.8 mmol/L）是否与现行指南一致？（来源是否支持待核实，归 #5 复核包）
 
