@@ -78,3 +78,7 @@ AI 侧交付物落地：`specs/examples/negatives.jsonl`（17 条负例：未提
 ## Issue #12 定标回流微调（2026-09-10，主人批改后）
 
 PR #19 落地主人裁决（17/17 confirmed，neg-007 改判 conditional_support）后，#12 分支按裁决实现自服否定分界：条件含「评估/核对」类程序表述（隐含走完程序即可用）→ conditional_support；「沟通后决定」类开放表述或无条件 → needs_review（attitude_target 标注"结果开放，交人工裁决"）。test_exp001 的 smoke-002 期望与负例 harness 随裁决更新；check_calibration --require-confirmed 全绿。derived-v3 重生成：needs_review 队列 9 条 = 5 开放性自服否定 + 3 方向相反 + 1 强度不一致，均有真实语义依据。
+
+## Issue #20 复核材料包交付（2026-09-11，分支 review/issue-20-materials）
+
+AI 侧交付物落地：`specs/review/`（README/background/case-card/form-open 27 条/form-candidates 候选池 20 条 DRAFT/boundaries/record）+ `attachments/`（9 组文件 + index，`scripts/gen_review_attachments.py` 从 trials.jsonl 幂等生成，正文逐字不裁剪、截断单列标注）+ `scripts/check_review_pack.py`（trial 全集/原文逐字/判定后置禁词/引文逐字定位/case-card 归属/密钥扫描等结构检查）+ `tests/test_review_pack.py`（70 例回归，含守卫绕过、路径穿越、附件删节/交换、引文篡改等破坏场景）。四闸全绿。/simplify 四角度 + pr-ready 三审计（sibling/并发/边界）全部执行并处置。双谱系评审：codex R1 3P0+6P1 → 修复 → R2 P1×2+P2×4 → 全部修复（P1 含删小节假绿、附件交换假绿，均附回归）；opencode R1 无 P0/P1（P2×5 采纳修复 4 项）；谱系 B 的 R2 因本机内存不足（opencode/qwen 连续 4 次 OOM）未完成，用户确认接受现状，风险与缓解记录于 PR。剩余人工环节：主人从候选池挑 8–12 定稿必核子集（依赖 #12 修复后刷新定位）、复核范围圈定、#5 联系复核人。issue #20 保持 open。

@@ -40,3 +40,6 @@
 
 2026-09-10：主人完成 17 条负例人工批改（issue #11 验收第 3 条的语义确认环节）：16 条确认，neg-007 由 needs_review 改判 conditional_support。两项方法论裁决：①「不建议自行加/使用」类否定的作用对象须与药品本身分开，对象分不清时不强填态度（neg-006 维持 needs_review）；② needs_review 与 conditional_support 的分界线 = 有无「走完程序即可用」的隐含路径（「应先评估并核对」有 → 条件支持；「沟通后决定」无 → 需复核）。17/17 confirmed，--require-confirmed 转绿；两条交付期护栏测试按预告转为定标流转断言。剩余人工环节：两人独立标注 27 条（worksheet）、示范组确认与 standard-finding 实质内容。
 2026-09-10：Issue #12 提取器 v2（分支 feat/issue-12-extractor-v2）。变了什么：提取从"整句首个否定命中"改为子句级关系分析（六值状态含 needs_review、substitution/adjunct 分离、attitude_target/condition/source_evidence 新字段），来源识别收紧；新产物写 derived-v3 并附 v1→v2 差异报告。为什么变：v1 存在否定对象串扰、替代/辅助混淆、年龄数字冒充来源、元描述误判（plan/002 §3 与 negatives.jsonl 逐条钉死）。对你意味着什么：提及率口径不变但态度分布更细（需复核单列交人工）；旧结果在 derived-v2 完整保留可对比；负例集已由主人批改全部 confirmed（neg-007 裁决条件支持），v2 需按裁决微调自服否定分界（见后续提交）。
+
+
+2026-09-11：issue #20 医学复核材料包交付（分支 review/issue-20-materials）。变了什么：新增 specs/review/ 七件材料（一页背景、病例卡、两层复核表、边界声明、记录表）+ 27 条原文附件（gen_review_attachments.py 幂等生成、逐字不裁剪）+ 候选主张池 20 条 DRAFT（cand-01~20，供主人挑 8–12 定稿，待 #12 后刷新）+ check_review_pack.py 结构检查 + 21 个回归测试；standard-finding.md 占位指向本包。双谱系评审：codex（GPT 系）R1→R2 闭环，全部 P0/P1 修复并附测试；opencode（DeepSeek 系）R1 无 P0/P1，其 R2 与降级链 qwen 连续 4 次被本机 OOM 杀，经用户确认接受现状收尾——该放宽已记录于 PR 描述，合并前建议主人抽查修复清单。裁决记录：候选主张改写的机械检测判为过度设计（语义判断归人审，docstring 已声明边界）；协议常量下沉 src 留清理 issue。
