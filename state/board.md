@@ -98,3 +98,7 @@ AI 侧交付物落地：`scripts/export_review_pack.py`（pandoc 封装，两批
 ## Issue #20 候选池 v2 刷新（2026-09-12，分支 review/issue-20-candidates-v2）
 
 候选池分布备注升级为逐断言复核版：20 条备注对照 27 条原文 + derived-v3（offline-rules-v2，语义未定标仅参考）刷新，含精确三家计数、needs_review 交叉标注（横幅声明选择性标注规则，全量 9 条三类）、离群口径补充；候选主张/逐字引文/复核栏/机器闸门格式零改动。process：/simplify 4 角度（修 README 状态词指针化）+ pr-ready 三审计——boundary 抓出第一轮 13 处计数/归因错误（含 cand-08 引文归属违反逐字声明），全部经 trials.jsonl 逐断言机器复算修正（6-12 口径实测 21/24）；sibling 修四处状态漂移（README:13、standard-finding、annotation-worksheet「#12 待修」假陈述、record.md 版本表）。四闸 147 + check_review_pack + check_calibration 全绿。AI 推荐必核子集 10 条在 _tmp/issue-20/recommended-subset.md（仅供参考）。剩余人工环节不变：主人挑 8–12 条置 FINAL → 导出第二批；圈定复核范围；#5 联系复核人。issue #20 保持 open 至定稿。
+
+## Issue #2 有界追问执行完成（2026-09-12，分支 feat/issue-2-bounded-followup）
+
+AI 侧交付：`src/medmirror/followup.py`（触发规则 followup-rules-v1 + 限额 + 预算 + 恢复语义同 #13）+ CLI + 评审后增至 22 例假网络测试（四闸 169/169）。真实执行：3 候选（三家各 1、tcm 路径、父试次 tcm_mirror-1）→ 4 次真实调用（预算 1 元、花费 0.0690 元；glm 额度内重试一次后耗尽，无预算拒绝）。观察：deepseek 完整答（presented=complete，3836 字、AHA/ASA 2011 等来源）、step 截断答（presented=truncated，726 字、中国指南引用）、glm 两次均思考耗尽零正文（presented=failed）。产物：docs/experiments/exp003-baseline/followup/{followups.jsonl, findings.jsonl}。决策（主人拍板）：#11 27 条人工标注未完成，放宽前置的理由=触发规则仅用二值提及判断（负例已 confirmed 覆盖），标注赛后补。首次实跑因 spec 缺 endpoint 中止于请求发出前（零费用），账本已 refund 关闭。issue #2 关闭条件：本 PR 合并 + 主人过目追问产物。
