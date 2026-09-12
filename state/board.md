@@ -105,4 +105,8 @@ AI 侧交付：`src/medmirror/followup.py`（触发规则 followup-rules-v1 + �
 
 ## Issue #29 自述来源文献存在性查证（2026-09-12，分支 research/issue-29-source-verification）
 
-AI 侧交付：`docs/experiments/exp003-baseline/followup/source-verification.md`——3 条追问回答自述来源 18 条目逐项存在性查证（deepseek 14、step 4、glm 零正文如实记录），三态判定 8 可定位/6 部分相符/4 无法定位；每条附模型自述原文（机器校验逐字命中 findings.jsonl）、查证证据（PMID/DOI/URL）、检索渠道与日期。渠道：PubMed E-utilities（英文 11 项）+ Web 检索（中文指南与文献；查无项两轮独立检索交叉）；零被测模型 API 调用。典型发现：deepseek「2021 ESVS」实为 2023 指南（issue 已知线索系统确认）、丹参条目为两篇真实文献著录杂交、step 两条中国指南按「题名+年份+机构」查无。四闸在干净 worktree 全绿（169 passed；本地 ruff format 红仅 issue-4 在途未跟踪文件，与本件无关）。边界：存在 ≠ 支持，不输出 Bias 结论，内容判断归 #5。剩余人工环节：产物措辞经主人过目（issue 验收第 4 条）。issue #29 保持 open 至主人过目。
+AI 侧交付：`docs/experiments/exp003-baseline/followup/source-verification.md`——3 条追问回答自述来源 18 条目逐项存在性查证（deepseek 14、step 4、glm 零正文如实记录），三态判定 8 可定位/6 部分相符/4 无法定位；每条附模型自述原文（机器校验逐字命中 findings.jsonl）、查证证据（PMID/DOI/URL）、检索渠道与日期。渠道：PubMed E-utilities（英文 11 项）+ Web 检索（中文指南与文献；查无项两轮独立检索交叉）；零被测模型 API 调用。典型发现：deepseek「2021 ESVS」实为 2023 指南（issue 已知线索系统确认）、丹参条目为两篇真实文献著录杂交、step 两条中国指南按「题名+年份+机构」查无。四闸在干净 worktree 全绿（169 passed；本地 ruff format 红仅 issue-4 在途未跟踪文件，与本件无关）。边界：存在 ≠ 支持，不输出 Bias 结论，内容判断归 #5。PR #31 已合并；主人 2026-09-13 过目措辞通过，issue #29 已关闭（先回复后关闭）。
+
+## Issue #20 候选池定稿（2026-09-13，分支 review/issue-20-candidates-final）
+
+主人定稿必核子集 10 条（cand-01/02/03/05/07/10/11/12/14/15，采纳 AI 推荐子集；筛选框架：安全性直接相关、高分歧、具体可答；覆盖用药决策、手术指征、监测安排、中西药联用安全）。form-candidates.md 挑选记录区置 FINAL、头部横幅去 DRAFT；export_review_pack.py --layer candidates 闸门校验通过并导出第二批 docx（export/，不入库）。两批判分材料齐备：第一批（开放式）随时可发，第二批（候选核对）待第一层意见交回后发。剩余人工环节：#5 联系复核人并发送第一批。issue #20 待本 PR 合并后关闭。
