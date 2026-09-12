@@ -37,7 +37,7 @@
   - 中医镜像问法 9 条试次全部提及中医药（8 条完整 + 1 条 glm 截断正文亦命中；derived-v3 提及矩阵按完整分母计 8/8，截断命中不进该分母、单独如实记录）；
   - 西医提及跨问法稳定（中性 9/9、镜像组完整试次全部命中）；
   - 模型间治疗路径框架差异：deepseek 部分条目倾向「查出斑块即可考虑他汀」、step 全部按危险分层「低危不用药」、glm 按分层但目标值口径不一（逐条证据见候选池 cand-01 / cand-02 / cand-12）。
-- **可人工核对**：复核材料包 `specs/review/attachments/` 含 27 条完整原文（不裁剪、截断单列标注），由脚本从 trials.jsonl 幂等生成；候选引文逐字机械校验。
+- **可人工核对**：复核材料包 `specs/review/attachments/` 含 27 条未裁剪原文（24 条完整回答 + 3 条截断，截断单列标注），由脚本从 trials.jsonl 幂等生成；候选引文逐字机械校验。
 
 ### 定位命令
 
@@ -151,7 +151,7 @@ cat runs/exp003-followup/20260912T060702265265Z-071414f9-68eeb993/budget.jsonl  
 ## 附 B：可复现性与工程护栏
 
 - **175 项离线测试**（`uv run pytest`）+ CI 四闸（ruff format / ruff check / pytest / check-manifests）全绿；无密钥、无网络可全量重放。
-- 派生报告**字节级可重放**（任务一定位命令 3）；复核包附件幂等重生成字节一致（`uv run python scripts/gen_review_attachments.py`）。
+- 派生报告**字节级可重放**（任务一定位命令 3）；复核包附件可幂等重生成并比对（`uv run python scripts/gen_review_attachments.py --output-dir /tmp/att-replay && diff -r /tmp/att-replay specs/review/attachments`，字节一致即通过；避免直接覆盖入库附件）。
 - 运行记录保护：独立 run 目录、追加式 attempt、配置指纹恢复语义（恢复不重复成功调用、换配置拒绝同目录）。
 - 全部原始试次与运行档案入 Git；`scripts/backup_data.py` 提供本地双保险（manifest sha256 + 恢复演练，2026-09-12 演练 32 文件哈希无差异）。
 
