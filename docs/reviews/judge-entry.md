@@ -144,7 +144,7 @@ cat runs/exp003-followup/20260912T060702265265Z-071414f9-68eeb993/budget.jsonl  
 ## 附 A：成本与预算
 
 - **基线 27 条**：68,665 tokens，按登记价格估算 **0.372007 元**（deepseek 0.110367 + glm 0.039352 + stepfun 0.222288；DeepSeek 取保守高峰价）——`uv run python scripts/reconcile_budget.py --trials docs/experiments/exp003-baseline/result/trials.jsonl` 复算与登记值精确一致。
-- **追问 4 次真实调用**：**0.069029 元**（3 候选，glm 额度内重试 1 次），预算 1 元、结余 0.930971 元，pending_charge 0——`uv run python scripts/reconcile_budget.py --run-dir runs/exp003-followup/20260912T060702265265Z-071414f9-68eeb993`。
+- **追问 4 次真实调用**：**0.069029 元**（3 候选，glm 额度内重试 1 次），预算 1 元、结余 0.930971 元，reconcile 复算零差异、无待核账——`uv run python scripts/reconcile_budget.py --run-dir runs/exp003-followup/20260912T060702265265Z-071414f9-68eeb993`。
 - **总预算约束 50 元**；账本三段式（reserve→settle/refund），价格未知零调用、超支入账不拒，首次追问因 spec 缺 endpoint 中止于请求发出前、账本 refund 关闭（`runs/exp003-followup/20260912T060631100726Z-071414f9-6b718004/ABORTED.md`）。
 - 供应商账单绝对值核对模板已备（`specs/calibration/bill-check.md`，待主人填）。
 
