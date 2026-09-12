@@ -232,34 +232,6 @@ class ManifestSchemaTest(unittest.TestCase):
                 p = self._manifest(payload, td)
                 self.assertIsNone(load_manifest(p), payload)
 
-    def test_empty_files_manifest_blocks_export(self):
-        """被篡改为空 files 的 manifest 必须让导出拒绝（R6-P1 回归）。"""
-        with tempfile.TemporaryDirectory() as td:
-            out = Path(td) / "export"
-            r = run_export("--layer", "open", "--output-dir", str(out))
-            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-            (out / MANIFEST_NAME).write_text('{"files": {}}', encoding="utf-8")
-            victim = out / "form-open.docx"
-            victim.write_bytes(b"user replaced")
-            r = run_export("--layer", "open", "--output-dir", str(out))
-            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
-            self.assertIn("非法", r.stdout)
-            self.assertEqual(victim.read_bytes(), b"user replaced")
-
-    def test_partial_manifest_refused(self):
-        """合法 schema 但 files 集合与目录不一致（R7-P1 回归）→ 拒绝。"""
-        with tempfile.TemporaryDirectory() as td:
-            out = Path(td) / "export"
-            r = run_export("--layer", "open", "--output-dir", str(out))
-            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-            # 篡改 manifest：只记录一个别的文件名（schema 合法）
-            (out / MANIFEST_NAME).write_text(
-                '{"files": {"other.docx": "' + "a" * 64 + '"}}', encoding="utf-8"
-            )
-            r = run_export("--layer", "open", "--output-dir", str(out))
-            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
-            self.assertIn("不一致", r.stdout)
-
 
 class FinalizedGateTest(unittest.TestCase):
     """定稿闸门契约单测（纯函数，不依赖 pandoc）。"""
@@ -330,6 +302,36 @@ class FinalizedGateTest(unittest.TestCase):
         picks13 = "、".join(f"cand-{i:02d}" for i in range(1, 14))
         self.assertFalse(candidates_finalized(self._section("FINAL", picks13)))
         self.assertFalse(candidates_finalized(self._section("FINAL", "、".join(["cand-01"] * 9))))
+
+    @unittest.skipUnless(HAS_PANDOC, "端到端导出路径需要 pandoc")
+    def test_empty_files_manifest_blocks_export(self):
+        """被篡改为空 files 的 manifest 必须让导出拒绝（R6-P1 回归）。"""
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td) / "export"
+            r = run_export("--layer", "open", "--output-dir", str(out))
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            (out / MANIFEST_NAME).write_text('{"files": {}}', encoding="utf-8")
+            victim = out / "form-open.docx"
+            victim.write_bytes(b"user replaced")
+            r = run_export("--layer", "open", "--output-dir", str(out))
+            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+            self.assertIn("非法", r.stdout)
+            self.assertEqual(victim.read_bytes(), b"user replaced")
+
+    @unittest.skipUnless(HAS_PANDOC, "端到端导出路径需要 pandoc")
+    def test_partial_manifest_refused(self):
+        """合法 schema 但 files 集合与目录不一致（R7-P1 回归）→ 拒绝。"""
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td) / "export"
+            r = run_export("--layer", "open", "--output-dir", str(out))
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            # 篡改 manifest：只记录一个别的文件名（schema 合法）
+            (out / MANIFEST_NAME).write_text(
+                '{"files": {"other.docx": "' + "a" * 64 + '"}}', encoding="utf-8"
+            )
+            r = run_export("--layer", "open", "--output-dir", str(out))
+            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+            self.assertIn("不一致", r.stdout)
 
 
 @unittest.skipUnless(HAS_PANDOC, "本机未安装 pandoc，跳过导出用例")

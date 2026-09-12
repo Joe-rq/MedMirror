@@ -254,6 +254,15 @@ def main() -> int:
     if missing:
         print(f"✗ 材料包缺文件（先确认 issue #20 的材料已在 main）：{missing}")
         return 1
+    if args.layer == "candidates":
+        cand_pre = (review / "form-candidates.md").read_text(encoding="utf-8")
+        pre_problems = pick_section_problems(cand_pre)
+        if pre_problems:
+            print("✗ 挑选记录区结构不合法，拒绝导出（--allow-draft 也不豁免结构）：")
+            for problem in pre_problems:
+                print(f"  · {problem}")
+            return 1
+    ensure_pandoc()  # 快速失败：无 pandoc 时先于快照/checker 报安装指引
 
     # ── 材料快照（单点真相）：全部预读 → 落盘 _tmp/ 快照目录 → 复读比对，
     # 定稿判定、checker、附件重生成比对与 staging 全部只面向快照——
@@ -378,8 +387,6 @@ def main() -> int:
                             )
                             return 1
 
-            pandoc = ensure_pandoc()
-
             header = OPEN_HEADER if args.layer == "open" else CANDIDATES_HEADER
             expected_docx = {
                 f.removesuffix(".md").replace("/", "__") + ".docx" for f in layer_files
@@ -476,7 +483,7 @@ def main() -> int:
                     staged[f"{flat}.docx"] = tmp_md
                 # pandoc 阶段（md → 同目录 tmp docx），全部成功才提交
                 for docx_name, tmp_md in sorted(staged.items()):
-                    render_docx(pandoc, tmp_md, tmpdir / docx_name)
+                    render_docx(ensure_pandoc(), tmp_md, tmpdir / docx_name)
                 # 产物校验：期望集合齐全且均为合法 docx（防「返回 0 但无产物」的伪 pandoc）
                 got = {n.name for n in tmpdir.glob("*.docx")}
                 if got != expected_docx or not all(zipfile.is_zipfile(tmpdir / n) for n in got):
