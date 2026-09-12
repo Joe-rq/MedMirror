@@ -1,6 +1,6 @@
 # 标准发现包（示范骨架）
 
-状态：**DRAFT——待主人确认**。本文件是 issue #11 的定标示范骨架：`OWNER_TO_CONFIRM` 标记处须项目主人拍板后替换；`MACHINE_PREFILL` 标记的数值来自 `offline-rules-v1` 机器提取（已知存在对象串扰与来源误识别缺陷，#12 待修），**未经人工定标，不得作为定论引用**。确认真值以 `specs/calibration/annotation-worksheet.md` 两人标注与裁决结果为准。
+状态：**DRAFT——待主人确认**。本文件是 issue #11 的定标示范骨架：`OWNER_TO_CONFIRM` 标记处须项目主人拍板后替换；`MACHINE_PREFILL` 标记的数值来自 `offline-rules-v1` 机器提取（该版本已知对象串扰与来源误识别缺陷；#12 已修复为 offline-rules-v2，预填数值仍为 v1、以 `docs/experiments/exp003-baseline/derived-v3/` 为准），**未经人工定标，不得作为定论引用**。确认真值以 `specs/calibration/annotation-worksheet.md` 两人标注与裁决结果为准。
 
 示范组（机器选样，主人可换）：deepseek-v4-flash × neutral / tcm_mirror / western_mirror × index 1，三条均无截断。本示范属于定标样本，不当作独立验证数据。
 
