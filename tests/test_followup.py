@@ -4,11 +4,22 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from medmirror import followup
 from medmirror.budget import Ledger
 
 
-def make_trial(tid, model, variant, index, *, status="success", finish="stop", response="答"):
+def make_trial(
+    tid,
+    model,
+    variant,
+    index,
+    *,
+    status="success",
+    finish="stop",
+    response="答：中医药：可以考虑；西医他汀",
+):
     return {
         "trial_id": tid,
         "model_catalog_id": model,
@@ -47,6 +58,7 @@ def baseline_fixture(*, neutral_tcm="not_mentioned"):
                     western="recommended"
                     if variant == "western_mirror" or variant == "neutral"
                     else "not_mentioned",
+                    wev="西医他汀" if variant == "western_mirror" else "",
                     tcm=(
                         neutral_tcm
                         if variant == "neutral"
@@ -318,7 +330,7 @@ def test_attempt_exhausted_leaves_failure_record(tmp_path):
         params=PARAMS,
     )
     assert stats2["executed"] == 1 and len(failing.calls) == 2  # max_attempts=2 用尽
-    # 再跑一次：不重试、记 attempt_exhausted，失败记录保留
+    # 再跑一次：不重试；每模型 attempt 上限（=MAX_PER_MODEL）先生效，失败记录保留
     stats3 = followup.execute_followups(
         run_dir=tmp_path,
         candidates=cands[:1],
@@ -329,8 +341,81 @@ def test_attempt_exhausted_leaves_failure_record(tmp_path):
         params=PARAMS,
     )
     assert stats3["executed"] == 0
-    assert stats3["outcomes"][0]["stop_reason"] == "attempt_exhausted"
+    assert stats3["outcomes"][0]["stop_reason"] == "max_per_model_reached"
     assert len(failing.calls) == 2
+
+
+def test_attempt_exhausted_below_model_cap(tmp_path):
+    """max_attempts=1（低于每模型上限）时：失败一次即耗尽该候选的 attempt 预算。"""
+    trials, extractions = baseline_fixture()
+    cands = followup.select_candidates(trials, extractions)
+    failing = FakeTransport(
+        results=[
+            {"status": "failed", "http_status": 429, "error_type": "HTTPError", "response": ""},
+        ]
+    )
+    ledger = Ledger(tmp_path / "budget.jsonl", total_cny=10.0)
+    followup.execute_followups(
+        run_dir=tmp_path,
+        candidates=cands[:1],
+        registry=registry_fixture(),
+        transport=failing,
+        ledger=ledger,
+        prices=PRICES,
+        params=PARAMS,
+        max_attempts=1,
+    )
+    stats2 = followup.execute_followups(
+        run_dir=tmp_path,
+        candidates=cands[:1],
+        registry=registry_fixture(),
+        transport=failing,
+        ledger=ledger,
+        prices=PRICES,
+        params=PARAMS,
+        max_attempts=1,
+    )
+    assert stats2["executed"] == 0
+    assert stats2["outcomes"][0]["stop_reason"] == "attempt_exhausted"
+    assert len(failing.calls) == 1
+
+
+def test_failed_attempts_consume_model_quota(tmp_path):
+    """失败调用同样消耗每模型额度——两次失败后该模型任何追问（含重试）均被 ≤2/模型 拦截。"""
+    trials, extractions = baseline_fixture()
+    cands = followup.select_candidates(trials, extractions)
+    twin = {**cands[0], "followup_id": cands[0]["followup_id"] + "x"}  # 人为第二条同模型候选
+    failing = FakeTransport(
+        results=[
+            {"status": "failed", "http_status": 429, "error_type": "HTTPError", "response": ""},
+            {"status": "failed", "http_status": 429, "error_type": "HTTPError", "response": ""},
+        ]
+    )
+    ledger = Ledger(tmp_path / "budget.jsonl", total_cny=10.0)
+    # 第一次：两候选各失败一次 → 该模型 attempt 额度已耗尽（按 attempt 计，不论成败）
+    followup.execute_followups(
+        run_dir=tmp_path,
+        candidates=[cands[0], twin],
+        registry=registry_fixture(),
+        transport=failing,
+        ledger=ledger,
+        prices=PRICES,
+        params=PARAMS,
+    )
+    assert len(failing.calls) == 2
+    # 第二次恢复：两条候选的重试与任何新调用都被每模型上限拦截
+    stats2 = followup.execute_followups(
+        run_dir=tmp_path,
+        candidates=[cands[0], twin],
+        registry=registry_fixture(),
+        transport=failing,
+        ledger=ledger,
+        prices=PRICES,
+        params=PARAMS,
+    )
+    assert stats2["executed"] == 0
+    assert all(o["stop_reason"] == "max_per_model_reached" for o in stats2["outcomes"])
+    assert len(failing.calls) == 2  # 失败额度不豁免——不再发起新调用
 
 
 def test_billing_unknown_pending_reconciliation(tmp_path):
@@ -398,3 +483,190 @@ def test_findings_not_executed_when_plan_only(tmp_path):
     cands = followup.select_candidates(trials, extractions)
     findings = followup.build_findings(cands, {}, extractions, {})
     assert all(f["followup"]["status"] == "not_executed" for f in findings)
+
+
+def test_unlocatable_evidence_fail_closed():
+    """「原文可定位」fail-closed：evidence 为空 / 不是父回答子串 / 提取失败 → 不触发。"""
+    trials, extractions = baseline_fixture()
+    # 情形一：glm 全部镜像 evidence 为空字符串（state 仍为提及）
+    for index in (1, 2, 3):
+        extractions[f"exp003-glm-5.3-flash-tcm_mirror-{index}"]["paths"]["tcm"]["evidence"] = ""
+    # 情形二：deepseek 全部镜像 evidence 不是父回答子串
+    for index in (1, 2, 3):
+        key = f"exp003-deepseek-v4-flash-tcm_mirror-{index}"
+        extractions[key]["paths"]["tcm"]["evidence"] = "原文里没有这句"
+    # 情形三：step 全部镜像提取 status 失败
+    for index in (1, 2, 3):
+        extractions[f"exp003-step-3.7-flash-tcm_mirror-{index}"]["status"] = "extraction_failed"
+    cands = followup.select_candidates(trials, extractions)
+    assert cands == []
+
+
+def test_neutral_not_mentioned_state_only_uses_extraction_state():
+    """中性侧「已提及」只看提取 state（与镜像父的 locatable 判定不同——中性不选父）。"""
+    trials, extractions = baseline_fixture(neutral_tcm="mentioned")
+    assert followup.select_candidates(trials, extractions) == []
+
+
+def test_prepare_plan_locks_config(tmp_path):
+    """plan 指纹锁定：换配置（max_attempts/消息）恢复同目录被拒绝。"""
+    trials, extractions = baseline_fixture()
+    cands = followup.select_candidates(trials, extractions)
+    plan = followup.prepare_plan(
+        run_dir=tmp_path,
+        candidates=cands,
+        params=PARAMS,
+        max_attempts=2,
+        registry=registry_fixture(),
+    )
+    assert plan["candidate_count"] == 3
+    # 同配置恢复：返回已有 plan
+    again = followup.prepare_plan(
+        run_dir=tmp_path,
+        candidates=cands,
+        params=PARAMS,
+        max_attempts=2,
+        registry=registry_fixture(),
+    )
+    assert again["config_fingerprint"] == plan["config_fingerprint"]
+    # 换 max_attempts → 拒绝
+    with pytest.raises(RuntimeError, match="配置指纹不一致"):
+        followup.prepare_plan(
+            run_dir=tmp_path,
+            candidates=cands,
+            params=PARAMS,
+            max_attempts=1,
+            registry=registry_fixture(),
+        )
+    # 换候选内容 → 拒绝
+    mutated = [{**cands[0], "messages": cands[0]["messages"][:-1]}, *cands[1:]]
+    with pytest.raises(RuntimeError, match="配置指纹不一致"):
+        followup.prepare_plan(
+            run_dir=tmp_path,
+            candidates=mutated,
+            params=PARAMS,
+            max_attempts=2,
+            registry=registry_fixture(),
+        )
+
+
+def test_reconcile_ledger_closes_orphan_reserve(tmp_path):
+    """恢复对账：reserve 后崩溃的两种窗口 + finished 后未结算，最终全部闭合。"""
+    ledger_path = tmp_path / "budget.jsonl"
+    ledger = Ledger(ledger_path, total_cny=10.0)
+    # 窗口一：reserve 后 started 落盘前崩溃（请求未发出）→ refund
+    ledger.reserve("fid-a", 1, 0.01, note="crash_before_started")
+    # 窗口二：started 落盘后 call 中崩溃 → pending_charge 保留预留
+    ledger.reserve("fid-b", 1, 0.02, note="crash_mid_call")
+    followup.append_jsonl(
+        tmp_path / "followups.jsonl",
+        {
+            "phase": "started",
+            "followup_id": "fid-b",
+            "attempt": 1,
+            "model_catalog_id": "deepseek-v4-flash",
+            "vendor": "deepseek",
+        },
+    )
+    # 窗口三：finished 已落盘（success+usage）但 settle 前崩溃 → 补 settle
+    ledger.reserve("fid-c", 1, 0.5, note="crash_before_settle")
+    followup.append_jsonl(
+        tmp_path / "followups.jsonl",
+        {
+            "phase": "started",
+            "followup_id": "fid-c",
+            "attempt": 1,
+            "model_catalog_id": "deepseek-v4-flash",
+            "vendor": "deepseek",
+        },
+    )
+    followup.append_jsonl(
+        tmp_path / "followups.jsonl",
+        {
+            "phase": "finished",
+            "followup_id": "fid-c",
+            "attempt": 1,
+            "status": "success",
+            "response": "答",
+            "vendor": "deepseek",
+            "usage": {"prompt_tokens": 100, "completion_tokens": 50},
+        },
+    )
+    rows = followup.load_followup_rows(tmp_path / "followups.jsonl")
+    reconciled = followup.reconcile_ledger(ledger, rows, PRICES, verbose=False)
+    assert reconciled == 3
+    assert ledger.state.reserved_cny == 0.02  # 仅 fid-b 的 pending 占位保留
+    # fid-c 按实际用量结算（deepseek 8/8 元/M：150 token = 0.0012 元）
+    assert abs(ledger.state.settled_cny - 0.0012) < 1e-9
+    # 再跑一次：无新未闭合预留
+    assert followup.reconcile_ledger(ledger, rows, PRICES, verbose=False) == 0
+
+
+def test_transport_exception_becomes_pending(tmp_path):
+    """传输层抛未捕获异常 → 按「已发出、结果未知」记录并挂账，不中断整轮。"""
+    trials, extractions = baseline_fixture()
+    cands = followup.select_candidates(trials, extractions)
+
+    class Exploding:
+        calls = 0
+
+        def call(self, config, spec, params):
+            Exploding.calls += 1
+            if Exploding.calls == 1:
+                raise RuntimeError("boom")
+            return {
+                "status": "success",
+                "response": "第二条成功",
+                "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+                "finish_reason": "stop",
+            }
+
+    ledger = Ledger(tmp_path / "budget.jsonl", total_cny=10.0)
+    stats = followup.execute_followups(
+        run_dir=tmp_path,
+        candidates=cands,
+        registry=registry_fixture(),
+        transport=Exploding(),
+        ledger=ledger,
+        prices=PRICES,
+        params=PARAMS,
+    )
+    assert stats["executed"] == 3  # 异常被转为记录，其余候选照常执行
+    rows = followup.load_followup_rows(tmp_path / "followups.jsonl")
+    outcome = followup.followup_outcome(rows, cands[0]["followup_id"])
+    assert outcome["status"] == "pending_reconciliation"
+    assert outcome["error_type"] == "RuntimeError"
+
+
+def test_findings_presented_truncated_and_neutral_ids(tmp_path):
+    """截断追问的 presented=truncated（不写成 success）；findings 含中性试次 IDs。"""
+    trials, extractions = baseline_fixture()
+    cands = followup.select_candidates(trials, extractions)
+    transport = FakeTransport(
+        results=[
+            {  # deepseek：length 截断但有正文
+                "status": "success",
+                "response": "截断的回答",
+                "usage": {"prompt_tokens": 10, "completion_tokens": 4096},
+                "finish_reason": "length",
+            },
+        ]
+    )
+    ledger = Ledger(tmp_path / "budget.jsonl", total_cny=10.0)
+    stats = followup.execute_followups(
+        run_dir=tmp_path,
+        candidates=cands,
+        registry=registry_fixture(),
+        transport=transport,
+        ledger=ledger,
+        prices=PRICES,
+        params=PARAMS,
+    )
+    stop_reasons = {o["followup_id"]: o["stop_reason"] for o in stats["outcomes"]}
+    rows = followup.load_followup_rows(tmp_path / "followups.jsonl")
+    findings = followup.build_findings(cands, rows, extractions, stop_reasons)
+    first = findings[0]
+    assert first["followup"]["presented"] == "truncated"
+    assert first["followup"]["status"] == "success"  # 原始状态保留
+    assert len(first["observation"]["neutral_all_not_mentioned"]["trial_ids"]) == 3
+    assert first["extractor_version"] == "offline-rules-v2"

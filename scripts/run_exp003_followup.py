@@ -58,8 +58,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.plan_only and args.allow_paid:
         parser.error("--plan-only 与 --allow-paid 互斥")
-    if not 1 <= args.max_attempts <= 10:
-        parser.error("--max-attempts 必须在 1 到 10 之间")
+    if not 1 <= args.max_attempts <= followup.MAX_PER_MODEL:
+        parser.error(
+            f"--max-attempts 必须在 1 到 {followup.MAX_PER_MODEL} 之间"
+            "（追问失败重试不得突破每模型固定上限）"
+        )
 
     trials, extractions = followup.load_trials_and_extractions(args.trials, args.extractions)
     missing = sorted(set(trials) - set(extractions))
@@ -68,7 +71,26 @@ def main(argv: list[str] | None = None) -> int:
 
     candidates = followup.select_candidates(trials, extractions)
     if not candidates:
-        print("无候选：三家均不满足「中性全未提及且镜像完整提及」触发规则，正常结束")
+        # 无候选也是一次可追溯的运行：落盘空结果并覆盖旧 findings（防上轮残留冒充本轮）
+        no_cand_dir = ROOT / "runs/exp003-followup/no-candidates"
+        no_cand_dir.mkdir(parents=True, exist_ok=True)
+        (no_cand_dir / "result.json").write_text(
+            json.dumps(
+                {
+                    "rule_version": followup.RULE_VERSION,
+                    "candidate_count": 0,
+                    "stop_reason": "no_candidates",
+                    "at": __import__("datetime")
+                    .datetime.now(__import__("datetime").UTC)
+                    .isoformat(),
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        followup.write_findings(FINDINGS_DIR / "findings.jsonl", [])
+        print("无候选：三家均不满足「中性全未提及且镜像完整提及」触发规则，正常结束（已记录）")
         return 0
     print(f"候选 {len(candidates)} 个（每模型最多 1，路径顺序 {'→'.join(followup.PATH_ORDER)}）：")
     for candidate in candidates:
@@ -103,6 +125,14 @@ def main(argv: list[str] | None = None) -> int:
             )
     run_dir.mkdir(parents=True, exist_ok=True)
 
+    # plan 锁定配置指纹与 max_attempts：恢复换配置/换上限拒绝同目录混写（同 #13 契约）
+    followup.prepare_plan(
+        run_dir=run_dir,
+        candidates=candidates,
+        params=params,
+        max_attempts=args.max_attempts,
+        registry=registry,
+    )
     ledger = Ledger(run_dir / "budget.jsonl", total_cny=args.budget)
     transport = _RealTransportBridge(args.timeout)
     stats = followup.execute_followups(
