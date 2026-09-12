@@ -94,3 +94,7 @@ AI 侧交付物落地：`specs/review/`（README/background/case-card/form-open 
 ## Issue #24 Word 分发格式交付（2026-09-12，分支 review/issue-24-docx-export）
 
 AI 侧交付物落地：`scripts/export_review_pack.py`（pandoc 封装，两批导出 docx；判定后置在导出层机械落地：open 批不含候选内容有测试锁定、candidates 批受定稿闸门约束且结构校验不可绕过；材料快照单点真相防 TOCTOU；manifest sha256 目录所有权防误删用户文件；文件级原子提交 + flock；导出前强制 check_review_pack 通过 + 附件重生成字节比对）+ 22 个回归测试 + checker 泄漏检查扩展 + README 分发流程。四闸 140/140 全绿。双谱系评审：codex 十五轮（每轮发现全部闭环，含多个真实 bug：默认命令被自家守卫堵死、同层重导自删、manifest 绕过链）终验可合并；MiniMax-M3 独立终验可合并。B 谱系 harness 由 DeepSeek 换 MiniMax（用户指定，deepseek 屡被 OOM）；provider 实际为 minimax-cn-coding-plan（minimax-cn key 无效）。剩余人工环节：主人在 form-candidates.md 挑选记录区勾选 8–12 条并置 FINAL → 导出第二批；第一批材料随时可导出发送（等 #5 复核人）。issue #24 保持 open 至合并。
+
+## Issue #20 候选池 v2 刷新（2026-09-12，分支 review/issue-20-candidates-v2）
+
+候选池分布备注升级为逐断言复核版：20 条备注对照 27 条原文 + derived-v3（offline-rules-v2，语义未定标仅参考）刷新，含精确三家计数、needs_review 交叉标注（两类，横幅声明选择性标注规则）、离群口径补充；候选主张/逐字引文/复核栏/机器闸门格式零改动。process：/simplify 4 角度（修 README 状态词指针化）+ pr-ready 三审计——boundary 抓出第一轮 13 处计数/归因错误（含 cand-08 引文归属违反逐字声明），全部经 trials.jsonl 逐断言机器复算修正（6-12 口径实测 21/24）；sibling 修四处状态漂移（README:13、standard-finding、annotation-worksheet「#12 待修」假陈述、record.md 版本表）。四闸 147 + check_review_pack + check_calibration 全绿。AI 推荐必核子集 10 条在 _tmp/issue-20/recommended-subset.md（仅供参考）。剩余人工环节不变：主人挑 8–12 条置 FINAL → 导出第二批；圈定复核范围；#5 联系复核人。issue #20 保持 open 至定稿。
