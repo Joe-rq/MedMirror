@@ -296,12 +296,13 @@ def reconcile_ledger(
             ledger.refund(
                 key[0], key[1], event["amount_cny"], note="recovery_reserve_without_started"
             )
+        elif finished.get("status") == "failed" and not finished.get("billing_unknown"):
+            # 明确失败（4xx 等未计费）：退还——与执行路径同序，failed 优先于 usage 缺失判断
+            ledger.refund(key[0], key[1], event["amount_cny"], note="recovery_failed_no_charge")
         elif finished.get("billing_unknown") or not isinstance(finished.get("usage"), dict):
             ledger.pending_charge(
                 key[0], key[1], event["amount_cny"], note="recovery_billing_unknown"
             )
-        elif finished.get("status") == "failed":
-            ledger.refund(key[0], key[1], event["amount_cny"], note="recovery_failed_no_charge")
         else:
             vendor = finished.get("vendor") or (row or {}).get("vendor")
             actual = actual_cost_cny(prices, vendor, finished.get("usage"))

@@ -592,9 +592,40 @@ def test_reconcile_ledger_closes_orphan_reserve(tmp_path):
             "usage": {"prompt_tokens": 100, "completion_tokens": 50},
         },
     )
+    # 窗口四（codex R2 P1 回归）：finished=failed 且无 usage → 应 refund 而非 pending_charge
+    ledger.reserve("fid-d", 1, 0.03, note="crash_failed_no_usage")
+    followup.append_jsonl(
+        tmp_path / "followups.jsonl",
+        {
+            "phase": "started",
+            "followup_id": "fid-d",
+            "attempt": 1,
+            "model_catalog_id": "glm-5.3-flash",
+            "vendor": "glm",
+        },
+    )
+    followup.append_jsonl(
+        tmp_path / "followups.jsonl",
+        {
+            "phase": "finished",
+            "followup_id": "fid-d",
+            "attempt": 1,
+            "status": "failed",
+            "http_status": 401,
+            "error_type": "HTTPError",
+            "response": "",
+            "vendor": "glm",  # 无 usage、无 billing_unknown：明确未计费
+        },
+    )
     rows = followup.load_followup_rows(tmp_path / "followups.jsonl")
     reconciled = followup.reconcile_ledger(ledger, rows, PRICES, verbose=False)
-    assert reconciled == 3
+    assert reconciled == 4
+    assert ledger.state.reserved_cny == 0.02  # 仅 fid-b 的 pending 占位保留（fid-d 已退还）
+    refund_events = [
+        e for e in ledger.state.events if e["kind"] == "refund" and e["trial_id"] == "fid-d"
+    ]
+    assert refund_events and refund_events[0]["note"] == "recovery_failed_no_charge"
+    assert reconciled == 4
     assert ledger.state.reserved_cny == 0.02  # 仅 fid-b 的 pending 占位保留
     # fid-c 按实际用量结算（deepseek 8/8 元/M：150 token = 0.0012 元）
     assert abs(ledger.state.settled_cny - 0.0012) < 1e-9
@@ -670,3 +701,48 @@ def test_findings_presented_truncated_and_neutral_ids(tmp_path):
     assert first["followup"]["status"] == "success"  # 原始状态保留
     assert len(first["observation"]["neutral_all_not_mentioned"]["trial_ids"]) == 3
     assert first["extractor_version"] == "offline-rules-v2"
+
+
+def test_cli_no_candidates_records_and_clears(tmp_path, monkeypatch, capsys):
+    """CLI 无候选：落盘 result.json、覆盖旧 findings（防上轮残留冒充本轮）。"""
+    import sys as _sys
+    from pathlib import Path as _Path
+
+    script_dir = _Path(__file__).resolve().parents[1] / "scripts"
+    _sys.path.insert(0, str(script_dir))
+    import run_exp003_followup as cli
+
+    # 输入：中性已提及 → 无候选
+    trials, extractions = baseline_fixture(neutral_tcm="mentioned")
+    trials_path = tmp_path / "trials.jsonl"
+    extractions_path = tmp_path / "extractions.jsonl"
+    for path, data in ((trials_path, trials), (extractions_path, extractions)):
+        path.write_text(
+            "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in data.values()),
+            encoding="utf-8",
+        )
+    # 旧 findings 残留 + 重定向输出目录到 tmp
+    fake_findings = tmp_path / "findings"
+    fake_findings.mkdir()
+    (fake_findings / "findings.jsonl").write_text(
+        json.dumps({"finding_id": "stale"}, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    monkeypatch.setattr(cli, "FINDINGS_DIR", fake_findings)
+    monkeypatch.setattr(cli, "NO_CANDIDATES_DIR", tmp_path / "no-candidates")
+
+    rc = cli.main(
+        [
+            "--trials",
+            str(trials_path),
+            "--extractions",
+            str(extractions_path),
+            "--plan-only",
+        ]
+    )
+    assert rc == 0
+    record = json.loads((tmp_path / "no-candidates" / "result.json").read_text(encoding="utf-8"))
+    assert record["candidate_count"] == 0
+    assert record["stop_reason"] == "no_candidates"
+    assert record["rule_version"] == followup.RULE_VERSION
+    assert (fake_findings / "findings.jsonl").read_text(encoding="utf-8") == ""  # 旧残留被清空
+    assert "无候选" in capsys.readouterr().out

@@ -20,6 +20,7 @@ import argparse
 import json
 import os
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,8 +33,27 @@ from medmirror.providers import load_catalog, load_local_env, model_registry
 DEFAULT_TRIALS = ROOT / "docs/experiments/exp003-baseline/result/trials.jsonl"
 DEFAULT_EXTRACTIONS = ROOT / "docs/experiments/exp003-baseline/derived-v3/extractions.jsonl"
 FINDINGS_DIR = ROOT / "docs/experiments/exp003-baseline/followup"
+NO_CANDIDATES_DIR = ROOT / "runs/exp003-followup/no-candidates"
 DEFAULT_BUDGET_CNY = 1.0
 PROTECTED_PARENT = ROOT / "docs/experiments/exp003-baseline/result"
+
+
+def record_no_candidates() -> None:
+    """无候选也是一次可追溯的运行：落盘空结果（防「本轮无候选」与「上轮有候选」混淆）。"""
+    NO_CANDIDATES_DIR.mkdir(parents=True, exist_ok=True)
+    (NO_CANDIDATES_DIR / "result.json").write_text(
+        json.dumps(
+            {
+                "rule_version": followup.RULE_VERSION,
+                "candidate_count": 0,
+                "stop_reason": "no_candidates",
+                "at": datetime.now(UTC).isoformat(),
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
 
 
 def load_prices() -> dict[str, dict[str, float]]:
@@ -71,24 +91,7 @@ def main(argv: list[str] | None = None) -> int:
 
     candidates = followup.select_candidates(trials, extractions)
     if not candidates:
-        # 无候选也是一次可追溯的运行：落盘空结果并覆盖旧 findings（防上轮残留冒充本轮）
-        no_cand_dir = ROOT / "runs/exp003-followup/no-candidates"
-        no_cand_dir.mkdir(parents=True, exist_ok=True)
-        (no_cand_dir / "result.json").write_text(
-            json.dumps(
-                {
-                    "rule_version": followup.RULE_VERSION,
-                    "candidate_count": 0,
-                    "stop_reason": "no_candidates",
-                    "at": __import__("datetime")
-                    .datetime.now(__import__("datetime").UTC)
-                    .isoformat(),
-                },
-                ensure_ascii=False,
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
+        record_no_candidates()
         followup.write_findings(FINDINGS_DIR / "findings.jsonl", [])
         print("无候选：三家均不满足「中性全未提及且镜像完整提及」触发规则，正常结束（已记录）")
         return 0
