@@ -137,6 +137,11 @@ def main(argv: list[str] | None = None) -> int:
         registry=registry,
     )
     ledger = Ledger(run_dir / "budget.jsonl", total_cny=args.budget)
+    if abs(ledger.state.total_cny - args.budget) > 1e-9:
+        parser.error(
+            f"恢复失败：目录 {run_dir.name} 的预算总额 {ledger.state.total_cny} 元"
+            f"与当前传入 {args.budget} 元不一致；预算锁定在首次 run（与基线 #13 契约一致）"
+        )
     transport = _RealTransportBridge(args.timeout)
     stats = followup.execute_followups(
         run_dir=run_dir,

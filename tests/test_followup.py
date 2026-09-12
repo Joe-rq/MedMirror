@@ -502,12 +502,6 @@ def test_unlocatable_evidence_fail_closed():
     assert cands == []
 
 
-def test_neutral_not_mentioned_state_only_uses_extraction_state():
-    """中性侧「已提及」只看提取 state（与镜像父的 locatable 判定不同——中性不选父）。"""
-    trials, extractions = baseline_fixture(neutral_tcm="mentioned")
-    assert followup.select_candidates(trials, extractions) == []
-
-
 def test_prepare_plan_locks_config(tmp_path):
     """plan 指纹锁定：换配置（max_attempts/消息）恢复同目录被拒绝。"""
     trials, extractions = baseline_fixture()

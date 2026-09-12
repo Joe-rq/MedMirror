@@ -73,8 +73,11 @@ def _locatable_mention(extraction: dict[str, Any] | None, path: str, parent_resp
     """「原文可定位」的 fail-closed 判定：提取成功 + 提及态 + evidence 非空且为父回答子串。"""
     if not extraction or extraction.get("status") != "success":
         return False
-    state = extraction["paths"][path]["state"]
-    evidence = extraction["paths"][path].get("evidence") or ""
+    # needs_review 亦计为提及（该类为「语义不确定交人工」，正文确已谈及该路径，
+    # 如自服否定条），state 原样记入 selection_reason 与 findings 供人工复核
+    node = extraction.get("paths", {}).get(path) or {}
+    state = node.get("state")
+    evidence = node.get("evidence") or ""
     return state != "not_mentioned" and bool(evidence) and evidence in (parent_response or "")
 
 
