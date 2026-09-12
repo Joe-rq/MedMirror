@@ -89,10 +89,23 @@ class ExportGuardTest(unittest.TestCase):
         self.assertIn("受保护目录", r.stdout)
 
     def test_placeholder_section_refused_even_with_allow_draft(self):
-        """真实材料的挑选区仍是占位（未勾选）→ 结构拒绝，--allow-draft 也不豁免。"""
+        """挑选区为占位（未勾选）→ 结构拒绝，--allow-draft 也不豁免。
+
+        场景自建（真实材料 2026-09-13 已定稿 FINAL，不再天然提供占位状态）：
+        拷贝材料包后把必核子集/日期行改回占位，校验结构守卫。
+        """
         with tempfile.TemporaryDirectory() as td:
+            pack = Path(td) / "review"
+            shutil.copytree(ROOT / "specs/review", pack)
+            cand = pack / "form-candidates.md"
+            text = cand.read_text(encoding="utf-8")
+            text = re.sub(r"^- 必核子集：.*$", "- 必核子集：待定", text, flags=re.MULTILINE)
+            cand.write_text(text, encoding="utf-8", newline="\n")
             out = Path(td) / "export"
-            r = run_export("--layer", "candidates", "--output-dir", str(out), "--allow-draft")
+            r = run_export(
+                "--layer", "candidates", "--review-dir", str(pack),
+                "--output-dir", str(out), "--allow-draft",
+            )
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertIn("结构不合法", r.stdout)
             self.assertFalse(list(out.glob("*.docx")) if out.exists() else [])
@@ -337,15 +350,22 @@ class FinalizedGateTest(unittest.TestCase):
 @unittest.skipUnless(HAS_PANDOC, "本机未安装 pandoc，跳过导出用例")
 class ExportCandidatesLayerTest(unittest.TestCase):
     def _picked_but_draft_pack(self, td: Path) -> Path:
-        """已勾选 8–12 条但状态行仍 DRAFT 的材料副本（--allow-draft 的合法预览场景）。"""
+        """已勾选 8–12 条但状态行仍 DRAFT 的材料副本（--allow-draft 的合法预览场景）。
+
+        按行正则整体改写三个数据行与头部横幅，不依赖真实材料当前处于何种状态
+        （真实材料 2026-09-13 已定稿 FINAL，占位串 replace 会静默落空）。
+        """
         pack = Path(td) / "review"
         shutil.copytree(ROOT / "specs/review", pack)
         cand = pack / "form-candidates.md"
         text = cand.read_text(encoding="utf-8")
         picks = "、".join(f"cand-{i:02d}" for i in range(1, 9))
-        text = text.replace("- 必核子集：待定", f"- 必核子集：{picks}").replace(
-            "- 定稿依据与日期：待定", "- 定稿依据与日期：预览（主人未定稿）2026"
+        text = re.sub(r"^- 候选池状态：.*$", "- 候选池状态：DRAFT", text, flags=re.MULTILINE)
+        text = re.sub(r"^- 必核子集：.*$", f"- 必核子集：{picks}", text, flags=re.MULTILINE)
+        text = re.sub(
+            r"^- 定稿依据与日期：.*$", "- 定稿依据与日期：预览（主人未定稿）2026", text, flags=re.MULTILINE
         )
+        text = re.sub(r"^> \*\*状态：.*$", "> **状态：DRAFT（fixture 预览场景）**", text, flags=re.MULTILINE, count=1)
         cand.write_text(text, encoding="utf-8", newline="\n")
         return pack
 
