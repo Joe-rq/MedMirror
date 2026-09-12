@@ -110,3 +110,7 @@ AI 侧交付：`docs/experiments/exp003-baseline/followup/source-verification.md
 ## Issue #20 候选池定稿（2026-09-13，分支 review/issue-20-candidates-final）
 
 主人定稿必核子集 10 条（cand-01/02/03/05/07/10/11/12/14/15，采纳 AI 推荐子集；筛选框架：安全性直接相关、高分歧、具体可答；覆盖用药决策、手术指征、监测安排、中西药联用安全）。form-candidates.md 挑选记录区置 FINAL、头部横幅去 DRAFT；export_review_pack.py --layer candidates 闸门校验通过并导出第二批 docx（export/，不入库）。两批判分材料齐备：第一批（开放式）随时可发，第二批（候选核对）待第一层意见交回后发。剩余人工环节：#5 联系复核人并发送第一批。issue #20 待本 PR 合并后关闭。
+
+## Issue #4 备份与恢复落地（2026-09-13，分支 feat/issue-4-backup-restore）
+
+主人拍板（E 方案）：runs/ 运行档案入 Git——从 .gitignore 移除，远程仓库即备份落点，伙伴 clone 取回（验收②⑤）；CLAUDE.md 规约句同步改写。在途工作收编：scripts/backup_data.py（备份+manifest sha256+凭据排除+--drill 恢复演练，转为本地双保险角色）+ tests/test_backup.py（修复两处测试缺陷：monkey 含 key 子串改教学断言、同秒碰撞 mock 时钟断言拒绝覆盖）+ backup-restore-log.md（含 2026-09-12 一次通过的真实演练记录：32 文件、哈希无差异、离线重放一致）+ runs/ 两个 run 目录（#2 追问的 plan/账本/attempt 档案，入库前密钥扫描通过——命中均为 usage 字段名）。验收①③④已在 #4 前置工作与演练记录中达成。剩余：PR 合并后回复并关闭 issue #4。
