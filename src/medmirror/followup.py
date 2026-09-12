@@ -250,11 +250,6 @@ def execute_followups(
             _log(verbose, f"{fid}: 预算拒绝（{error}）")
             continue
 
-        spec = {
-            "trial_id": fid,
-            "messages": candidate["messages"],
-            "vendor": candidate["vendor"],
-        }
         append_jsonl(
             followups_path,
             {
@@ -272,6 +267,13 @@ def execute_followups(
             },
         )
         config = registry[model]
+        spec = {
+            "trial_id": fid,
+            "messages": candidate["messages"],
+            "vendor": candidate["vendor"],
+            "endpoint": config.endpoint,
+            "model": config.model_id,
+        }
         result = transport.call(config, spec, params)
         finished = {
             "phase": "finished",
