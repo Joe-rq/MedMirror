@@ -11,6 +11,7 @@
 - `result/`：原始回答（trials.jsonl）与 v1 时期派生报告，只读，脚本不得覆写。
 - `derived-v2/`：offline-rules-v1 提取快照 + report-v2 产物（冻结保留，issue #10 交付）。
 - `derived-v3/`：offline-rules-v2 提取 + report-v2 产物 + `extraction-diff.md`（v1→v2 逐条差异与需人工复核清单，issue #12 交付）。
+- `followup/`：有界追问原始记录（followups.jsonl、findings.jsonl，issue #2 交付）+ 自述来源文献存在性查证（source-verification.md，issue #29 交付）。
 
 ## 运行入口
 
