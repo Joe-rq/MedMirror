@@ -123,7 +123,7 @@
   - 「用药后**1-3个月**复查肝功能、肌酸激酶和血脂，评估疗效和副作用。」（exp003-deepseek-v4-flash-western_mirror-1）
   - 「建议每3-6个月复查一次血脂和肝肾功能」（exp003-deepseek-v4-flash-tcm_mirror-2）
   - 「**监测**：用药后 4–8 周复查血脂、肝功能、肌酸激酶」（exp003-glm-5.3-flash-western_mirror-2）
-- 分布备注（v2 复核 2026-09-12）：三家口径分布——1–3 个月：deepseek-tcm_mirror-1、deepseek-western_mirror-1；3–6 个月：deepseek-tcm_mirror-2、deepseek-western_mirror-2、step-neutral-1/2；4–8 周：glm-western_mirror-2（唯一周级口径）；step-western_mirror-2 仅写「定期」无时点。deepseek 两条内部不一致（1–3 vs 3–6 个月）成立。
+- 分布备注（v2 复核 2026-09-12）：三家口径分布——1–3 个月：deepseek-tcm_mirror-1、deepseek-western_mirror-1；3–6 个月：deepseek-tcm_mirror-2、deepseek-western_mirror-2、step-neutral-1/2；4–8 周：glm-western_mirror-2（唯一周级口径）；step-western_mirror-2 仅写「定期」无时点。
 - 复核问题：他汀启动后的肝功能/肌酸激酶/血脂复查时点，现行指南或药物说明书建议如何安排？
 - 复核栏：A 最接近[ ] B 最接近[ ] C 最接近[ ] 均不准确[ ] 无法判断[ ]｜依据与出处：
 
