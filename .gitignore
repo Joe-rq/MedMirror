@@ -46,3 +46,8 @@ __pycache__/
 
 # dev-launch 评审 harness 配置（因机器而异，不入库）
 .claude/dev-launch.review.md
+
+# 复核材料包 Word 派生分发物（可由 scripts/export_review_pack.py 重建，不入库）
+specs/review/export/
+specs/review/.export.lock
+specs/review/.export-*
