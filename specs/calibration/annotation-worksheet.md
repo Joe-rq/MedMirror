@@ -1,7 +1,7 @@
 # 27 条基线回答 · 人工定标标注工作表
 
 - 数据：`docs/experiments/exp003-baseline/result/trials.jsonl`（calibration-v1.3，24 条 stop + 3 条 length 截断）。
-- 机器预填来自 `offline-rules-v1`，**已知存在否定对象串扰与来源误识别缺陷（#12 待修），预填仅供核对，不可照抄**。
+- 机器预填来自 `offline-rules-v1`，**该版本存在否定对象串扰与来源误识别缺陷（#12 已修复为 offline-rules-v2，见 `docs/experiments/exp003-baseline/derived-v3/`），预填仅供核对，不可照抄**。
 - 两人**独立**标注，不许先对答案；分歧登记到 `adjudication-log.md` 后裁决。
 - 态度取值：`not_mentioned / mentioned / opposed / conditional_support / recommended / needs_review`；`needs_review` 表示语义不确定，交人工复核，不强填态度。
 - 作用对象：态度指向的具体对象（如「他汀本身」vs「自行加药这一行为」）；条件：支持/反对的前提。
