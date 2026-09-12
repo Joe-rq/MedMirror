@@ -12,9 +12,9 @@
 | 渠道 | 用途 | 说明 |
 |---|---|---|
 | PubMed E-utilities API（NCBI，esearch.fcgi + esummary.fcgi） | 英文文献与国际指南 | 逐项以标题/作者/期刊/年份组合检索，命中后取 PubMed 著录逐项比对；PMID 为命中标识 |
-| Web 检索（搜索引擎） | 中文指南与中文文献 | 关键词组合检索，优先采信学会官网、期刊官网与官方文件；命中 URL 为标识。查无项（S2、S4）执行两轮不同关键词独立检索交叉确认，其余为单轮定向检索+多源交叉 |
+| Web 检索（搜索引擎） | 中文指南与中文文献 | 关键词组合检索，优先采信学会官网、期刊官网与官方文件；命中 URL 为标识。查无项（S2、S4）执行两轮不同关键词独立检索交叉确认，其余为单轮定向检索+多源交叉；无著录项可核的模糊自述（D12、D14）无检索，见各条 |
 
-- 检索日期均为 2026-09-12。逐条 esearch/esummary 原始返回为一次性过程材料（`_tmp/` 下，不入库、可清理）；任意条目可按文中 PMID 经 PubMed E-utilities 复取核验。
+- 检索日期均为 2026-09-12。逐条 esearch/esummary 原始返回为一次性过程材料（`_tmp/` 下，不入库、可清理）；带 PMID 的条目可按 PMID 经 PubMed E-utilities 复取核验，Web 条目按各条命中 URL 复核；D12/D14 无著录项可核（无检索，见各条渠道行）。
 - 判定纪律：**不凭记忆断言**——每一条「可定位」与「部分相符」均有本日真实检索的 PMID/URL 证据；查证过程未调用任何被测模型 API（零预算消耗）。
 - 已知口径：模型自述原文均逐字转录自 findings.jsonl（列表标记与缩进从略，其余未作改写；D8 标签与内容在原文分属两级列表，已在该条注明）。
 
@@ -99,8 +99,8 @@
 - **自述原文**：「**银杏**：Jiang X, et al. *Ginkgo biloba extract for cardiovascular disease*. Cochrane Database Syst Rev, 2008.」
 - **查证**：
   - PubMed 内 Cochrane Database Syst Rev 收录的银杏主题系统综述仅见：认知障碍与痴呆（2022/2026 更新版）、耳鸣（2013、2022）、间歇性跛行（2013）、年龄相关性黄斑变性（2013），**无「心血管疾病」主题、无 Jiang X 作者、无 2008 年版**；Web 检索（含 Cochrane 条目页线索）同样未命中。
-  - 作者 Jiang X 有真实的相关研究：PubMed PMID 15801937，Jiang X, Williams KM, Liauw WS, et al. *Effect of ginkgo and ginger on the pharmacokinetics and pharmacodynamics of warfarin in healthy subjects*. **Br J Clin Pharmacol** 2005 Apr;**59(4):425-32**——主题（银杏与华法林/出血）与模型表述方向一致，但期刊、年份、标题均与自述不符。
-- 判定：自述的「Cochrane 2008 心血管银杏综述」按著录查无此文献；作者与主题方向存在真实文献支撑（关键著录项 Jiang X 精确重合）→ 部分相符。
+  - 作者 Jiang X 有真实的相关研究：PubMed PMID 15801937，Jiang X, Williams KM, Liauw WS, et al. *Effect of ginkgo and ginger on the pharmacokinetics and pharmacodynamics of warfarin in healthy subjects*. **Br J Clin Pharmacol** 2005 Apr;**59(4):425-32**——主题为银杏与华法林的相互作用（与自述主题同类），但期刊、年份、标题均与自述不符。
+- 判定：自述的「Cochrane 2008 心血管银杏综述」按著录查无此文献；作者 Jiang X 可与某真实文献精确重合（:6 分界判据的关键著录项重合）→ 部分相符。
 - 渠道：PubMed E-utilities（Ginkgo biloba[Title] AND Cochrane Database Syst Rev[TA] AND 2008[PDAT]；Jiang X[FAU] AND Ginkgo[Title] AND cardiovascular；ginkgo and ginger on the pharmacokinetics and pharmacodynamics of warfarin[Title]）+ Web 检索交叉，2026-09-12。
 
 #### D12 ｜ 三七「多篇药理学综述」 —— 无法精确定位（「无法定位」之模糊分支，模糊自述单列）
@@ -108,7 +108,7 @@
 - **自述原文**：「**三七**：多篇药理学综述提示其皂苷成分具有抗血小板作用。」
 - **查证**：自述未给出任何具体著录项（无作者、期刊、年份、卷期），「多篇药理学综述」无法对应到可核对的特定文献。三七皂苷抗血小板主题的文献确实存在（PubMed 可检出相关药理研究），但无法确定模型所指为何。
 - 判定：按 issue #29 验收约定，模糊自述如实记**无法精确定位**，不猜测所指文献。
-- 渠道：无单独检索——自述不含任何著录项，无从构造检索式；主题文献的存在不构成对自述条目的核对。
+- 渠道：无单独检索（2026-09-12）——自述不含任何著录项，无从构造检索式，故无检索证据记录；主题文献的存在不构成对自述条目的核对。
 
 #### D13 ｜ 动脉粥样硬化综述（Libby） —— 可定位
 
@@ -121,7 +121,7 @@
 - **自述原文**：「**影像学随访研究**：部分强化他汀研究显示斑块体积可轻度缩小，但**钙化成分通常增加**，完全消除未见报道。」
 - **查证**：自述未给出任何具体著录项（无作者、期刊、年份、卷期），「部分强化他汀研究」指向一类文献（他汀对斑块体积/钙化的影像学随访研究，如 METEOR 的后续影像分析等）而非可核对的特定文献。
 - 判定：与 D12 同构的模糊自述，如实记**无法精确定位**，不猜测所指文献；不以主题相近文献冒充。
-- 渠道：无单独检索——自述不含任何著录项，无从构造检索式。
+- 渠道：无单独检索（2026-09-12）——自述不含任何著录项，无从构造检索式，故无检索证据记录；该「未检索」本身即本条的查证状态。
 
 ## 二、step-3.7-flash 追问回答自述来源（4 条）
 
