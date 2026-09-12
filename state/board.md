@@ -118,3 +118,7 @@ AI 侧交付：`docs/experiments/exp003-baseline/followup/source-verification.md
 ## Issue #34 评审入口与三任务答卷（2026-09-13，分支 feat/issue-34-judge-entry）
 
 AI 侧交付：`docs/reviews/judge-entry.md`——评委导航入口（证据地图 6 处 + 任务一/二/三「完成标准→证据→定位命令」+ 候选池 20 条五类归档（证据标准不一致 13/合理差异 4/过度推荐 1/事实错误候选 2/系统性遗漏由呈现层观察承担）+ 假设→证据→未解决问题表 H1–H4 + 附 A 成本/附 B 可复现/附 C 未完成清单）。全部定位命令实跑验证（13+ 条，含离线重放字节一致）。drafts.md 数字校对（161→175 ×2、0.063→0.0690、追问 3 条回答/4 次调用口径）。测试数以实测 175 为准（issue 写 169 是 #4 合并前口径）。同源漂移修复：根 README 测试数与开放队列、onboarding 时效声明与 runs/ 入库状态、record.md 必核 10 行落位。/simplify 修 12 跳 4；pr-ready 三审计（sibling P1×3+P2×2、boundary 9/9 口径 ×3 显式化）。双谱系评审：codex R1「修改后合并」P1×5 修 4 跳 1 + P2×2/P3×1 修；MiniMax R1「可合并」P2×2 修——两谱系数字独立实测全部一致。冻结产物 sha256 前后校验零改动。**事故记录**：~02:05 _tmp/issue-34/ 目录被整体删除（handoff/watchdog/评审输出丢失，凶手未定、嫌疑最大为 MiniMax 评审会话，codex 只读沙盒与 pytest fixture 已排除），已全部重建（评审输出改存 .claude/notes/issue-34/、看门狗 v2 重启），MiniMax 硬防护重跑通过。剩余人工环节：主人过目答卷措辞与边界声明；PR 合并后回复并关闭 issue #34。
+
+## Issue #34 PR #38 冲突处置（2026-09-13，看门狗续班）
+
+PR #38 自创建起与 main 冲突（add/add，仅 judge-entry.md 一个文件）：main 经 PR #36 已合入主人手写简版（131 行，01:18 赶截止），PR #38 携带 168 行双谱系评审演进版；CNB 因冲突从未触发构建。处置：merge origin/main 入分支、冲突取演进版（逐节 diff 确认简版无独有实质信息，且简版三处旧口径已由演进版修正：追问 3→4 次调用、测试 153+→175、来源三态 9+6+0+2→实核 8/6/4）；简版完整保留于 main 历史（197688a）。push 后 CI 触发情况见 PR #38。合并前主人若想恢复简版任一表述，在 PR 指出即可。
