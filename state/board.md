@@ -114,3 +114,7 @@ AI 侧交付：`docs/experiments/exp003-baseline/followup/source-verification.md
 ## Issue #4 备份与恢复落地（2026-09-13，分支 feat/issue-4-backup-restore）
 
 主人拍板（E 方案）：runs/ 运行档案入 Git——从 .gitignore 移除，远程仓库即备份落点，伙伴 clone 取回（验收②⑤）；CLAUDE.md 规约句同步改写。在途工作收编：scripts/backup_data.py（备份+manifest sha256+凭据排除+--drill 恢复演练，转为本地双保险角色）+ tests/test_backup.py（修复两处测试缺陷：monkey 含 key 子串改教学断言、同秒碰撞 mock 时钟断言拒绝覆盖）+ backup-restore-log.md（含 2026-09-12 一次通过的真实演练记录：32 文件、哈希无差异、离线重放一致）+ runs/ 两个 run 目录（#2 追问的 plan/账本/attempt 档案，入库前密钥扫描通过——命中均为 usage 字段名）。验收①③④已在 #4 前置工作与演练记录中达成。剩余：PR 合并后回复并关闭 issue #4。
+
+## Issue #34 评审入口与三任务答卷（2026-09-13，分支 feat/issue-34-judge-entry）
+
+AI 侧交付：`docs/reviews/judge-entry.md`——评委导航入口（证据地图 6 处 + 任务一/二/三「完成标准→证据→定位命令」+ 候选池 20 条五类归档（证据标准不一致 13/合理差异 4/过度推荐 1/事实错误候选 2/系统性遗漏由呈现层观察承担）+ 假设→证据→未解决问题表 H1–H4 + 附 A 成本/附 B 可复现/附 C 未完成清单）。全部定位命令实跑验证（13+ 条，含离线重放字节一致）。drafts.md 数字校对（161→175 ×2、0.063→0.0690、追问 3 条回答/4 次调用口径）。测试数以实测 175 为准（issue 写 169 是 #4 合并前口径）。同源漂移修复：根 README 测试数与开放队列、onboarding 时效声明与 runs/ 入库状态、record.md 必核 10 行落位。/simplify 修 12 跳 4；pr-ready 三审计（sibling P1×3+P2×2、boundary 9/9 口径 ×3 显式化）。双谱系评审：codex R1「修改后合并」P1×5 修 4 跳 1 + P2×2/P3×1 修；MiniMax R1「可合并」P2×2 修——两谱系数字独立实测全部一致。冻结产物 sha256 前后校验零改动。**事故记录**：~02:05 _tmp/issue-34/ 目录被整体删除（handoff/watchdog/评审输出丢失，凶手未定、嫌疑最大为 MiniMax 评审会话，codex 只读沙盒与 pytest fixture 已排除），已全部重建（评审输出改存 .claude/notes/issue-34/、看门狗 v2 重启），MiniMax 硬防护重跑通过。剩余人工环节：主人过目答卷措辞与边界声明；PR 合并后回复并关闭 issue #34。
