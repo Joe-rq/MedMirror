@@ -114,3 +114,7 @@ AI 侧交付：`docs/experiments/exp003-baseline/followup/source-verification.md
 ## Issue #4 备份与恢复落地（2026-09-13，分支 feat/issue-4-backup-restore）
 
 主人拍板（E 方案）：runs/ 运行档案入 Git——从 .gitignore 移除，远程仓库即备份落点，伙伴 clone 取回（验收②⑤）；CLAUDE.md 规约句同步改写。在途工作收编：scripts/backup_data.py（备份+manifest sha256+凭据排除+--drill 恢复演练，转为本地双保险角色）+ tests/test_backup.py（修复两处测试缺陷：monkey 含 key 子串改教学断言、同秒碰撞 mock 时钟断言拒绝覆盖）+ backup-restore-log.md（含 2026-09-12 一次通过的真实演练记录：32 文件、哈希无差异、离线重放一致）+ runs/ 两个 run 目录（#2 追问的 plan/账本/attempt 档案，入库前密钥扫描通过——命中均为 usage 字段名）。验收①③④已在 #4 前置工作与演练记录中达成。剩余：PR 合并后回复并关闭 issue #4。
+
+## 评审入口数字修正与 fp-fn-report 入库（2026-09-13，分支 docs/fp-fn-report）
+
+入库 `specs/calibration/fp-fn-report.md`（#11/#12 关闭数据，judge-entry.md 引用死链补齐）。同轮修正 judge-entry.md 三处与 source-verification.md 权威汇总（18 条目 = 8 可定位 + 6 部分相符 + 4 无法定位/无法精确定位）矛盾的计数：摘要表 9/6/0/2 → 8/6/2/2（「2017 中国高血压指南」为源报告不存在的条目，实为 Libby 综述与 2023 中国血脂管理指南）；H2 行 deepseek 11 项口径 → 14 项（7+5+2）、step 2+2 → 1+1+2、中医 D8-D10 → D8-D11；任务一「自述 11 项文献来源」→「14 项来源条目（12 著录可核 + 2 模糊）」。#4/#20 远程核实均已 closed（completed，2026-09-12），此前「待关闭」记录过时。
