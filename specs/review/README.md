@@ -29,6 +29,17 @@ issue #20 交付物：为 #5 的医学复核人准备的可独立判断材料包
 - 模型回答是被测对象，不是医学真相；见 `boundaries.md`。
 - 本目录不含任何密钥、真实患者信息；`attachments/` 由 `scripts/gen_review_attachments.py` 从 Git 跟踪的 trials.jsonl 生成，勿手改。
 
+## 分发给复核人（Word 形态）
+
+md 是真相源与机器校验载体；发给复核人的 docx 由 `scripts/export_review_pack.py`（pandoc）派生，**不入库**（`export/` 已 gitignore），md 改动后重导出。前置依赖：`brew install pandoc`。
+
+| 批次 | 命令 | 内容 | 发送时点 |
+|---|---|---|---|
+| 第一批（开放式） | `uv run python scripts/export_review_pack.py --layer open` | background、case-card、boundaries、form-open + attachments 全部（文件集随材料目录派生） | 立即；**绝不与候选内容同发**（脚本机械保证） |
+| 第二批（候选核对） | `uv run python scripts/export_review_pack.py --layer candidates` | form-candidates | 第一层意见交回**且**必核子集定稿后（DRAFT 状态脚本拒绝导出，预览加 `--allow-draft`） |
+
+复核人交回填好的 docx 后，意见**原话粘贴**进 `record.md`（不改写、不做医学加工）。导出的 docx 头部已自动附 Word 使用说明（填写方式、智能引号风险提示）。
+
 ## 机器检测
 
 ```bash

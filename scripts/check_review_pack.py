@@ -244,11 +244,36 @@ def check_open_layer(text: str, trials: dict[str, dict]) -> None:
             err(f"form-open.md 出现研究判定措辞「{word}」——第一层必须保持开放式，判定词不得出现")
 
 
+# 第一层（开放式）全部固定材料：候选标题泄漏检查的覆盖面（导出 open 批即分发这些文件）
+OPEN_LAYER_FIXED = ["background.md", "case-card.md", "boundaries.md", "form-open.md"]
+
+
 def check_candidate_leak(open_text: str, cand_text: str) -> None:
     for title in CAND_TITLE_RE.findall(cand_text):
         core = title.split("】", 1)[-1].strip()
         if core and core in open_text:
             err(f"form-open.md 夹带了候选标题「{title}」——候选措辞属第二层")
+
+
+CAND_ID_ANY_RE = re.compile(r"cand-\d{2}")
+
+
+def check_fixed_material_leaks(texts: dict[str, str]) -> None:
+    """open 批全部固定材料不得夹带候选标题或候选编号（附件由生成器重生成比对把守）。"""
+    cand_text = texts.get("form-candidates.md")
+    if cand_text is None:
+        return
+    for name in OPEN_LAYER_FIXED:
+        text = texts.get(name)
+        if text is None:
+            continue
+        for title in CAND_TITLE_RE.findall(cand_text):
+            core = title.split("】", 1)[-1].strip()
+            if core and core in text:
+                err(f"{name} 夹带了候选标题「{title}」——候选措辞属第二层，不得进入第一批材料")
+        hit = CAND_ID_ANY_RE.search(text)
+        if hit:
+            err(f"{name} 夹带了候选编号「{hit.group(0)}」——候选措辞属第二层，不得进入第一批材料")
 
 
 def check_candidates(text: str, trials: dict[str, dict]) -> None:
@@ -428,6 +453,7 @@ def main() -> int:
         check_open_layer(texts["form-open.md"], trials)
     if "form-open.md" in texts and "form-candidates.md" in texts:
         check_candidate_leak(texts["form-open.md"], texts["form-candidates.md"])
+    check_fixed_material_leaks(texts)
     if "form-candidates.md" in texts:
         check_candidates(texts["form-candidates.md"], trials)
     if "case-card.md" in texts:

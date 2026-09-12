@@ -90,3 +90,7 @@ AI 侧交付物落地：`specs/review/`（README/background/case-card/form-open 
 ## Issue #3 实现完成（2026-09-12，分支 feat/issue-3-budget-gate）
 
 预算硬闸门补齐 + 账单核对工具：新增 `scripts/reconcile_budget.py`（读 run 目录 budget.jsonl 逐笔 settle 复算期望成本并输出差异报告；或对历史 trials 按登记价格复算——实测 0.372007 元与已登记估算精确一致）；`specs/calibration/bill-check.md`（主人核对三家实际账单的模板，含核对口径、差额归因栏、关闭勾选项）；`tests/test_budget_gate.py` 7 例（并发预留不透支、部分结算后额度复用、崩溃恢复保留已结算+在途预留、截断尾行容忍、重复加载幂等、init 事件锁定总额）。四闸 + check_calibration = 125/125 全绿。工程硬闸核心在 #13 已交付（reserve→settle/refund/pending_charge 四段、价格未知零调用、超时不释放预留、预算锁定 init），本件补齐 #3 专属三个缺口。issue #3 的关闭条件 = 主人填 bill-check.md + 本工程验收 → 人工关闭。
+
+## Issue #24 Word 分发格式交付（2026-09-12，分支 review/issue-24-docx-export）
+
+AI 侧交付物落地：`scripts/export_review_pack.py`（pandoc 封装，两批导出 docx；判定后置在导出层机械落地：open 批不含候选内容有测试锁定、candidates 批受定稿闸门约束且结构校验不可绕过；材料快照单点真相防 TOCTOU；manifest sha256 目录所有权防误删用户文件；文件级原子提交 + flock；导出前强制 check_review_pack 通过 + 附件重生成字节比对）+ 22 个回归测试 + checker 泄漏检查扩展 + README 分发流程。四闸 140/140 全绿。双谱系评审：codex 十五轮（每轮发现全部闭环，含多个真实 bug：默认命令被自家守卫堵死、同层重导自删、manifest 绕过链）终验可合并；MiniMax-M3 独立终验可合并。B 谱系 harness 由 DeepSeek 换 MiniMax（用户指定，deepseek 屡被 OOM）；provider 实际为 minimax-cn-coding-plan（minimax-cn key 无效）。剩余人工环节：主人在 form-candidates.md 挑选记录区勾选 8–12 条并置 FINAL → 导出第二批；第一批材料随时可导出发送（等 #5 复核人）。issue #24 保持 open 至合并。
