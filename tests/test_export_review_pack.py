@@ -103,8 +103,13 @@ class ExportGuardTest(unittest.TestCase):
             cand.write_text(text, encoding="utf-8", newline="\n")
             out = Path(td) / "export"
             r = run_export(
-                "--layer", "candidates", "--review-dir", str(pack),
-                "--output-dir", str(out), "--allow-draft",
+                "--layer",
+                "candidates",
+                "--review-dir",
+                str(pack),
+                "--output-dir",
+                str(out),
+                "--allow-draft",
             )
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertIn("结构不合法", r.stdout)
@@ -363,9 +368,18 @@ class ExportCandidatesLayerTest(unittest.TestCase):
         text = re.sub(r"^- 候选池状态：.*$", "- 候选池状态：DRAFT", text, flags=re.MULTILINE)
         text = re.sub(r"^- 必核子集：.*$", f"- 必核子集：{picks}", text, flags=re.MULTILINE)
         text = re.sub(
-            r"^- 定稿依据与日期：.*$", "- 定稿依据与日期：预览（主人未定稿）2026", text, flags=re.MULTILINE
+            r"^- 定稿依据与日期：.*$",
+            "- 定稿依据与日期：预览（主人未定稿）2026",
+            text,
+            flags=re.MULTILINE,
         )
-        text = re.sub(r"^> \*\*状态：.*$", "> **状态：DRAFT（fixture 预览场景）**", text, flags=re.MULTILINE, count=1)
+        text = re.sub(
+            r"^> \*\*状态：.*$",
+            "> **状态：DRAFT（fixture 预览场景）**",
+            text,
+            flags=re.MULTILINE,
+            count=1,
+        )
         cand.write_text(text, encoding="utf-8", newline="\n")
         return pack
 
