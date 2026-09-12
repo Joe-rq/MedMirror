@@ -1,0 +1,29 @@
+{
+  "candidate_count": 3,
+  "config_fingerprint": "eac938c702c7d75cb86d46ff057c8b4c7bfe68ee2c426a33625e2e231809f11c",
+  "followup_ids": [
+    "exp003-deepseek-v4-flash-tcm_mirror-1-fu1",
+    "exp003-glm-5.3-flash-tcm_mirror-1-fu1",
+    "exp003-step-3.7-flash-tcm_mirror-1-fu1"
+  ],
+  "kind": "exp003-followup",
+  "max_attempts": 2,
+  "max_per_model": 2,
+  "max_total": 6,
+  "params": {
+    "max_tokens": 4096,
+    "reasoning_effort": {
+      "deepseek": null,
+      "glm": null,
+      "stepfun": "low"
+    },
+    "temperature": 0.7,
+    "thinking_mode": {
+      "deepseek": "disabled",
+      "glm": null,
+      "stepfun": null
+    }
+  },
+  "protocol_version": "calibration-v1.3",
+  "rule_version": "followup-rules-v1"
+}
