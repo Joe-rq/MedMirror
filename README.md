@@ -9,13 +9,20 @@
 - [Agent 开工入口](AGENTS.md)
 - [**接手开发（第二人及其 AI）**](docs/onboarding/README.md)
 
-## 现状
+## 现状（2026-09-12）
 
-协议 v1.3 已冻结；三家官方 API 已接通；`exp003-baseline` 27 条真实回答已落盘（含 usage，其中 3 条长度截断）；已有离线提取报告，分组统计与提取语义缺口见 [纠偏交接计划](docs/plan/002_prototype-calibration-handoff.md)。**人工定标尚未完成，不输出医学 Bias 结论。**
+意向书三支柱已全部落地，**30 条真实模型回答**（27 基线 + 3 有界追问，预算 1 元档实际花费 0.0690 元）与完整证据链入库：
+
+- **受控评测**：协议 v1.3（1 合成病例 × 3 问法 × 3 模型 × 3 重复）；提取器 offline-rules-v2（六值态度 + 逐字引文 + 来源三态分离，语义未定标待 #11 人工标注回流）
+- **有界追问**（followup-rules-v1）：固定触发规则（中性全未提及 + 镜像完整可定位提及）、每模型 ≤2 / 全轮 ≤6、按实际调用计额、预算硬闸、崩溃可恢复——真实观察：deepseek 完整作答并自述 AHA/ASA 2011 等来源、step 截断作答引中国指南、glm 两次思考耗尽零正文（供应商差异实证）
+- **可复核发现包**：`specs/review/` 两层复核表（判定后置：先开放式后候选核对，引文逐字机械校验）、Word 分发闸门、候选池 20 条（分布备注已逐断言机器复算）
+- **工程底座**：169 项离线测试 + CI 四闸 + 预算账本（reserve→settle/refund）+ 独立 run 目录恢复语义；每个 PR 经双谱系独立评审（GPT 系 + MiniMax 系）
+
+**人工定标与专业复核尚未完成，不输出医学 Bias 结论。** 剩余人工环节：候选池挑 8–12 条定稿、#11 27 条标注、#5 联系复核人。
 
 ## 接下来做什么
 
-伙伴先认领 [#10【阶段1】报告与截断修复](https://cnb.cool/joe-rq/MedMirror/-/issues/10)；主人同步推进 #11 人工定标与 #5 复核人员安排。完整阶段、分工和前置条件见 [接手开发队列](docs/onboarding/README.md#开发队列按阶段与依赖不按-issue-编号)。Issue 编号是稳定标识，按阶段与依赖开发。
+开放队列：#11 人工定标（27 条标注）、#5 复核人员与材料发送、#20 候选池定稿（挑 8–12 条置 FINAL）、#29 追问自述来源的文献存在性查证、#4 备份落点确认。完整阶段与依赖见 [接手开发队列](docs/onboarding/README.md#开发队列按阶段与依赖不按-issue-编号)。
 
 ## 环境与四闸
 
@@ -24,7 +31,7 @@ uv sync                                  # 自动装 Python 3.13 与 pytest/ruff
 cp .env.example .env.local               # 再填三家 key，禁止提交
 uv run ruff format --check .             # 闸1 格式
 uv run ruff check .                      # 闸2 写法
-uv run pytest                            # 闸3 逻辑（36 用例）
+uv run pytest                            # 闸3 逻辑（169 用例）
 uv run python scripts/check-manifests.py # 闸4 包清单冒烟
 ```
 
