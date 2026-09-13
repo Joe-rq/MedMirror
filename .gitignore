@@ -38,7 +38,6 @@ node_modules/
 .env
 .env.*
 !.env.example
-runs/
 .venv/
 __pycache__/
 .pytest_cache/

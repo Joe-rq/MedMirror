@@ -1,0 +1,9 @@
+{"kind": "init", "amount_cny": 1.0}
+{"kind": "reserve", "trial_id": "exp003-deepseek-v4-flash-tcm_mirror-1-fu1", "attempt": 1, "amount_cny": 0.044658, "note": "followup=20260912T060702265265Z-071414f9-68eeb993"}
+{"kind": "settle", "trial_id": "exp003-deepseek-v4-flash-tcm_mirror-1-fu1", "attempt": 1, "amount_cny": 0.022071, "reserved_cny": 0.044658}
+{"kind": "reserve", "trial_id": "exp003-glm-5.3-flash-tcm_mirror-1-fu1", "attempt": 1, "amount_cny": 0.006378, "note": "followup=20260912T060702265265Z-071414f9-68eeb993"}
+{"kind": "settle", "trial_id": "exp003-glm-5.3-flash-tcm_mirror-1-fu1", "attempt": 1, "amount_cny": 0.006136, "reserved_cny": 0.006378}
+{"kind": "reserve", "trial_id": "exp003-step-3.7-flash-tcm_mirror-1-fu1", "attempt": 1, "amount_cny": 0.035531, "note": "followup=20260912T060702265265Z-071414f9-68eeb993"}
+{"kind": "settle", "trial_id": "exp003-step-3.7-flash-tcm_mirror-1-fu1", "attempt": 1, "amount_cny": 0.034686, "reserved_cny": 0.035531}
+{"kind": "reserve", "trial_id": "exp003-glm-5.3-flash-tcm_mirror-1-fu1", "attempt": 2, "amount_cny": 0.006378, "note": "followup=20260912T060702265265Z-071414f9-68eeb993"}
+{"kind": "settle", "trial_id": "exp003-glm-5.3-flash-tcm_mirror-1-fu1", "attempt": 2, "amount_cny": 0.006136, "reserved_cny": 0.006378}

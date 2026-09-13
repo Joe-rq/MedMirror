@@ -102,3 +102,15 @@ AI 侧交付物落地：`scripts/export_review_pack.py`（pandoc 封装，两批
 ## Issue #2 有界追问执行完成（2026-09-12，分支 feat/issue-2-bounded-followup）
 
 AI 侧交付：`src/medmirror/followup.py`（触发规则 followup-rules-v1 + 限额 + 预算 + 恢复语义同 #13）+ CLI + 评审后增至 22 例假网络测试（四闸 169/169）。真实执行：3 候选（三家各 1、tcm 路径、父试次 tcm_mirror-1）→ 4 次真实调用（预算 1 元、花费 0.0690 元；glm 额度内重试一次后耗尽，无预算拒绝）。观察：deepseek 完整答（presented=complete，3836 字、AHA/ASA 2011 等来源）、step 截断答（presented=truncated，726 字、中国指南引用）、glm 两次均思考耗尽零正文（presented=failed）。产物：docs/experiments/exp003-baseline/followup/{followups.jsonl, findings.jsonl}。决策（主人拍板）：#11 27 条人工标注未完成，放宽前置的理由=触发规则仅用二值提及判断（负例已 confirmed 覆盖），标注赛后补。首次实跑因 spec 缺 endpoint 中止于请求发出前（零费用），账本已 refund 关闭。issue #2 关闭条件：本 PR 合并 + 主人过目追问产物。
+
+## Issue #29 自述来源文献存在性查证（2026-09-12，分支 research/issue-29-source-verification）
+
+AI 侧交付：`docs/experiments/exp003-baseline/followup/source-verification.md`——3 条追问回答自述来源 18 条目逐项存在性查证（deepseek 14、step 4、glm 零正文如实记录），三态判定 8 可定位/6 部分相符/4 无法定位；每条附模型自述原文（机器校验逐字命中 findings.jsonl）、查证证据（PMID/DOI/URL）、检索渠道与日期。渠道：PubMed E-utilities（英文 11 项）+ Web 检索（中文指南与文献；查无项两轮独立检索交叉）；零被测模型 API 调用。典型发现：deepseek「2021 ESVS」实为 2023 指南（issue 已知线索系统确认）、丹参条目为两篇真实文献著录杂交、step 两条中国指南按「题名+年份+机构」查无。四闸在干净 worktree 全绿（169 passed；本地 ruff format 红仅 issue-4 在途未跟踪文件，与本件无关）。边界：存在 ≠ 支持，不输出 Bias 结论，内容判断归 #5。PR #31 已合并；主人 2026-09-13 过目措辞通过，issue #29 已关闭（先回复后关闭）。
+
+## Issue #20 候选池定稿（2026-09-13，分支 review/issue-20-candidates-final）
+
+主人定稿必核子集 10 条（cand-01/02/03/05/07/10/11/12/14/15，采纳 AI 推荐子集；筛选框架：安全性直接相关、高分歧、具体可答；覆盖用药决策、手术指征、监测安排、中西药联用安全）。form-candidates.md 挑选记录区置 FINAL、头部横幅去 DRAFT；export_review_pack.py --layer candidates 闸门校验通过并导出第二批 docx（export/，不入库）。两批判分材料齐备：第一批（开放式）随时可发，第二批（候选核对）待第一层意见交回后发。剩余人工环节：#5 联系复核人并发送第一批。issue #20 待本 PR 合并后关闭。
+
+## Issue #4 备份与恢复落地（2026-09-13，分支 feat/issue-4-backup-restore）
+
+主人拍板（E 方案）：runs/ 运行档案入 Git——从 .gitignore 移除，远程仓库即备份落点，伙伴 clone 取回（验收②⑤）；CLAUDE.md 规约句同步改写。在途工作收编：scripts/backup_data.py（备份+manifest sha256+凭据排除+--drill 恢复演练，转为本地双保险角色）+ tests/test_backup.py（修复两处测试缺陷：monkey 含 key 子串改教学断言、同秒碰撞 mock 时钟断言拒绝覆盖）+ backup-restore-log.md（含 2026-09-12 一次通过的真实演练记录：32 文件、哈希无差异、离线重放一致）+ runs/ 两个 run 目录（#2 追问的 plan/账本/attempt 档案，入库前密钥扫描通过——命中均为 usage 字段名）。验收①③④已在 #4 前置工作与演练记录中达成。剩余：PR 合并后回复并关闭 issue #4。
