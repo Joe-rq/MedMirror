@@ -60,14 +60,19 @@ def _extraction_input(trial: dict[str, Any]) -> dict[str, Any]:
     return trial
 
 
-def extract_sorted(trials: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """校验输入契约、逐条提取并按 trial_id 排序；失败试次也保留 extraction 行。"""
+def extract_sorted(
+    trials: list[dict[str, Any]], paths: dict[str, list[str]] | None = None
+) -> list[dict[str, Any]]:
+    """校验输入契约、逐条提取并按 trial_id 排序；失败试次也保留 extraction 行。
+
+    paths 缺省为默认病例词表；新病例穿自己的词表（issue #50）。
+    """
     for trial in trials:
         trial_id = trial.get("trial_id")
         if not isinstance(trial_id, str) or not trial_id:
             raise ValueError(f"存在缺失或非法 trial_id 的输入行：{trial_id!r}")
     return [
-        extract_trial(_extraction_input(trial))
+        extract_trial(_extraction_input(trial), paths=paths)
         for trial in sorted(trials, key=lambda t: t["trial_id"])
     ]
 
@@ -88,9 +93,13 @@ def _spec_key(record: dict[str, Any]) -> str:
     return _slice_key(*_slice_fields(record))
 
 
-def _ensure_slice(slices: dict[str, dict[str, Any]], record: dict[str, Any]) -> dict[str, Any]:
+def _ensure_slice(
+    slices: dict[str, dict[str, Any]], record: dict[str, Any], paths: dict[str, list[str]]
+) -> dict[str, Any]:
     catalog_id, variant = _slice_fields(record)
-    return slices.setdefault(_slice_key(catalog_id, variant), _new_slice(catalog_id, variant))
+    return slices.setdefault(
+        _slice_key(catalog_id, variant), _new_slice(catalog_id, variant, paths)
+    )
 
 
 def _bump_category(slice_data: dict[str, Any], category: str, trial_id: str) -> None:
@@ -98,7 +107,7 @@ def _bump_category(slice_data: dict[str, Any], category: str, trial_id: str) -> 
     slice_data["trial_ids_by_category"][category].append(trial_id)
 
 
-def _new_slice(catalog_id: Any, variant: Any) -> dict[str, Any]:
+def _new_slice(catalog_id: Any, variant: Any, paths: dict[str, list[str]]) -> dict[str, Any]:
     return {
         "model_catalog_id": catalog_id,
         "prompt_variant": variant,
@@ -119,7 +128,7 @@ def _new_slice(catalog_id: Any, variant: Any) -> dict[str, Any]:
                 "truncated_mentioned_n": 0,
                 "evidence_index": [],
             }
-            for path in PATH_PATTERNS
+            for path in paths
         },
     }
 
@@ -160,13 +169,16 @@ def build_report(
     extractions: list[dict[str, Any]],
     planned: list[dict[str, Any]],
     pricing: dict[str, dict[str, float]] | None = None,
+    paths: dict[str, list[str]] | None = None,
 ) -> dict[str, Any]:
     """由原始试次、提取结果与协议计划生成确定性分析报告。
 
     trials 为 load_jsonl 的原始行；extractions 为对应的提取结果（按 trial_id 对齐）；
     planned 为协议计划试次（含 trial_id / model_catalog_id / prompt_variant）。
     相同输入与版本产生完全一致的结果，产物不含时间戳。
+    paths 缺省为默认病例词表；提取与报告须同源（同一份 CaseSpec 的词表）。
     """
+    effective_paths = paths if paths is not None else PATH_PATTERNS
     ids = [trial.get("trial_id") for trial in trials]
     duplicated = sorted(tid for tid, count in Counter(ids).items() if count > 1)
     if duplicated:
@@ -177,9 +189,9 @@ def build_report(
         raise ValueError(f"以下试次缺少提取结果：{missing_extraction}")
     # 提取器与报告词表一旦漂移（#11/#12 改动后未同步）立即显式报错，不产出半成品报告
     for row in extractions:
-        if set(row["paths"]) != set(PATH_PATTERNS):
-            missing = sorted(set(PATH_PATTERNS) - set(row["paths"]))
-            extra = sorted(set(row["paths"]) - set(PATH_PATTERNS))
+        if set(row["paths"]) != set(effective_paths):
+            missing = sorted(set(effective_paths) - set(row["paths"]))
+            extra = sorted(set(row["paths"]) - set(effective_paths))
             raise ValueError(
                 f"{row['trial_id']}：提取结果路径集与词表不一致（缺 {missing}，多 {extra}）"
             )
@@ -198,7 +210,7 @@ def build_report(
     slices: dict[str, dict[str, Any]] = {}
     mismatched: list[str] = []
     for spec in planned:
-        slice_data = _ensure_slice(slices, spec)
+        slice_data = _ensure_slice(slices, spec, effective_paths)
         slice_data["planned_n"] += 1
         row = rows_by_id.get(spec["trial_id"])
         if row is not None and (
@@ -223,7 +235,9 @@ def build_report(
     # 计划外试次只列名单，不进入任何计划内计数或语义分母；异常输入显式暴露，不静默丢弃。
     unplanned_ids = [t["trial_id"] for t in executed if t["trial_id"] not in planned_ids]
     for trial_id in unplanned_ids:
-        _ensure_slice(slices, rows_by_id[trial_id])["unplanned_trial_ids"].append(trial_id)
+        _ensure_slice(slices, rows_by_id[trial_id], effective_paths)["unplanned_trial_ids"].append(
+            trial_id
+        )
 
     for slice_data in slices.values():
         for target in slice_data["paths"].values():
@@ -353,7 +367,9 @@ def _n_of_denominator(target: dict[str, Any]) -> str:
     return f"-/{target['complete_n']}"
 
 
-def render_markdown(report: dict[str, Any]) -> str:
+def render_markdown(report: dict[str, Any], paths: dict[str, list[str]] | None = None) -> str:
+    """渲染 Markdown 报告；paths 缺省为默认病例词表，须与生成 report 的词表同源。"""
+    effective_paths = paths if paths is not None else PATH_PATTERNS
     counts = report["counts"]
     costs = report["estimated_cost_cny_by_vendor"]
     cost_text = (
@@ -382,14 +398,14 @@ def render_markdown(report: dict[str, Any]) -> str:
         "## 分组总览",
         "",
         "| 分组 | 计划 | 完整 | 截断 | 失败 | 未执行 | 原因未知 | "
-        + " | ".join(f"{path_labels.get(path, path)}提及 n/N" for path in PATH_PATTERNS)
+        + " | ".join(f"{path_labels.get(path, path)}提及 n/N" for path in effective_paths)
         + " |",
-        "|---|" + "|".join(["---:"] * (6 + len(PATH_PATTERNS))) + "|",
+        "|---|" + "|".join(["---:"] * (6 + len(effective_paths))) + "|",
     ]
     for key, slice_data in report["slices"].items():
         sc = slice_data["counts"]
         rates = "".join(
-            f" {_n_of_denominator(slice_data['paths'][path])} |" for path in PATH_PATTERNS
+            f" {_n_of_denominator(slice_data['paths'][path])} |" for path in effective_paths
         )
         lines.append(
             f"| {key} | {slice_data['planned_n']} | {sc['complete']} | {sc['truncated']} | "
