@@ -20,4 +20,5 @@
 
 ## 状态与变更
 完成可命名工作单元后更新 state/board.md；重要决定写 state/changelog.md。人写的 hi.md、notes 原件只读。已确认意向的实质变化由用户决定。新增能力须通过相关反例和回归，不能通过降低标准让旧实现过关。
+CNB CLI 关 issue：`--state` 与 `--state-reason` 须成对传（缺一报 400），取值 `completed`/`not_planned`（无 `closed_completed`）；关闭前先发处理结果评论。
 
