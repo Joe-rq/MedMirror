@@ -22,7 +22,7 @@ related: [plan/001_autonomous-evaluation-loop, plan/002_prototype-calibration-ha
 ## 1. 现状（2026-09-13 已确认）
 
 工程侧（已溢出，后续不再主动扩张）：
-- 四闸 CI 全绿（ruff format/check、pytest 186、check-manifests）；双谱系评审体系（GPT 系 codex + MiniMax/DeepSeek 系）多轮收敛惯例成型。
+- 四闸 CI 全绿（ruff format/check、pytest 210、check-manifests）；双谱系评审体系（GPT 系 codex + MiniMax/DeepSeek 系）多轮收敛惯例成型。
 - `src/medmirror/`：protocol（提取 offline-rules-v2）、runner（run 目录/恢复/max_attempts）、budget（reserve→settle/refund 三段账本）、followup（followup-rules-v1）、reporting（五类分母）。
 - 复核材料包两批导出就绪（`scripts/export_review_pack.py`，第一批开放式随时可发，第二批候选核对 10 条已 FINAL 待复核流程）。
 - 来源查证 18 条目三态判定完成（`docs/experiments/exp003-baseline/followup/source-verification.md`）；账单已核对 0.4746 元（`specs/calibration/bill-check.md`）。
@@ -59,7 +59,7 @@ related: [plan/001_autonomous-evaluation-loop, plan/002_prototype-calibration-ha
 | # | 步骤 | 涉及 | 验收 |
 |---|------|------|------|
 | 2.1 | 拍板新增 1–2 个病例场景（不同科室/决策类型/中西医张力点）；更新 intent 修订记录与协议版本（v1.3 → v2.0），走新版本不回改旧产物 | 主人拍板，伙伴起草 | intent/协议版本变更留痕；旧 run 目录零改动 |
-| 2.2 | 病例与协议模板化：病例、提示变体、提取词表抽为声明式配置，第三方可自带病例接入；复用 `protocol.py` 词表机制与 `runner.py` plan 生成 | 伙伴 | 用模板重放 exp003 基线，产物与现产物字节一致或有逐项 diff 报告；新病例从模板到报告全链路跑通一次离线冒烟 |
+| 2.2 | 病例与协议模板化：病例、提示变体、提取词表抽为声明式配置，第三方可自带病例接入；复用 `protocol.py` 词表机制与 `runner.py` plan 生成（前半已随 #50 完成：CaseSpec 落地、exp003 重放逐字段零漂移、词表全链路穿参） | 伙伴 | 用模板重放 exp003 基线，产物与现产物字节一致或有逐项 diff 报告（✅ #50 机器证明）；新病例从模板到报告全链路跑通一次离线冒烟（待 2.1 拍板后随 2.3） |
 | 2.3 | 新病例基线+有界追问执行（沿用 budget 硬闸与恢复语义；先离线校验提取，再有限真实调用；建议 1.4 首批复核意见回流后再放大——复核可能暴露提取或材料缺陷，先修再扩） | 双方 | `reconcile_budget.py` 复算一致；报告生成；needs_review 队列如实入档 |
 | 2.4 | （条件触发）新病例表达形态超出 v2/v3 词表时分流入 needs_review，人工抽检后再决定提取器版本演进 | 伙伴 | 负例集回归全绿；抽检记录留痕 |
 

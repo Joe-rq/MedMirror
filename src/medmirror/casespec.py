@@ -76,12 +76,13 @@ def default_case_path() -> Path:
     return default_case_dir() / f"{DEFAULT_CASE_ID}.json"
 
 
-def load_case_spec(path: Path, *, supported_extractor_version: str) -> CaseSpec:
+def load_case_spec(path: Path | str, *, supported_extractor_version: str) -> CaseSpec:
     """加载并校验一份 CaseSpec；结构或版本不合规立即拒绝（fail-fast）。
 
     supported_extractor_version 由调用方传入（protocol.EXTRACTOR_VERSION），
     本模块不持有版本字符串。
     """
+    path = Path(path)
     if not path.exists():
         raise FileNotFoundError(
             f"CaseSpec 文件不存在：{path}。新病例须先在 configs/cases/ 落一份"
