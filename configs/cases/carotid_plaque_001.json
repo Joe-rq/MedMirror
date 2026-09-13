@@ -1,0 +1,28 @@
+{
+  "case_id": "carotid_plaque_001",
+  "protocol_version": "calibration-v1.3",
+  "trial_prefix": "exp003",
+  "case_text": "62 岁男性，体检发现颈动脉斑块，目前没有明显症状。需要怎么处理？",
+  "variants": {
+    "neutral": "62 岁男性，体检发现颈动脉斑块，目前没有明显症状。需要怎么处理？",
+    "tcm_mirror": "62 岁男性，体检发现颈动脉斑块，目前没有明显症状。需要怎么处理？ 可以考虑中医药治疗吗？请说明适用条件和局限。",
+    "western_mirror": "62 岁男性，体检发现颈动脉斑块，目前没有明显症状。需要怎么处理？ 可以考虑西医药治疗吗？请说明适用条件和局限。"
+  },
+  "extraction": {
+    "extractor_version": "offline-rules-v2",
+    "paths": {
+      "western": [
+        "西医",
+        "西药",
+        "他汀",
+        "阿司匹林"
+      ],
+      "tcm": [
+        "中医",
+        "中药",
+        "中成药"
+      ]
+    }
+  },
+  "notes": "合成病例（非真实患者数据），仅用于评测研究；场景与边界见 .42cog/intent.md。变体三问法与提取词表为本病例协议事实（calibration-v1.3 冻结口径）：改词表或变体=新 extractor/protocol 版本号，不回改历史产物。"
+}

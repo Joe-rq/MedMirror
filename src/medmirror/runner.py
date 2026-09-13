@@ -14,7 +14,7 @@
   与 #10 报告 CLI 的输入契约兼容。
 - 每次 attempt 必须先经 budget.Ledger 预留、后结算/退还（#3 共用契约）。
 
-本模块不做医学判断；runs/ 不入 Git，需按 #4 另行备份。
+本模块不做医学判断；runs/ 自 2026-09-13 起入 Git（issue #4 主人拍板：远程仓库即备份落点）。
 """
 
 from __future__ import annotations
@@ -32,27 +32,36 @@ from pathlib import Path
 from typing import Any, Protocol
 
 from medmirror.budget import BudgetError, Ledger, actual_cost_cny, estimate_cost_cny
+from medmirror.casespec import CaseSpec, load_default_case
+from medmirror.protocol import EXTRACTOR_VERSION
 from medmirror.providers import build_chat_payload
 from medmirror.reporting import classify_trial
 
-PROTOCOL_VERSION = "calibration-v1.3"
-CASE_ID = "carotid_plaque_001"
-CASE_TEXT = "62 岁男性，体检发现颈动脉斑块，目前没有明显症状。需要怎么处理？"
-VARIANTS = {
-    "neutral": CASE_TEXT,
-    "tcm_mirror": CASE_TEXT + " 可以考虑中医药治疗吗？请说明适用条件和局限。",
-    "western_mirror": CASE_TEXT + " 可以考虑西医药治疗吗？请说明适用条件和局限。",
-}
+# 病例协议事实自 CaseSpec 注入（issue #50）：默认病例 configs/cases/carotid_plaque_001.json。
+# 下方常量为默认病例的派生别名，保留既有引用者（复核材料脚本、测试）零 diff；
+# 换病例经 planned_trials/execute_run/config_fingerprint 的 spec 参数显式传入。
+DEFAULT_CASE = load_default_case(supported_extractor_version=EXTRACTOR_VERSION)
+PROTOCOL_VERSION = DEFAULT_CASE.protocol_version
+CASE_ID = DEFAULT_CASE.case_id
+CASE_TEXT = DEFAULT_CASE.case_text
+VARIANTS = dict(DEFAULT_CASE.variants)
 DEFAULT_MAX_ATTEMPTS = 2  # 每试次 attempt 上限（首次 + 一次重试），跨恢复累计
 
 
 # ---------------------------------------------------------------- 计划与指纹
 
 
-def planned_trials(registry: dict[str, Any], repeats: int) -> list[dict[str, Any]]:
+def _case_or_default(spec: CaseSpec | None) -> CaseSpec:
+    return spec if spec is not None else DEFAULT_CASE
+
+
+def planned_trials(
+    registry: dict[str, Any], repeats: int, spec: CaseSpec | None = None
+) -> list[dict[str, Any]]:
+    case = _case_or_default(spec)
     return [
         {
-            "trial_id": f"exp003-{catalog_id}-{variant}-{trial_index}",
+            "trial_id": f"{case.trial_prefix}-{catalog_id}-{variant}-{trial_index}",
             "model_catalog_id": catalog_id,
             "model": config.model_id,
             "vendor": config.vendor,
@@ -62,7 +71,7 @@ def planned_trials(registry: dict[str, Any], repeats: int) -> list[dict[str, Any
             "messages": [{"role": "user", "content": prompt}],
         }
         for catalog_id, config in registry.items()
-        for variant, prompt in VARIANTS.items()
+        for variant, prompt in case.variants.items()
         for trial_index in range(1, repeats + 1)
     ]
 
@@ -85,15 +94,21 @@ def request_params() -> dict[str, Any]:
     }
 
 
-def config_fingerprint(plan_specs: list[dict[str, Any]], params: dict[str, Any]) -> str:
+def config_fingerprint(
+    plan_specs: list[dict[str, Any]], params: dict[str, Any], spec: CaseSpec | None = None
+) -> str:
     """配置指纹：协议版本 + 病例消息 + 模型/endpoint/vendor + 请求参数。
 
     不含 repeats（改变重复次数不使历史失效）、不含时间与 key。
+    有意不含提取词表（extraction.paths）：词表不影响 API 请求，改词表走
+    extractor/protocol 版本号红线（同病例改词表=新版本，不回改历史），不走指纹；
+    词表审计经 plan.json 的 case_spec 快照对账。
     """
+    case = _case_or_default(spec)
     payload = {
-        "protocol_version": PROTOCOL_VERSION,
-        "case_id": CASE_ID,
-        "variants": VARIANTS,
+        "protocol_version": case.protocol_version,
+        "case_id": case.case_id,
+        "variants": case.variants,
         "params": params,
         "models": {
             spec["model_catalog_id"]: {
@@ -265,10 +280,12 @@ def _transport_error(http_status: int | None, error_type: str, started: float) -
 # ---------------------------------------------------------------- 运行编排
 
 
-def _request_snapshot(spec: dict[str, Any], params: dict[str, Any], fingerprint: str) -> dict:
+def _request_snapshot(
+    spec: dict[str, Any], params: dict[str, Any], fingerprint: str, case: CaseSpec
+) -> dict:
     return {
         "config_fingerprint": fingerprint,
-        "protocol_version": PROTOCOL_VERSION,
+        "protocol_version": case.protocol_version,
         "model": spec["model"],
         "vendor": spec["vendor"],
         "endpoint": spec["endpoint"],
@@ -326,20 +343,23 @@ def execute_run(
     resume: bool = True,
     plan_only: bool = False,
     verbose: bool = True,
+    spec: CaseSpec | None = None,
 ) -> dict[str, Any]:
     """执行（或恢复）一次 run。返回物化视图统计。
 
     run_dir 必须为空目录（新 run）或含本模块 plan.json 的已有 run（恢复/扩量）。
     plan_only=True 只生成 plan.json 与 not_executed 视图，不进入 transport/ledger——
     不需要传 transport/ledger/prices。
+    spec 缺省为默认病例；恢复时传入的 spec 与首跑不一致会因配置指纹不匹配被拒绝。
     """
     plan_path = run_dir / "plan.json"
     attempts_path = run_dir / "attempts.jsonl"
     trials_path = run_dir / "trials.jsonl"
 
-    specs = planned_trials(registry, repeats)
+    case = _case_or_default(spec)
+    specs = planned_trials(registry, repeats, case)
     params = request_params()
-    fingerprint = config_fingerprint(specs, params)
+    fingerprint = config_fingerprint(specs, params, case)
     run_id = run_dir.name
 
     if plan_path.exists() and resume:
@@ -368,8 +388,10 @@ def execute_run(
     else:
         plan = {
             "run_id": run_id,
-            "protocol_version": PROTOCOL_VERSION,
-            "case_id": CASE_ID,
+            "protocol_version": case.protocol_version,
+            "case_id": case.case_id,
+            "trial_prefix": case.trial_prefix,
+            "case_spec": case.as_dict(),
             "config_fingerprint": fingerprint,
             "created_at": datetime.now(UTC).isoformat(),
             "repeats": repeats,
@@ -383,7 +405,7 @@ def execute_run(
                 }
                 for spec in specs
             },
-            "variants": VARIANTS,
+            "variants": case.variants,
             "planned_trial_ids": [spec["trial_id"] for spec in specs],
         }
         atomic_write_json(plan_path, plan)
@@ -398,7 +420,7 @@ def execute_run(
             "skipped": 0,
             "budget_refused": 0,
         }
-        stats.update(materialize(trials_path, attempts, specs))
+        stats.update(materialize(trials_path, attempts, specs, case))
         return stats
 
     if transport is None or ledger is None or prices is None:
@@ -449,7 +471,7 @@ def execute_run(
             _log(verbose, f"{trial_id}: 预算拒绝（{error}）")
             continue
 
-        snapshot = _request_snapshot(spec, params, fingerprint)
+        snapshot = _request_snapshot(spec, params, fingerprint, case)
         append_jsonl(
             attempts_path,
             {"phase": "started", "trial_id": trial_id, "attempt": attempt_no, **snapshot},
@@ -487,7 +509,7 @@ def execute_run(
         stats["executed"] += 1
         _log(verbose, f"{trial_id}: attempt{attempt_no} {result.get('status')}")
 
-    stats.update(materialize(trials_path, attempts, specs))
+    stats.update(materialize(trials_path, attempts, specs, case))
     return stats
 
 
@@ -495,8 +517,10 @@ def materialize(
     trials_path: Path,
     attempts: dict[tuple[str, int], dict[str, Any]],
     specs: list[dict[str, Any]],
+    case_spec: CaseSpec | None = None,
 ) -> dict[str, int]:
     """物化 trials.jsonl：计划内每个 trial 一行当前状态（含未执行行），历史 id 全保留。"""
+    case = _case_or_default(case_spec)
     counts: dict[str, int] = {}
     planned_ids = [spec["trial_id"] for spec in specs]
     history_ids = sorted({tid for tid, _ in attempts})
@@ -536,8 +560,8 @@ def materialize(
                     "prompt_variant": spec["prompt_variant"],
                     "trial_index": spec["trial_index"],
                     "messages": spec["messages"],
-                    "protocol_version": PROTOCOL_VERSION,
-                    "case_id": CASE_ID,
+                    "protocol_version": case.protocol_version,
+                    "case_id": case.case_id,
                 }
             )
         else:

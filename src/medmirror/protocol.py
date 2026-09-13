@@ -10,6 +10,10 @@
 - 可识别来源须指名道姓（书名号/年份紧邻/机构白名单），年龄数字与泛指「指南」不算
 规格来源：specs/examples/negatives.jsonl（pending_owner_confirmation）与
 specs/examples/negatives-review.md；语义最终以 #11 人工定标为准。
+
+路径词表（issue #50）：自 CaseSpec 配置注入，模块级 PATH_PATTERNS 为默认病例
+（configs/cases/carotid_plaque_001.json）的快照；提取与聚合均可经 paths 参数
+穿入他病例词表（缺省=默认病例），正则规则骨架与本文件其余逻辑不随病例变化。
 """
 
 from __future__ import annotations
@@ -19,12 +23,15 @@ import re
 from pathlib import Path
 from typing import Any
 
+from medmirror.casespec import load_default_case
+
 EXTRACTOR_VERSION = "offline-rules-v2"
 
-PATH_PATTERNS = {
-    "western": ["西医", "西药", "他汀", "阿司匹林"],
-    "tcm": ["中医", "中药", "中成药"],
-}
+# 默认病例词表快照（import 期一次性读取；文件在 Git 内，clone 即有）。
+# 缺失/不合规会在 import 时报错并点名文件路径与修复动作（casespec.load_case_spec）。
+PATH_PATTERNS: dict[str, list[str]] = load_default_case(
+    supported_extractor_version=EXTRACTOR_VERSION
+).extraction_paths
 
 # ---------------------------------------------------------------- 切分
 
@@ -382,10 +389,16 @@ def _path_extraction(text: str, path: str, terms: list[str]) -> dict[str, Any]:
     return result
 
 
-def extract_trial(trial: dict[str, Any]) -> dict[str, Any]:
+def extract_trial(
+    trial: dict[str, Any], paths: dict[str, list[str]] | None = None
+) -> dict[str, Any]:
+    """提取一条试次；paths 缺省为默认病例词表（CaseSpec 注入），新病例穿自己的词表。"""
+    effective_paths = paths if paths is not None else PATH_PATTERNS
     status = trial.get("status", "success")
     response = trial.get("response", "") if status == "success" else ""
-    paths = {path: _path_extraction(response, path, terms) for path, terms in PATH_PATTERNS.items()}
+    extracted = {
+        path: _path_extraction(response, path, terms) for path, terms in effective_paths.items()
+    }
 
     evidence_mentioned = any(word in response for word in SOURCE_WORDS)
     identifiable_source = bool(
@@ -398,18 +411,23 @@ def extract_trial(trial: dict[str, Any]) -> dict[str, Any]:
         "trial_id": trial["trial_id"],
         "status": status,
         "extractor_version": EXTRACTOR_VERSION,
-        "paths": paths,
+        "paths": extracted,
         "evidence_mentioned": evidence_mentioned,
         "identifiable_source": identifiable_source,
         "source_evidence": source_evidence,
     }
 
 
-def aggregate(trials: list[dict[str, Any]], extractions: list[dict[str, Any]]) -> dict[str, Any]:
+def aggregate(
+    trials: list[dict[str, Any]],
+    extractions: list[dict[str, Any]],
+    paths: dict[str, list[str]] | None = None,
+) -> dict[str, Any]:
+    effective_paths = paths if paths is not None else PATH_PATTERNS
     valid = [t for t in trials if t.get("status") == "success" and t.get("response")]
     by_id = {e["trial_id"]: e for e in extractions}
     path_rates: dict[str, dict[str, float | int]] = {}
-    for path in PATH_PATTERNS:
+    for path in effective_paths:
         values = [by_id[t["trial_id"]]["paths"][path] for t in valid]
         path_rates[path] = {
             "mentioned": sum(1 for value in values if value["mentioned"]),
