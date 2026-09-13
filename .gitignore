@@ -51,3 +51,6 @@ specs/review/export/
 specs/review/.export.lock
 specs/review/.export-*
 .claude/notes/
+
+# 主人拍板 2026-09-13（issue #55）：录音含别组未公开项目信息，不入公开仓，本地为唯一存档
+vault/raw/roadshow-recording-20260913.md

@@ -42,7 +42,7 @@ related: [../plan/003_post-hackathon-roadmap, ../../specs/calibration/fp-fn-repo
 
 ### 1.4 评审
 
-既有工程与材料改动经**双谱系 AI 交叉评审**（GPT 系 codex + MiniMax/DeepSeek 系，多轮收敛至无 P0/P1/P2 才合并；评审者均为 AI，非人工独立评审，例外与放宽在 `state/board.md` 如实记录）；本稿自身亦随 PR 走双谱系评审（评审状态见 PR 描述）。
+既有工程与材料改动经**双谱系 AI 交叉评审**（GPT 系 codex + MiniMax/DeepSeek 系，多轮收敛至无 P0/P1/P2 才合并；评审者均为 AI，非人工独立评审，例外与放宽在 `state/board.md` 如实记录）；本稿自身的双谱系评审随本 PR 执行并收敛（评审链见 PR 描述与 `state/board.md` 本轮记录——board 早期「谱系 B 未跑」记录指评估稿，非本稿）。
 
 ## 二、发现
 
@@ -64,7 +64,7 @@ related: [../plan/003_post-hackathon-roadmap, ../../specs/calibration/fp-fn-repo
 
 - deepseek：完整作答 3836 字，自述 AHA/ASA 2011、ESVS 等来源；
 - step：726 字截断作答，引用中国 2017/2023 指南；
-- glm：两次尝试均思考耗尽 4096 token 零正文（`no_final_content` ×2，供应商思考参数差异的又一实例，如实记录）。
+- glm：两次尝试均在输出预算内思考耗尽零正文（4096 token 上限，reasoning 4090/4083，`no_final_content` ×2，供应商思考参数差异的又一实例，如实记录）。
 
 原文与账本：`docs/experiments/exp003-baseline/followup/followups.jsonl`、`runs/exp003-followup/`。
 
