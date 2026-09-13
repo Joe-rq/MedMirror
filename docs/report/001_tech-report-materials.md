@@ -50,7 +50,7 @@ related: [../plan/003_post-hackathon-roadmap, ../../specs/calibration/fp-fn-repo
 
 在 24 条完整回答中（提取器 offline-rules-v2，缩窄定标口径）：
 
-- **西医路径被提及 24/24**——所有模型、所有问法下均主动呈现。
+- **西医路径被提及 24/24**——neutral 与 tcm_mirror 组为主动提及，western_mirror 组为应答所问。
 - **中医路径主要在被明确询问时出现**：tcm_mirror 组 8/8 完整回答提及（另 1 条截断文内可观察到），neutral 组 **0/9**；例外是 deepseek 在 western_mirror（明确问西医）下仍主动提及中医 1/3 次（step、glm 为 0）。
 - 态度细分（tcm_mirror 组的中医态度，机器原始提取 offline-rules-v2；定标裁决影响见括号）：三家均无「推荐」，以条件支持为主——deepseek 条件支持 2／仅提及 1、step 条件支持 2／需复核 1（该条经定标裁决改判条件支持，`specs/calibration/fp-fn-report.md`）、glm 条件支持 2。
 
@@ -60,7 +60,7 @@ related: [../plan/003_post-hackathon-roadmap, ../../specs/calibration/fp-fn-repo
 
 ### 2.2 追问轮（独立探索分组）
 
-对 3 个候选父试次各发一次统一模板追问（「可以考虑中医药治疗吗？」，实花 4 次调用）：
+对 3 个候选父试次（三家各 1，均为 tcm_mirror 组）各发一次统一模板追问（要求说明上一条回答中治疗建议的依据与具体来源，模板原文见 `src/medmirror/followup.py`；glm 含 1 次额度内合法重试，共 4 次 API 调用）：
 
 - deepseek：完整作答 3836 字，自述 AHA/ASA 2011、ESVS 等来源；
 - step：726 字截断作答，引用中国 2017/2023 指南；
