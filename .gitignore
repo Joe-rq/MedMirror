@@ -50,3 +50,4 @@ __pycache__/
 specs/review/export/
 specs/review/.export.lock
 specs/review/.export-*
+.claude/notes/

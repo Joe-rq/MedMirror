@@ -25,7 +25,7 @@ related: [../plan/003_post-hackathon-roadmap, ../specs/calibration/fp-fn-report,
 ### 1.1 受控采集
 
 - 病例：1 个**合成**病例（62 岁男性、体检发现无症状颈动脉斑块；真实患者信息不入实验，`.42cog/real.md`）。
-- 设计：3 种问法（neutral / tcm_mirror / western_mirror）× 3 家模型（deepseek-v4-flash、step-3.7-flash、glm-5.3-flash，官方 API）× 3 次重复 = 27 条计划试次；27/27 拿到最终答案，其中 24 条完整、3 条截断单列不进分母（`docs/experiments/exp003-baseline/result/trials.jsonl`）。
+- 设计：3 种问法（neutral / tcm_mirror / western_mirror）× 3 家模型（deepseek-v4-flash、step-3.7-flash、glm-5.3-flash，官方 API）× 3 次重复 = 27 条计划试次；27/27 执行成功（0 失败），其中 24 条完整、3 条截断单列不进分母（`docs/experiments/exp003-baseline/result/trials.jsonl`）。
 - 协议版本化：v1.0 冻结后经 v1.1→v1.3 修订（每版留档、不回改旧产物）。修订主因是实测暴露的**供应商思考参数差异**：DeepSeek 可关闭思考、StepFun 可降推理档、GLM 两者皆 400 拒绝——v1.3 按各厂兼容性固定请求差异并全部入档（specs/calibration.md §1.4）。这是供应商兼容性约束，不解释为模型质量差异。
 
 ### 1.2 执行保护
@@ -105,11 +105,11 @@ related: [../plan/003_post-hackathon-roadmap, ../specs/calibration/fp-fn-report,
 | 提取定标 | ⚠️ 缩窄口径 | 1+9+14+3 定标完成，但 14 条信任扩展未经独立标注——引用时保留该声明 |
 | 来源查证 | ⚠️ 仅著录层 | 18 条目三态判定完成；「存在 ≠ 支持」，内容支持与否待复核 |
 | 医学复核 | ❌ 未回流 | 第一批材料 2026-09-12 已发出（`specs/review/record.md`），意见未回流——**不输出已确认 Bias** |
-| 样本量 | ❌ 小样本 | 27+4 条、单合成病例、每格 3 次重复——描述性观察，不支撑稳定性结论 |
+| 样本量 | ❌ 小样本 | 27 条基线 + 4 次追问调用（3 个结果）、单合成病例、每格 3 次重复——描述性观察，不支撑稳定性结论 |
 
 **待建立资产**（而非既有护城河）：校准 + 可追溯 + 复核闭环若走完，才构成差异化；当前复核闭环进行中。
 
-外部反馈的使用纪律：路演评委的两条方向性反馈（突出结果可靠性、可向数据生产方向拓展）仅作**方向确认**引用——评委未查看仓库证据，「评委认可」不构成外部背书。「批量化生产医疗数据」按字面属研究问题变更（受众与验证对象均不同），须另行拍板走协议新版本流程；本项目当前只吸收其交集——把「新病例接入成本」量化为模板化的验收指标（测量方法见 `docs/plan/003_post-hackathon-roadmap.md` §2.2 表后指标定义块）。
+外部反馈的使用纪律：路演评委的两条方向性反馈（突出结果可靠性、可向数据生产方向拓展）仅作**方向确认**引用——评委未查看仓库证据，「评委认可」不构成外部背书。「批量化生产医疗数据」按字面属研究问题变更（受众与验证对象均不同），须另行拍板走协议新版本流程；本项目当前只吸收其交集——把「新场景接入成本」量化为模板化的验收指标（测量方法见 `docs/plan/003_post-hackathon-roadmap.md` §2.2 表下指标定义块）。
 
 ## 五、复现
 
@@ -118,7 +118,7 @@ git clone https://github.com/Joe-rq/MedMirror && cd MedMirror
 uv sync && uv run pytest   # 236 项离线测试，无需 API 密钥
 ```
 
-- 四闸 CI（ruff format/check、pytest、check-manifests）全绿；离线重放 exp003 产物与已发布报告**字节一致**。
+- CI 闸门全绿（ruff format/check、pytest、check-manifests、doc-hygiene，定义见 `.cnb.yml`）；离线重放 exp003 产物与已发布报告**字节一致**。
 - 证据导航入口（每节 3 条命令内到达原始证据）：`docs/reviews/judge-entry.md`。
 - 新病例接入 = 填一份 CaseSpec 声明式配置（`configs/cases/README.md`，零改码）。
 
@@ -141,3 +141,4 @@ uv sync && uv run pytest   # 236 项离线测试，无需 API 密钥
 | 9 | 「数据批量化生产」未按字面采纳，说明研究问题变更流程 | ✅ | §四 |
 | 10 | 大纲含核心短语「呈现差异评测工作流」 | ✅ | 大纲节 |
 | 11 | 每条实质声明附仓库证据定位（路径/命令） | ✅ | 全文 |
+| 12 | 发布前确认 GitHub 镜像已同步至本文所引仓库状态（本文承诺的测试数与 CaseSpec 接入须在镜像上成立；同步动作归主人） | ⬜ 发布前 | §五 |
