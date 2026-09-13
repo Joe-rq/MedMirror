@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_CASE_ID = "carotid_plaque_001"
-_TRIAL_PREFIX_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
+_TRIAL_PREFIX_RE = re.compile(r"[a-z0-9][a-z0-9_-]*")
 
 _TOP_LEVEL_KEYS = {
     "case_id",
@@ -50,7 +50,18 @@ class CaseSpec:
 
     @property
     def extraction_paths(self) -> dict[str, list[str]]:
-        return dict(self.paths)
+        return {path: list(terms) for path, terms in self.paths.items()}
+
+    def protocol_facts(self) -> dict[str, Any]:
+        """协议事实子集（不含 notes 编辑性字段）：恢复时比对首跑快照用。
+
+        trial_prefix/词表/变体/病例文本任一变化都意味着协议事实变更，不得混入
+        同一 run 目录（config_fingerprint 有意不含词表与前缀——请求不受其影响，
+        守护在此处补齐，见 runner.config_fingerprint 注释）。
+        """
+        data = self.as_dict()
+        data.pop("notes")
+        return data
 
     def as_dict(self) -> dict[str, Any]:
         """完整快照（入 plan.json 供审计对账：当年用什么词表与变体跑的）。"""
@@ -105,7 +116,7 @@ def load_case_spec(path: Path | str, *, supported_extractor_version: str) -> Cas
         value = raw.get(key)
         if not isinstance(value, str) or not value.strip():
             raise ValueError(f"CaseSpec 字段 {key} 缺失或为空字符串：{path}")
-    if not _TRIAL_PREFIX_RE.match(raw["trial_prefix"]):
+    if not _TRIAL_PREFIX_RE.fullmatch(raw["trial_prefix"]):
         raise ValueError(
             f"CaseSpec trial_prefix {raw['trial_prefix']!r} 不合规范"
             f"（须匹配 {_TRIAL_PREFIX_RE.pattern}）：{path}"
@@ -145,13 +156,15 @@ def load_case_spec(path: Path | str, *, supported_extractor_version: str) -> Cas
     if not isinstance(paths, dict) or not paths:
         raise ValueError(f"CaseSpec extraction.paths 须为非空对象：{path}")
     for path_name, terms in paths.items():
-        if not isinstance(path_name, str) or not path_name:
+        if not isinstance(path_name, str) or not path_name.strip():
             raise ValueError(f"CaseSpec paths 键须为非空字符串：{path}")
         if not isinstance(terms, list) or not terms:
             raise ValueError(f"CaseSpec paths[{path_name!r}] 须为非空词表列表：{path}")
         for term in terms:
-            if not isinstance(term, str) or not term:
-                raise ValueError(f"CaseSpec paths[{path_name!r}] 含空词项：{path}")
+            if not isinstance(term, str) or not term.strip():
+                raise ValueError(
+                    f"CaseSpec paths[{path_name!r}] 含空白或空词项（空白词会命中任意文本）：{path}"
+                )
 
     return CaseSpec(
         case_id=raw["case_id"],

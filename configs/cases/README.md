@@ -65,3 +65,7 @@ Schema 封闭：未知顶层键与 `extraction` 内未知键一律拒绝。加�
 **边界（截至 issue #50）**：尚无按 `--case` 选病例的执行 CLI——`scripts/run_exp003_baseline.py`
 锚定 exp003 默认病例；新病例的基线执行属 plan/003 步骤 2.3（须病例拍板与新协议版本后），
 当前接入面是配置 + 库级 API。提取词表超出 v2 词表表达形态时按步骤 2.4 分流 needs_review。
+本项目按仓库 clone + `uv sync` 运行（未发布 pip 包）：默认病例在 `medmirror.protocol` /
+`medmirror.runner` 导入期按仓库相对路径读取 `configs/cases/`，wheel 安装形态不含该目录
+（如需分发再补 package data，当前未做）。自定义 CaseSpec 经 `load_case_spec(任意路径)`
+加载则不依赖仓库内目录。

@@ -195,6 +195,16 @@ def build_report(
             raise ValueError(
                 f"{row['trial_id']}：提取结果路径集与词表不一致（缺 {missing}，多 {extra}）"
             )
+        # 词表内容守卫（评审 P1，部分覆盖）：提及路径的首命中词必来自提取时词表；
+        # 同键不同词的两份词表（先提取后报告各用一份）在有任何命中时被此闸拦截。
+        # 全部路径均未提及的行无从对账——完整守护须提取行携带词表签名（schema 变更，未做）。
+        for path_name, path_data in row["paths"].items():
+            term = path_data.get("term")
+            if path_data.get("mentioned") and term and term not in effective_paths[path_name]:
+                raise ValueError(
+                    f"{row['trial_id']}：路径 {path_name} 的命中词 {term!r} 不在报告词表中"
+                    "（提取与报告须用同一份 CaseSpec 词表）"
+                )
         for path_data in row["paths"].values():
             if path_data["state"] not in STATE_ORDER:
                 raise ValueError(

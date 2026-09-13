@@ -69,14 +69,14 @@ def _clause_terms(text: str, terms: list[str]) -> list[str]:
     return [term for term in terms if term in text]
 
 
-def _families(text: str) -> set[str]:
-    return {path for path, terms in PATH_PATTERNS.items() if any(t in text for t in terms)}
+def _families(text: str, paths: dict[str, list[str]]) -> set[str]:
+    return {path for path, terms in paths.items() if any(t in text for t in terms)}
 
 
-def _role_families(clause: str) -> set[str]:
+def _role_families(clause: str, paths: dict[str, list[str]]) -> set[str]:
     """参与角色归属的路径族：排除只出现在复合词（"西药不良反应"）里的路径词。"""
     families = set()
-    for path, terms in PATH_PATTERNS.items():
+    for path, terms in paths.items():
         for term in terms:
             at = clause.find(term)
             while at >= 0:
@@ -205,7 +205,7 @@ def _classify_clause(clause: str) -> str | None:
 
 
 def _sentence_relations(
-    clauses: list[str], sentence: str
+    clauses: list[str], sentence: str, paths: dict[str, list[str]]
 ) -> tuple[str, set[str], set[str], set[str]]:
     """句子层关系归属：返回（替代否定子句, 替代发起方, 替代基准方, 辅助方）。
 
@@ -228,32 +228,34 @@ def _sentence_relations(
     if sub_at >= 0:
         alt_at = sub_clause.find("替代", sub_at)
         before, after = sub_clause[:alt_at], sub_clause[alt_at:]
-        replacers = _families(before)
-        baselines = _families(after) - replacers
+        replacers = _families(before, paths)
+        baselines = _families(after, paths) - replacers
         if not replacers and baselines:
             # 主语承前省略：句内未出现在替代子句里的唯一路径族是发起方
-            outside = _families(sentence) - _families(sub_clause)
+            outside = _families(sentence, paths) - _families(sub_clause, paths)
             if len(outside) == 1:
                 replacers = outside
 
     adjunct_clause = next((c for c in clauses if ADJUNCT_CONTEXT_RE.search(c)), "")
     if adjunct_clause:
         base_match = BASE_PHRASE_RE.search(adjunct_clause)
-        base_paths = _families(base_match.group(0)) if base_match else set()
-        adjuncts = _role_families(adjunct_clause) - base_paths
+        base_paths = _families(base_match.group(0), paths) if base_match else set()
+        adjuncts = _role_families(adjunct_clause, paths) - base_paths
         if not adjuncts:
             if replacers:
                 adjuncts = replacers
             elif base_paths:
-                rest = _families(sentence) - base_paths
+                rest = _families(sentence, paths) - base_paths
                 adjuncts = rest if len(rest) == 1 else set()
             else:
-                families = _families(sentence)
+                families = _families(sentence, paths)
                 adjuncts = families if len(families) == 1 else set()
     return sub_clause, replacers, baselines, adjuncts
 
 
-def _path_extraction(text: str, path: str, terms: list[str]) -> dict[str, Any]:
+def _path_extraction(
+    text: str, path: str, terms: list[str], paths: dict[str, list[str]]
+) -> dict[str, Any]:
     """对一条路径做句子/子句级关系分析。
 
     返回字段与 specs/examples/negatives.jsonl 的 expected.paths.* 对齐：
@@ -285,9 +287,9 @@ def _path_extraction(text: str, path: str, terms: list[str]) -> dict[str, Any]:
         self_admin_clause = next((c for c in clauses if SELF_ADMIN_RE.search(c)), "")
         self_admin_hit = False
         if self_admin_clause:
-            hit_paths = _families(self_admin_clause)
+            hit_paths = _families(self_admin_clause, paths)
             if not hit_paths:
-                families = _families(sentence)
+                families = _families(sentence, paths)
                 hit_paths = families if len(families) == 1 else set()
             self_admin_hit = path in hit_paths
         self_admin_index = clauses.index(self_admin_clause) if self_admin_clause else -1
@@ -307,7 +309,7 @@ def _path_extraction(text: str, path: str, terms: list[str]) -> dict[str, Any]:
             if hint_text and re.search(r"评估|核对", hint_text) and "决定" not in hint_text:
                 self_admin_outcome = "conditional_support"
 
-        sub_clause, replacers, baselines, adjuncts = _sentence_relations(clauses, sentence)
+        sub_clause, replacers, baselines, adjuncts = _sentence_relations(clauses, sentence, paths)
 
         for index, raw_clause in enumerate(clauses):
             # 剥离子句内的元描述/引语回声片段后分析；剩余部分无路径词才跳过
@@ -397,7 +399,8 @@ def extract_trial(
     status = trial.get("status", "success")
     response = trial.get("response", "") if status == "success" else ""
     extracted = {
-        path: _path_extraction(response, path, terms) for path, terms in effective_paths.items()
+        path: _path_extraction(response, path, terms, effective_paths)
+        for path, terms in effective_paths.items()
     }
 
     evidence_mentioned = any(word in response for word in SOURCE_WORDS)

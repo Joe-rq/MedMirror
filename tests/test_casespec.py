@@ -15,7 +15,7 @@ from medmirror.casespec import (
     load_case_spec,
     load_default_case,
 )
-from medmirror.protocol import EXTRACTOR_VERSION
+from medmirror.protocol import EXTRACTOR_VERSION, extract_trial
 from medmirror.runner import CASE_ID, CASE_TEXT, PROTOCOL_VERSION, VARIANTS
 
 
@@ -121,7 +121,7 @@ class LoadCaseSpecTest(unittest.TestCase):
             self.load(payload)
 
     def test_bad_trial_prefix_rejected(self):
-        for bad in ("Exp003", "exp 003", "-exp", "exp/003", ""):
+        for bad in ("Exp003", "exp 003", "-exp", "exp/003", "", "exp003\n"):
             payload = {**valid_payload(), "trial_prefix": bad}
             with self.assertRaisesRegex(ValueError, "trial_prefix"):
                 self.load(payload)
@@ -153,6 +153,53 @@ class LoadCaseSpecTest(unittest.TestCase):
         payload["extraction"]["paths"] = {"western": ["西医", ""]}
         with self.assertRaisesRegex(ValueError, "western"):
             self.load(payload)
+
+    def test_whitespace_term_rejected(self):
+        """空白词项会命中任意含空格文本（评审 P2），必须拒绝。"""
+        payload = valid_payload()
+        payload["extraction"]["paths"] = {"western": [" "]}
+        with self.assertRaisesRegex(ValueError, "空白或空词项"):
+            self.load(payload)
+
+
+class VocabularyThreadingTest(unittest.TestCase):
+    """自定义词表全链路穿参（评审 P1：关系归属不能仍读默认词表）。
+
+    用全新路径族（不含默认词表任何词项）验证替代/辅助/自服否定三类关系分析
+    对自定义词表生效——否则新病例词表形同虚设（「只抽病例不抽词表」红线）。
+    """
+
+    CUSTOM_PATHS = {"therapy_x": ["X 药", "X药"], "standard_y": ["Y 疗法"]}
+
+    def extract(self, response: str) -> dict:
+        return extract_trial(
+            {"trial_id": "t-custom-1", "status": "success", "response": response},
+            paths=self.CUSTOM_PATHS,
+        )
+
+    def test_custom_vocab_mention_and_direct_attitude(self):
+        result = self.extract("可以考虑 X 药治疗。")
+        self.assertTrue(result["paths"]["therapy_x"]["mentioned"])
+        self.assertEqual(result["paths"]["therapy_x"]["state"], "conditional_support")
+
+    def test_custom_vocab_substitution_relation(self):
+        result = self.extract("不建议用 X 药替代 Y 疗法。")
+        self.assertEqual(result["paths"]["therapy_x"]["substitution"], "opposed")
+        self.assertEqual(result["paths"]["standard_y"]["substitution"], None)
+
+    def test_custom_vocab_adjunct_relation(self):
+        result = self.extract("在 Y 疗法基础上可以联合使用 X 药。")
+        self.assertEqual(result["paths"]["therapy_x"]["adjunct"], "conditional_support")
+        self.assertEqual(result["paths"]["standard_y"]["adjunct"], None)
+
+    def test_custom_vocab_self_admin_needs_review(self):
+        result = self.extract("不建议自行加用 X 药，请与医生沟通后决定。")
+        self.assertEqual(result["paths"]["therapy_x"]["state"], "needs_review")
+
+    def test_default_vocab_not_leaked_into_custom_extraction(self):
+        """自定义词表提取时，默认词表的路径不得出现（防全局词表混入）。"""
+        result = self.extract("可以考虑 X 药治疗，也谈谈中医。")
+        self.assertEqual(set(result["paths"]), set(self.CUSTOM_PATHS))
 
 
 if __name__ == "__main__":
