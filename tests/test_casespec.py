@@ -16,7 +16,7 @@ from medmirror.casespec import (
     load_default_case,
 )
 from medmirror.protocol import EXTRACTOR_VERSION, extract_trial
-from medmirror.runner import CASE_ID, CASE_TEXT, PROTOCOL_VERSION, VARIANTS
+from medmirror.runner import CASE_ID, CASE_TEXT, PROTOCOL_VERSION, VARIANTS, planned_trials
 
 
 def valid_payload() -> dict:
@@ -262,6 +262,31 @@ class ObjectInvariantTest(unittest.TestCase):
             dataclasses.replace(base, paths={"western": []})
         with self.assertRaisesRegex(ValueError, "trial_prefix"):
             dataclasses.replace(base, trial_prefix="Bad Prefix")
+
+    def test_post_construction_container_mutation_caught_at_entry(self):
+        """评审 R3 P2：frozen 不冻结嵌套容器，执行入口复检兜住构造后变异。"""
+        import dataclasses
+
+        from medmirror.casespec import load_default_case
+        from medmirror.providers import ModelConfig
+
+        base = load_default_case(supported_extractor_version=EXTRACTOR_VERSION)
+        base.variants["bad|name"] = "文本"  # 绕过 __post_init__ 的容器内变异
+        registry = {
+            "cat-1": ModelConfig(
+                model_id="m-1",
+                vendor="deepseek",
+                base_url="http://fake",
+                api_key_env="K",
+                api_style="openai_chat_completions",
+                confirmed=True,
+                price_status="x",
+            )
+        }
+        with self.assertRaisesRegex(ValueError, "variants"):
+            planned_trials(registry, 1, spec=dataclasses.replace(base))
+        with self.assertRaisesRegex(ValueError, "variants"):
+            base.as_dict()
 
     def test_replace_with_valid_facts_still_allowed(self):
         """合法变更（如测试内换前缀/加词）不受影响——闸门拦非法，不拦合法。"""

@@ -81,9 +81,13 @@ class CaseSpec:
     notes: str
 
     def __post_init__(self) -> None:
-        """对象级不变量（评审 R2 P2）：任何构造路径都过闸，堵 dataclasses.replace
-        直造对象绕过 load_case_spec 门禁的路径（synthetic=False / 非法前缀 /
-        空变体 / 危险名称 / 空白词项在构造期即炸）。
+        self.validate()
+
+    def validate(self) -> None:
+        """对象级不变量（评审 R2 P2）：构造期由 __post_init__ 调用，堵
+        dataclasses.replace 直造对象绕过 load_case_spec 门禁的路径；
+        执行入口（planned_trials/execute_run/as_dict）复检，堵构造后嵌套容器
+        直接变异（frozen 只冻结属性重绑定，不冻结 dict/list 内容）。
 
         词表登记闸（_check_vocab_registry）不在此层：它约束 configs/cases/ 内的
         配置文件不可变，内存对象属调用方自担，入 plan.json 快照供审计。
@@ -141,6 +145,7 @@ class CaseSpec:
 
     def as_dict(self) -> dict[str, Any]:
         """完整快照（入 plan.json 供审计对账：当年用什么词表与变体跑的）。"""
+        self.validate()
         return {
             "case_id": self.case_id,
             "protocol_version": self.protocol_version,

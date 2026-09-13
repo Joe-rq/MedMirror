@@ -59,6 +59,7 @@ def planned_trials(
     registry: dict[str, Any], repeats: int, spec: CaseSpec | None = None
 ) -> list[dict[str, Any]]:
     case = _case_or_default(spec)
+    case.validate()  # 构造后容器变异复检（评审 R3 P2）
     return [
         {
             "trial_id": f"{case.trial_prefix}-{catalog_id}-{variant}-{trial_index}",
@@ -357,6 +358,7 @@ def execute_run(
     trials_path = run_dir / "trials.jsonl"
 
     case = _case_or_default(spec)
+    case.validate()  # 构造后容器变异复检（评审 R3 P2）
     specs = planned_trials(registry, repeats, case)
     params = request_params()
     fingerprint = config_fingerprint(specs, params, case)
