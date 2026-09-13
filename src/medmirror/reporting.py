@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
+from medmirror.casespec import vocab_digest
 from medmirror.protocol import EXTRACTOR_VERSION, PATH_PATTERNS, extract_trial
 
 REPORT_VERSION = "exp003-report-v2"
@@ -71,10 +72,16 @@ def extract_sorted(
         trial_id = trial.get("trial_id")
         if not isinstance(trial_id, str) or not trial_id:
             raise ValueError(f"存在缺失或非法 trial_id 的输入行：{trial_id!r}")
-    return [
+    effective_paths = paths if paths is not None else PATH_PATTERNS
+    rows = [
         extract_trial(_extraction_input(trial), paths=paths)
         for trial in sorted(trials, key=lambda t: t["trial_id"])
     ]
+    # 词表签名随行落盘（评审 P1）：报告侧与提取侧词表必须逐字节同源，
+    # 首命中词抽查不够（同键不同词、先命中项恰好重叠时会漏判）
+    for row in rows:
+        row["paths_digest"] = vocab_digest(effective_paths)
+    return rows
 
 
 def _state_counts() -> dict[str, int]:
@@ -195,12 +202,24 @@ def build_report(
             raise ValueError(
                 f"{row['trial_id']}：提取结果路径集与词表不一致（缺 {missing}，多 {extra}）"
             )
-        # 词表内容守卫（评审 P1，部分覆盖）：提及路径的首命中词必来自提取时词表；
-        # 同键不同词的两份词表（先提取后报告各用一份）在有任何命中时被此闸拦截。
-        # 全部路径均未提及的行无从对账——完整守护须提取行携带词表签名（schema 变更，未做）。
+        # 词表签名守卫（评审 P1）：extract_sorted 产出的行携带提取时词表摘要，
+        # 与报告词表摘要逐字节比对——同键不同词的两份词表必被拦截。
+        row_digest = row.get("paths_digest")
+        if row_digest is not None and row_digest != vocab_digest(effective_paths):
+            raise ValueError(
+                f"{row['trial_id']}：提取词表签名与报告词表不一致"
+                f"（提取 {row_digest[:12]}，报告 {vocab_digest(effective_paths)[:12]}）；"
+                "提取与报告必须用同一份 CaseSpec 词表"
+            )
+        # 无签名的历史行退回首命中词抽查（部分覆盖：全零命中行无从对账）
         for path_name, path_data in row["paths"].items():
             term = path_data.get("term")
-            if path_data.get("mentioned") and term and term not in effective_paths[path_name]:
+            if (
+                row_digest is None
+                and path_data.get("mentioned")
+                and term
+                and term not in effective_paths[path_name]
+            ):
                 raise ValueError(
                     f"{row['trial_id']}：路径 {path_name} 的命中词 {term!r} 不在报告词表中"
                     "（提取与报告须用同一份 CaseSpec 词表）"
@@ -378,7 +397,10 @@ def _n_of_denominator(target: dict[str, Any]) -> str:
 
 
 def render_markdown(report: dict[str, Any], paths: dict[str, list[str]] | None = None) -> str:
-    """渲染 Markdown 报告；paths 缺省为默认病例词表，须与生成 report 的词表同源。"""
+    """渲染 Markdown 报告；paths 缺省为默认病例词表，须与生成 report 的词表同源。
+
+    注意：本渲染器为 exp003 品牌（标题与指路文案锚定 exp003）；跨病例通用渲染待新报告版本。
+    """
     effective_paths = paths if paths is not None else PATH_PATTERNS
     counts = report["counts"]
     costs = report["estimated_cost_cny_by_vendor"]

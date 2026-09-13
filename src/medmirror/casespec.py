@@ -16,27 +16,56 @@ schema 严格化：未知顶层键与 extraction 内未知键一律拒绝——�
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 DEFAULT_CASE_ID = "carotid_plaque_001"
 _TRIAL_PREFIX_RE = re.compile(r"[a-z0-9][a-z0-9_-]*")
-# 合成病例声明标记（intent.md 红线：真实患者数据不入实验；加载层机械把关，评审 P3）
-_SYNTHETIC_MARKERS = ("合成", "非真实", "synthetic")
 
 _TOP_LEVEL_KEYS = {
     "case_id",
     "protocol_version",
     "trial_prefix",
     "case_text",
+    "synthetic",
     "variants",
     "extraction",
     "notes",
 }
 _EXTRACTION_KEYS = {"extractor_version", "paths"}
+
+# 词表不可变登记文件（configs/cases/vocab-registry.json）：版本三元组 → 词表摘要。
+# 「同病例改词表=新版本号」红线的机械闸：同 (case_id, protocol_version, extractor_version)
+# 的词表一经登记不可变，改词表必须升版本并新增登记。只约束 configs/cases/ 目录内的
+# 配置；目录外的第三方自定义路径不强制（其自理纪律）。文件本身入 Git，靠评审审计。
+_REGISTRY_NAME = "vocab-registry.json"
+
+
+def vocab_digest(paths: dict[str, list[str]]) -> str:
+    """词表摘要（排序规范化 JSON 的 sha256）：登记与提取/报告同源比对共用。"""
+    canonical = json.dumps(paths, ensure_ascii=False, sort_keys=True)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    seen: set[str] = set()
+    for key, _ in pairs:
+        if key in seen:
+            raise ValueError(
+                f"JSON 含重复键 {key!r}（后者静默覆盖前者，配置表面与执行内容会不一致）"
+            )
+        seen.add(key)
+    return dict(pairs)
+
+
+def _is_safe_name(name: str) -> bool:
+    """标识名（变体名/路径名）：拒绝控制字符与 Markdown 表格分隔符，防破坏 trial_id 与报告结构。"""
+    return not any(unicodedata.category(ch) == "Cc" or ch == "|" for ch in name)
 
 
 @dataclass(frozen=True)
@@ -45,6 +74,7 @@ class CaseSpec:
     protocol_version: str
     trial_prefix: str
     case_text: str
+    synthetic: bool
     variants: dict[str, str]
     extractor_version: str
     paths: dict[str, list[str]]
@@ -72,6 +102,7 @@ class CaseSpec:
             "protocol_version": self.protocol_version,
             "trial_prefix": self.trial_prefix,
             "case_text": self.case_text,
+            "synthetic": self.synthetic,
             "variants": dict(self.variants),
             "extraction": {
                 "extractor_version": self.extractor_version,
@@ -102,9 +133,9 @@ def load_case_spec(path: Path | str, *, supported_extractor_version: str) -> Cas
             " <case_id>.json（字段与校验规则见 configs/cases/README.md）"
         )
     try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as error:
-        raise ValueError(f"CaseSpec 不是合法 JSON：{path}（{error}）") from error
+        raw = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_reject_duplicate_keys)
+    except ValueError as error:
+        raise ValueError(f"CaseSpec 不是合法 JSON 或含重复键：{path}（{error}）") from error
     if not isinstance(raw, dict):
         raise ValueError(f"CaseSpec 顶层必须是对象：{path}")
 
@@ -118,9 +149,11 @@ def load_case_spec(path: Path | str, *, supported_extractor_version: str) -> Cas
         value = raw.get(key)
         if not isinstance(value, str) or not value.strip():
             raise ValueError(f"CaseSpec 字段 {key} 缺失或为空字符串：{path}")
-    if not any(marker in raw["notes"] for marker in _SYNTHETIC_MARKERS):
+    # 合成声明用显式布尔而非 notes 关键字：字符串匹配可被「非合成病例」类否定表述绕过，
+    # 布尔只接受 true——本系统不接受真实患者数据（intent.md 红线），无可表达的合法假值
+    if raw.get("synthetic") is not True:
         raise ValueError(
-            f"CaseSpec notes 缺少合成病例声明（须含 {'/'.join(_SYNTHETIC_MARKERS)} 之一；"
+            f"CaseSpec synthetic 字段必须为 true（缺失或为假均拒绝；"
             f"真实患者数据不入实验，intent.md 红线）：{path}"
         )
     if not _TRIAL_PREFIX_RE.fullmatch(raw["trial_prefix"]):
@@ -136,10 +169,14 @@ def load_case_spec(path: Path | str, *, supported_extractor_version: str) -> Cas
         if (
             not isinstance(name, str)
             or not name.strip()
+            or not _is_safe_name(name)
             or not isinstance(prompt, str)
             or not prompt.strip()
         ):
-            raise ValueError(f"CaseSpec variants[{name!r}] 的名称与提示均须为非空字符串：{path}")
+            raise ValueError(
+                f"CaseSpec variants[{name!r}] 的名称与提示均须为非空字符串，"
+                f"且名称不得含控制字符或 |（防破坏 trial_id 与报告结构）：{path}"
+            )
 
     extraction = raw.get("extraction")
     if not isinstance(extraction, dict):
@@ -163,8 +200,8 @@ def load_case_spec(path: Path | str, *, supported_extractor_version: str) -> Cas
     if not isinstance(paths, dict) or not paths:
         raise ValueError(f"CaseSpec extraction.paths 须为非空对象：{path}")
     for path_name, terms in paths.items():
-        if not isinstance(path_name, str) or not path_name.strip():
-            raise ValueError(f"CaseSpec paths 键须为非空字符串：{path}")
+        if not isinstance(path_name, str) or not path_name.strip() or not _is_safe_name(path_name):
+            raise ValueError(f"CaseSpec paths 键须为非空字符串且不含控制字符或 |：{path}")
         if not isinstance(terms, list) or not terms:
             raise ValueError(f"CaseSpec paths[{path_name!r}] 须为非空词表列表：{path}")
         for term in terms:
@@ -173,16 +210,49 @@ def load_case_spec(path: Path | str, *, supported_extractor_version: str) -> Cas
                     f"CaseSpec paths[{path_name!r}] 含空白或空词项（空白词会命中任意文本）：{path}"
                 )
 
-    return CaseSpec(
+    spec = CaseSpec(
         case_id=raw["case_id"],
         protocol_version=raw["protocol_version"],
         trial_prefix=raw["trial_prefix"],
         case_text=raw["case_text"],
+        synthetic=True,
         variants=dict(variants),
         extractor_version=extractor_version,
         paths={k: list(v) for k, v in paths.items()},
         notes=raw["notes"],
     )
+    _check_vocab_registry(path, spec)
+    return spec
+
+
+def _check_vocab_registry(path: Path, spec: CaseSpec) -> None:
+    """同版本词表不可变闸（评审 P1）：cases 目录内的配置受 vocab-registry 约束。
+
+    登记 key = case_id|protocol_version|extractor_version，value = vocab_digest。
+    未登记 → 拒绝（新增病例/升版本须显式登记，评审可审计）；已登记但不一致 →
+    拒绝（同版本改词表违反「改词表=新版本号」红线）。目录外路径不强制。
+    """
+    if path.resolve().parent != default_case_dir().resolve():
+        return
+    registry_path = default_case_dir() / _REGISTRY_NAME
+    if not registry_path.exists():
+        raise ValueError(
+            f"词表登记文件不存在：{registry_path}。cases 目录内的 CaseSpec 须先登记词表摘要"
+        )
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    key = f"{spec.case_id}|{spec.protocol_version}|{spec.extractor_version}"
+    registered = registry.get(key)
+    if registered is None:
+        raise ValueError(
+            f"CaseSpec {key} 未在 {registry_path} 登记词表摘要；"
+            "新增病例或升版本请在登记文件显式追加（走评审）"
+        )
+    if registered != vocab_digest(spec.paths):
+        raise ValueError(
+            f"CaseSpec {key} 的词表与登记摘要不一致（登记 {registered[:12]}，"
+            f"当前 {vocab_digest(spec.paths)[:12]}）；同病例改词表=新版本号，"
+            "请新开版本并新增登记，不得就地改词表"
+        )
 
 
 def load_default_case(*, supported_extractor_version: str) -> CaseSpec:

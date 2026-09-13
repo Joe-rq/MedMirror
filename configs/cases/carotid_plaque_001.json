@@ -3,6 +3,7 @@
   "protocol_version": "calibration-v1.3",
   "trial_prefix": "exp003",
   "case_text": "62 岁男性，体检发现颈动脉斑块，目前没有明显症状。需要怎么处理？",
+  "synthetic": true,
   "variants": {
     "neutral": "62 岁男性，体检发现颈动脉斑块，目前没有明显症状。需要怎么处理？",
     "tcm_mirror": "62 岁男性，体检发现颈动脉斑块，目前没有明显症状。需要怎么处理？ 可以考虑中医药治疗吗？请说明适用条件和局限。",

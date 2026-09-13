@@ -25,6 +25,7 @@ def valid_payload() -> dict:
         "protocol_version": "demo-v1",
         "trial_prefix": "demo",
         "case_text": "示例病例文本",
+        "synthetic": True,
         "variants": {"neutral": "示例病例文本"},
         "extraction": {
             "extractor_version": EXTRACTOR_VERSION,
@@ -108,10 +109,39 @@ class LoadCaseSpecTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "offline-rules-v1.*offline-rules-v2"):
             self.load(payload)
 
-    def test_notes_without_synthetic_declaration_rejected(self):
-        """intent.md 红线机械把关（评审 P3）：notes 无合成声明标记即拒绝。"""
-        payload = {**valid_payload(), "notes": "常规病例文本"}
-        with self.assertRaisesRegex(ValueError, "合成病例声明"):
+    def test_synthetic_field_required_and_must_be_true(self):
+        """intent.md 红线机械把关：synthetic 缺失或为假即拒绝（显式布尔，不可被否定表述绕过）。"""
+        for bad in (None, False, "true", 1):
+            payload = {**valid_payload(), "synthetic": bad}
+            with self.assertRaisesRegex(ValueError, "synthetic"):
+                self.load(payload)
+        payload = valid_payload()
+        payload.pop("synthetic")
+        with self.assertRaisesRegex(ValueError, "synthetic"):
+            self.load(payload)
+
+    def test_duplicate_json_keys_rejected(self):
+        """重复键会被 json 静默取后值（评审 P2），必须显式拒绝。"""
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", encoding="utf-8", delete=False
+        ) as tmp:
+            tmp.write('{"case_id": "a", "case_id": "b"}')
+        path = Path(tmp.name)
+        self.addCleanup(path.unlink)
+        with self.assertRaisesRegex(ValueError, "重复键.*case_id"):
+            load_case_spec(path, supported_extractor_version=EXTRACTOR_VERSION)
+
+    def test_unsafe_variant_name_rejected(self):
+        """变体名进 trial_id 与报告（评审 P2）：控制字符与 | 破坏结构，拒绝。"""
+        for bad in ("neu\ntral", "a|b"):
+            payload = {**valid_payload(), "variants": {bad: "示例病例文本"}}
+            with self.assertRaisesRegex(ValueError, "variants"):
+                self.load(payload)
+
+    def test_unsafe_path_name_rejected(self):
+        payload = valid_payload()
+        payload["extraction"]["paths"] = {"west\nern": ["西医"]}
+        with self.assertRaisesRegex(ValueError, "paths 键"):
             self.load(payload)
 
     def test_missing_required_field_rejected(self):
@@ -206,6 +236,41 @@ class VocabularyThreadingTest(unittest.TestCase):
         """自定义词表提取时，默认词表的路径不得出现（防全局词表混入）。"""
         result = self.extract("可以考虑 X 药治疗，也谈谈中医。")
         self.assertEqual(set(result["paths"]), set(self.CUSTOM_PATHS))
+
+
+class VocabRegistryTest(unittest.TestCase):
+    """同版本词表不可变闸（评审 P1）：cases 目录内配置受 vocab-registry 约束。"""
+
+    def _write_in_cases_dir(self, payload: dict) -> Path:
+        target = default_case_path().parent / f"zzz_test_{abs(id(payload)) % 10000}.json"
+        target.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        self.addCleanup(target.unlink)
+        return target
+
+    def test_unregistered_version_triple_rejected(self):
+        payload = {**valid_payload(), "case_id": "unregistered_case"}
+        path = self._write_in_cases_dir(payload)
+        with self.assertRaisesRegex(ValueError, "未在.*登记"):
+            load_case_spec(path, supported_extractor_version=EXTRACTOR_VERSION)
+
+    def test_registered_triple_with_changed_vocab_rejected(self):
+        """同版本改词表（登记摘要不一致）拒绝——「改词表=新版本号」红线的机械闸。"""
+        payload = json.loads(default_case_path().read_text(encoding="utf-8"))
+        payload["extraction"]["paths"]["western"] = ["西医", "新词"]
+        path = self._write_in_cases_dir(payload)
+        with self.assertRaisesRegex(ValueError, "词表与登记摘要不一致"):
+            load_case_spec(path, supported_extractor_version=EXTRACTOR_VERSION)
+
+    def test_registered_default_case_loads(self):
+        spec = load_default_case(supported_extractor_version=EXTRACTOR_VERSION)
+        self.assertTrue(spec.synthetic)
+
+    def test_outside_cases_dir_skips_registry(self):
+        """目录外第三方路径不受登记约束（自理纪律），合法样本可直接加载。"""
+        path = write_payload(valid_payload())
+        self.addCleanup(path.unlink)
+        spec = load_case_spec(path, supported_extractor_version=EXTRACTOR_VERSION)
+        self.assertEqual(spec.case_id, "demo_case_001")
 
 
 if __name__ == "__main__":

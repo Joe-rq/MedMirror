@@ -74,8 +74,32 @@ class VocabularyContentDriftTest(unittest.TestCase):
         vocab_b = {"western": ["阿司匹林"], "tcm": ["中医"]}
         trials = [make_trial("exp003-d-1", response="建议使用西医治疗。")]
         extractions = extract_sorted(trials, paths=vocab_a)
-        with self.assertRaisesRegex(ValueError, "命中词.*不在报告词表"):
+        with self.assertRaisesRegex(ValueError, "词表签名"):
             build_report(trials, extractions, make_planned(count=1), paths=vocab_b)
+
+    def test_overlapping_first_term_does_not_bypass_signature(self):
+        """评审 P1 场景：两词表首命中词重叠、第二词不同——签名守卫必须拦截。"""
+        vocab_a = {"western": ["西医", "西药"], "tcm": ["中医"]}
+        vocab_b = {"western": ["西医", "他汀"], "tcm": ["中医"]}
+        trials = [make_trial("exp003-d-1", response="可以考虑西医，建议使用西药治疗。")]
+        extractions = extract_sorted(trials, paths=vocab_a)
+        with self.assertRaisesRegex(ValueError, "词表签名"):
+            build_report(trials, extractions, make_planned(count=1), paths=vocab_b)
+
+    def test_digestless_rows_fall_back_to_term_check(self):
+        """无签名历史行走首命中词抽查（向后兼容路径不被签名缺失短路）。"""
+        vocab = {"western": ["西医"], "tcm": ["中医"]}
+        trials = [make_trial("exp003-d-1", response="建议使用西医治疗。")]
+        extractions = extract_sorted(trials, paths=vocab)
+        for row in extractions:
+            row.pop("paths_digest")
+        with self.assertRaisesRegex(ValueError, "命中词"):
+            build_report(
+                trials,
+                extractions,
+                make_planned(count=1),
+                paths={"western": ["他汀"], "tcm": ["中医"]},
+            )
 
     def test_same_vocab_extraction_and_report_still_passes(self):
         vocab = {"western": ["西医"], "tcm": ["中医"]}

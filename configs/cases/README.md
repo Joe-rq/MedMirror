@@ -15,13 +15,26 @@
 | `protocol_version` | str | 非空 | 协议版本钉子（写入 plan 与物化视图，供审计） |
 | `trial_prefix` | str | `^[a-z0-9][a-z0-9_-]*$` | trial_id 前缀（`<prefix>-<模型>-<变体>-<序号>`） |
 | `case_text` | str | 非空 | 病例主诉文本（基线提问正文） |
+| `synthetic` | bool | 必须为 `true` | 合成病例声明（显式布尔：真实患者数据不入实验，intent.md 红线；无可表达的合法假值） |
 | `variants` | {name: str} | 非空对象，名称与提示均非空 | 提示变体：变体名 → 完整提示文本 |
 | `extraction.extractor_version` | str | 须等于当前代码支持的提取器版本 | 词表与提取器语义绑定；不匹配拒绝加载 |
 | `extraction.paths` | {path: [term]} | 非空对象，词表非空列表且词项非空 | 路径词表：路径名 → 触发词列表 |
-| `notes` | str | 非空，且须含「合成/非真实/synthetic」之一 | 病例声明（合成声明是硬校验——真实患者数据不入实验） |
+| `notes` | str | 非空 | 病例说明（来源/边界等编辑性描述） |
 
-Schema 封闭：未知顶层键与 `extraction` 内未知键一律拒绝。加字段 = schema 变更，
-须显式评审，不默吞。
+Schema 封闭：未知顶层键与 `extraction` 内未知键一律拒绝；JSON 重复键拒绝
+（防后者静默覆盖前者）；变体名/路径名拒绝控制字符与 `|`（防破坏 trial_id 与报告结构）。
+加字段 = schema 变更，须显式评审，不默吞。
+
+## 词表登记（vocab-registry.json）
+
+`configs/cases/vocab-registry.json` 登记 `case_id|protocol_version|extractor_version →
+词表摘要（sha256）`。**cases 目录内**的 CaseSpec 加载时强制核对：
+
+- 版本三元组未登记 → 拒绝（新增病例或升版本须显式追加登记，走评审）；
+- 已登记但词表摘要不一致 → 拒绝（同版本改词表违反「改词表=新版本号」红线）。
+
+改词表的正确路径：升 `protocol_version` 或换 `extractor_version` → 在登记文件新增一行。
+目录外的第三方自定义路径不受登记约束（自理纪律）。
 
 ## 协议红线（不可绕过）
 
@@ -65,6 +78,7 @@ Schema 封闭：未知顶层键与 `extraction` 内未知键一律拒绝。加�
 **边界（截至 issue #50）**：尚无按 `--case` 选病例的执行 CLI——`scripts/run_exp003_baseline.py`
 锚定 exp003 默认病例；新病例的基线执行属 plan/003 步骤 2.3（须病例拍板与新协议版本后），
 当前接入面是配置 + 库级 API。提取词表超出 v2 词表表达形态时按步骤 2.4 分流 needs_review。
+`render_markdown` 为 exp003 品牌渲染器（标题与指路文案锚定 exp003）；跨病例通用渲染待新报告版本，当前他病例报告请以结构化 json 产物为准（形态参见 `docs/experiments/exp003-baseline/derived-v3/analysis.json`）。
 本项目按仓库 clone + `uv sync` 运行（未发布 pip 包）：默认病例在 `medmirror.protocol` /
 `medmirror.runner` 导入期按仓库相对路径读取 `configs/cases/`，wheel 安装形态不含该目录
 （如需分发再补 package data，当前未做）。自定义 CaseSpec 经 `load_case_spec(任意路径)`
