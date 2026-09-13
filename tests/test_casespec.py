@@ -16,7 +16,14 @@ from medmirror.casespec import (
     load_default_case,
 )
 from medmirror.protocol import EXTRACTOR_VERSION, extract_trial
-from medmirror.runner import CASE_ID, CASE_TEXT, PROTOCOL_VERSION, VARIANTS, planned_trials
+from medmirror.runner import (
+    CASE_ID,
+    CASE_TEXT,
+    PROTOCOL_VERSION,
+    VARIANTS,
+    execute_run,
+    planned_trials,
+)
 
 
 def valid_payload() -> dict:
@@ -265,7 +272,6 @@ class ObjectInvariantTest(unittest.TestCase):
 
     def test_post_construction_container_mutation_caught_at_entry(self):
         """评审 R3 P2：frozen 不冻结嵌套容器，执行入口复检兜住构造后变异。"""
-        import dataclasses
 
         from medmirror.casespec import load_default_case
         from medmirror.providers import ModelConfig
@@ -283,10 +289,42 @@ class ObjectInvariantTest(unittest.TestCase):
                 price_status="x",
             )
         }
+        # 直传污染对象（不经 replace 重建）：异常必须来自入口复检而非构造期
         with self.assertRaisesRegex(ValueError, "variants"):
-            planned_trials(registry, 1, spec=dataclasses.replace(base))
+            planned_trials(registry, 1, spec=base)
         with self.assertRaisesRegex(ValueError, "variants"):
             base.as_dict()
+        with tempfile.TemporaryDirectory() as tmp, self.assertRaisesRegex(ValueError, "variants"):
+            execute_run(
+                run_dir=Path(tmp) / "run",
+                registry=registry,
+                repeats=1,
+                transport=None,
+                ledger=None,
+                prices=None,
+                plan_only=True,
+                spec=base,
+            )
+
+    def test_post_construction_paths_mutation_caught_at_entry(self):
+        from medmirror.casespec import load_default_case
+        from medmirror.providers import ModelConfig
+
+        base = load_default_case(supported_extractor_version=EXTRACTOR_VERSION)
+        base.paths["western"].append(" ")  # 容器内注入空白词项
+        registry = {
+            "cat-1": ModelConfig(
+                model_id="m-1",
+                vendor="deepseek",
+                base_url="http://fake",
+                api_key_env="K",
+                api_style="openai_chat_completions",
+                confirmed=True,
+                price_status="x",
+            )
+        }
+        with self.assertRaisesRegex(ValueError, "词项"):
+            planned_trials(registry, 1, spec=base)
 
     def test_replace_with_valid_facts_still_allowed(self):
         """合法变更（如测试内换前缀/加词）不受影响——闸门拦非法，不拦合法。"""
