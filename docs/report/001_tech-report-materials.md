@@ -4,13 +4,13 @@ number: "001"
 date: 2026-09-13
 title: 技术报告素材稿：医疗大模型呈现差异评测工作流的可靠性证据链
 status: draft
-tags: [report, narrative, reliability, cost]
-related: [plan/003_post-hackathon-roadmap, specs/calibration/fp-fn-report, specs/calibration/bill-check]
+tags: [narrative, reliability, cost]
+related: [../plan/003_post-hackathon-roadmap, ../specs/calibration/fp-fn-report, ../specs/calibration/bill-check]
 ---
 
 # 技术报告素材稿：医疗大模型呈现差异评测工作流的可靠性证据链
 
-> **状态**：AI 侧素材稿（issue #52/#55）——供主人定稿发布；文末叙事 checklist 为验收留痕，定稿发布时可移除。数值与口径以仓库证据文件为准，本文每条声明附定位。
+> **状态**：AI 侧素材稿（issue #52/#55）——供主人定稿发布；文末叙事 checklist 为验收留痕，定稿发布时可移除。成本口径定义见本文 §三，金额证据为 `specs/calibration/bill-check.md` 与 `runs/` 账本；本文每条声明附定位。
 
 ## 大纲与定位
 
@@ -37,7 +37,7 @@ related: [plan/003_post-hackathon-roadmap, specs/calibration/fp-fn-report, specs
 ### 1.3 提取与定标（缩窄口径，如实声明）
 
 - 提取器 offline-rules-v2：规则式子句分析，输出六值态度 + **逐字引文** + 来源三态分离；不确定一律交 `needs_review`，不强填态度（`src/medmirror/protocol.py`）。
-- 负例集 17 条（未提及/否定/条件支持/推荐/对象串扰/来源误识别等陷阱题）先行批改确认（`specs/examples/negatives.jsonl`，`scripts/check_calibration.py --require-confirmed` 可机器复核）。
+- 负例集 17 条（未提及/否定/条件支持/推荐/对象串扰/来源误识别等陷阱题）先行批改确认（`specs/examples/negatives.jsonl`；仓库根目录 `uv run python scripts/check_calibration.py --require-confirmed` 可机器复核）。
 - 人工定标按**缩窄口径**完成：1 条完整逐字段标注 + 9 条 needs_review 口头裁决 + 14 条抽查后接受机器结果 + 3 条截断。**14 条信任扩展未经逐字段独立标注，此局限声明在一切引用中保留**（`specs/calibration/fp-fn-report.md`）。定标结论：v2 无强填态度错误，保守策略（宁可交人审）经 9 条裁决验证。
 
 ### 1.4 评审
@@ -79,7 +79,7 @@ related: [plan/003_post-hackathon-roadmap, specs/calibration/fp-fn-report, specs
 | 部分相符 | 6 | 文献真实存在，但作者/年份/卷期/标题等著录项有出入 |
 | 无法定位（含 2 条无法精确定位） | 4 | 按自述著录查无，或自述过于模糊无法核对 |
 
-**可复核的著录错位模式 6+4/18**——典型样本：年份标签错位（自述「2021 ESVS」实为 2023 指南）、两篇真实文献的著录杂交（丹参条目）、指南名称 × 机构错配或查无。另 8 条可定位说明并非全不可信。逐条判定与检索证据（PMID/DOI/URL）：`docs/experiments/exp003-baseline/followup/source-verification.md`。
+**可复核的著录错位模式 6+4/18**——典型样本：年份标签错位（自述「2021 ESVS」实为 2023 指南）、两篇真实文献的著录杂交（丹参条目）、指南名称 × 机构错配或查无、期刊/文献类型错配。另 8 条可定位说明并非全不可信。逐条判定与检索证据（PMID/DOI/URL）：`docs/experiments/exp003-baseline/followup/source-verification.md`。
 
 **边界**：查证只到著录层——文献存在不等于支持模型表述，内容核实归专业复核（未回流，见第四节）。
 
@@ -109,7 +109,7 @@ related: [plan/003_post-hackathon-roadmap, specs/calibration/fp-fn-report, specs
 
 **待建立资产**（而非既有护城河）：校准 + 可追溯 + 复核闭环若走完，才构成差异化；当前复核闭环进行中。
 
-外部反馈的使用纪律：路演评委的两条方向性反馈（突出结果可靠性、可向数据生产方向拓展）仅作**方向确认**引用——评委未查看仓库证据，「评委认可」不构成外部背书。「批量化生产医疗数据」按字面属研究问题变更（受众与验证对象均不同），须另行拍板走协议新版本流程；本项目当前只吸收其交集——把「新病例接入成本」量化为模板化的验收指标（测量方法见 `docs/plan/003_post-hackathon-roadmap.md` §2.2）。
+外部反馈的使用纪律：路演评委的两条方向性反馈（突出结果可靠性、可向数据生产方向拓展）仅作**方向确认**引用——评委未查看仓库证据，「评委认可」不构成外部背书。「批量化生产医疗数据」按字面属研究问题变更（受众与验证对象均不同），须另行拍板走协议新版本流程；本项目当前只吸收其交集——把「新病例接入成本」量化为模板化的验收指标（测量方法见 `docs/plan/003_post-hackathon-roadmap.md` §2.2 表后指标定义块）。
 
 ## 五、复现
 
@@ -126,11 +126,13 @@ uv sync && uv run pytest   # 236 项离线测试，无需 API 密钥
 
 ## 附：叙事验收 checklist（#55 验收①，定稿发布时可移除）
 
+> 可复用的叙事纪律（成本口径标签、五维度绑定、声明附定位等）已提炼至 `specs/style/README.md` 负例表；本表保留为本次验收留痕。
+
 | # | 检查项 | 结果 | 定位 |
 |---|---|---|---|
-| 1 | 成本数字全部带口径标签（估算/实花/已核对），无裸数字、无混合口径 | ✅ 第三节三口径表 | §三 |
+| 1 | 成本数字全部带口径标签（估算/实花/已核对），无裸数字、无混合口径 | ✅ | §三 |
 | 2 | 成本表述为特性非卖点（标题与导读均不以低价为主线） | ✅ | 大纲、§三 |
-| 3 | 可靠性声明逐条挂五证据维度状态（可回溯/定标/查证/复核/样本量） | ✅ 第四节状态表 | §四 |
+| 3 | 可靠性声明逐条挂五证据维度状态（可回溯/定标/查证/复核/样本量） | ✅ | §四 |
 | 4 | 14 条信任扩展局限随行（定标维度声明中保留） | ✅ | §1.3、§四 |
 | 5 | 来源查证仅声明到著录层，未输出「已核实」 | ✅ | §2.3 |
 | 6 | 复核状态如实标「未回流」，无「已确认 Bias」表述 | ✅ | §四 |
@@ -138,4 +140,4 @@ uv sync && uv run pytest   # 236 项离线测试，无需 API 密钥
 | 8 | 评委反馈仅作方向确认引用，未当外部背书 | ✅ | §四 |
 | 9 | 「数据批量化生产」未按字面采纳，说明研究问题变更流程 | ✅ | §四 |
 | 10 | 大纲含核心短语「呈现差异评测工作流」 | ✅ | 大纲节 |
-| 11 | 每条实质声明附仓库证据定位（路径/命令） | ✅ 全文 | 全文 |
+| 11 | 每条实质声明附仓库证据定位（路径/命令） | ✅ | 全文 |
