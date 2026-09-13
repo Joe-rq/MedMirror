@@ -122,3 +122,6 @@ AI 侧交付：`docs/reviews/judge-entry.md`——评委导航入口（证据地
 ## Issue #34 PR #38 冲突处置（2026-09-13，看门狗续班 + 复评）
 PR #38 自创建起与 main 冲突：merge 后冲突面为三个文件（judge-entry.md、board.md、changelog.md），CNB 因冲突从未触发构建。看门狗续班取「judge-entry.md 取演进版、丢弃简版」并记录「简版无独有实质信息」。**该结论经复核不成立并已纠正**：main 侧经 PR #37（来源查证计数修正）实际独有 4 块经查证内容——①任务一「核心发现」表（含分支版缺的「西医镜像下中医提及回落 deepseek 1/3」「glm neutral western 组内态度不一致」两行与截断三条字数明细）；②来源查证三态摘要表（8/6/2/2）；③H1–H4 中 main 的 H2「证据标准差异」与 H4「替代/辅助角色区分」两条假设（分支版 H2/H4 换成了供应商思考参数与来源著录，这两条本已不在分支版表中）；④board/changelog 的 PR #37 记录。本次复评裁决：**judge-entry.md 以分支演出版为骨架，回填 main 独有内容**——task1 缺的两条观察补进本轮 bullet、来源查证三态表原样保留在任务三（与 H4 同批证据）、board/changelog 两侧记录全留（本质是互不冲突的历史追加）。三文件冲突标记已清零，合并未丢任何经查证内容。
 
+## Issue #39 开源上线（2026-09-13，分支 docs/issue-39-judge-nav）
+
+GitHub 公开仓已上线：https://github.com/Joe-rq/MedMirror（main = e5c1c32，PR #40 + #41）。README 评委快速入口（导航→judge-entry→证据地图→四闸复现，命令实跑 186 passed）；测试数 175→186 同源刷新 5 处（board 历史快照不改写）；措辞中性化：评审声明去「独立/每个」误导并指向 state 日志例外记录、事故记录去指向性嫌疑表述（board/changelog 同源两处）；judge-entry 账单状态与 bill-check.md 已核对状态对齐。双谱系评审收敛：codex R1 P1×2+P2×2 全部修复；MiniMax R2 判可合并，另抓到 codex 漏判（changelog 条目复述被中性化原措辞）。事故如实记录：首次 push github 误推本地过期 main（e6cca90），约数分钟窗口匿名访问见旧 README，已更正并复扫密钥干净。匿名回读验证：仓库页/raw README/raw trials.jsonl 均 200。issue #39 待主人确认表单字段 10 后关闭。
