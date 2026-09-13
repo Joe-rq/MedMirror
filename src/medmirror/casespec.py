@@ -80,6 +80,50 @@ class CaseSpec:
     paths: dict[str, list[str]]
     notes: str
 
+    def __post_init__(self) -> None:
+        """对象级不变量（评审 R2 P2）：任何构造路径都过闸，堵 dataclasses.replace
+        直造对象绕过 load_case_spec 门禁的路径（synthetic=False / 非法前缀 /
+        空变体 / 危险名称 / 空白词项在构造期即炸）。
+
+        词表登记闸（_check_vocab_registry）不在此层：它约束 configs/cases/ 内的
+        配置文件不可变，内存对象属调用方自担，入 plan.json 快照供审计。
+        """
+        for field in ("case_id", "protocol_version", "case_text", "notes"):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"CaseSpec.{field} 须为非空字符串")
+        if self.synthetic is not True:
+            raise ValueError("CaseSpec.synthetic 必须为 true（真实患者数据不入实验）")
+        if not _TRIAL_PREFIX_RE.fullmatch(self.trial_prefix):
+            raise ValueError(f"CaseSpec.trial_prefix {self.trial_prefix!r} 不合规范")
+        if not self.variants:
+            raise ValueError("CaseSpec.variants 须为非空对象")
+        for name, prompt in self.variants.items():
+            if (
+                not isinstance(name, str)
+                or not name.strip()
+                or not _is_safe_name(name)
+                or not isinstance(prompt, str)
+                or not prompt.strip()
+            ):
+                raise ValueError(f"CaseSpec.variants[{name!r}] 名称或提示非法")
+        if not isinstance(self.extractor_version, str) or not self.extractor_version:
+            raise ValueError("CaseSpec.extractor_version 须为非空字符串")
+        if not self.paths:
+            raise ValueError("CaseSpec.paths 须为非空对象")
+        for path_name, terms in self.paths.items():
+            if (
+                not isinstance(path_name, str)
+                or not path_name.strip()
+                or not _is_safe_name(path_name)
+            ):
+                raise ValueError(f"CaseSpec.paths[{path_name!r}] 键非法")
+            if not isinstance(terms, list) or not terms:
+                raise ValueError(f"CaseSpec.paths[{path_name!r}] 须为非空词表列表")
+            for term in terms:
+                if not isinstance(term, str) or not term.strip():
+                    raise ValueError(f"CaseSpec.paths[{path_name!r}] 含空白或空词项")
+
     @property
     def extraction_paths(self) -> dict[str, list[str]]:
         return {path: list(terms) for path, terms in self.paths.items()}

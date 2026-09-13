@@ -238,6 +238,42 @@ class VocabularyThreadingTest(unittest.TestCase):
         self.assertEqual(set(result["paths"]), set(self.CUSTOM_PATHS))
 
 
+class ObjectInvariantTest(unittest.TestCase):
+    """评审 R2 P2：dataclasses.replace 直造对象也须过不变量闸（构造层校验）。"""
+
+    def test_replace_cannot_disable_synthetic(self):
+        import dataclasses
+
+        from medmirror.casespec import load_default_case
+
+        base = load_default_case(supported_extractor_version=EXTRACTOR_VERSION)
+        with self.assertRaisesRegex(ValueError, "synthetic"):
+            dataclasses.replace(base, synthetic=False)
+
+    def test_replace_cannot_inject_invalid_variants_or_terms(self):
+        import dataclasses
+
+        from medmirror.casespec import load_default_case
+
+        base = load_default_case(supported_extractor_version=EXTRACTOR_VERSION)
+        with self.assertRaisesRegex(ValueError, "variants"):
+            dataclasses.replace(base, variants={"a|b": "文本"})
+        with self.assertRaisesRegex(ValueError, "词表列表"):
+            dataclasses.replace(base, paths={"western": []})
+        with self.assertRaisesRegex(ValueError, "trial_prefix"):
+            dataclasses.replace(base, trial_prefix="Bad Prefix")
+
+    def test_replace_with_valid_facts_still_allowed(self):
+        """合法变更（如测试内换前缀/加词）不受影响——闸门拦非法，不拦合法。"""
+        import dataclasses
+
+        from medmirror.casespec import load_default_case
+
+        base = load_default_case(supported_extractor_version=EXTRACTOR_VERSION)
+        renamed = dataclasses.replace(base, trial_prefix="exp004")
+        self.assertEqual(renamed.trial_prefix, "exp004")
+
+
 class VocabRegistryTest(unittest.TestCase):
     """同版本词表不可变闸（评审 P1）：cases 目录内配置受 vocab-registry 约束。"""
 
