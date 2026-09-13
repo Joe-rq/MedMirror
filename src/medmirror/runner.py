@@ -376,15 +376,34 @@ def execute_run(
             first_facts = {k: v for k, v in first_case.items() if k != "notes"}
             current_facts = case.protocol_facts()
             if first_facts != current_facts:
-                changed = sorted(
-                    key
-                    for key in set(first_facts) | set(current_facts)
-                    if first_facts.get(key) != current_facts.get(key)
-                )
+                changed: list[str] = []
+                for key in sorted(set(first_facts) | set(current_facts)):
+                    if first_facts.get(key) == current_facts.get(key):
+                        continue
+                    if key == "extraction" and isinstance(first_facts.get(key), dict):
+                        # 展开一层：词表/版本钉子哪项变了直接点名（评审 P3）
+                        first_ext, current_ext = first_facts[key], current_facts[key]
+                        changed.extend(
+                            f"extraction.{sub}"
+                            for sub in sorted(set(first_ext) | set(current_ext))
+                            if first_ext.get(sub) != current_ext.get(sub)
+                        )
+                    else:
+                        changed.append(key)
                 raise RuntimeError(
                     f"恢复失败：目录 {run_id} 的 CaseSpec 协议事实与首跑不一致"
                     f"（差异字段：{changed}）；同病例改词表/前缀/变体属协议变更，"
                     "请新开 run 目录并按版本纪律走新版本"
+                )
+        else:
+            # 老 plan（#50 前格式）无 case_spec 快照：用首计划 trial_id 兜底校验
+            # 前缀/变体未变（评审 P3：否则换前缀 spec 可在指纹相同时静默混入）
+            first_planned = plan.get("planned_trial_ids") or []
+            if first_planned and first_planned[0] not in {spec["trial_id"] for spec in specs}:
+                raise RuntimeError(
+                    f"恢复失败：目录 {run_id} 为无 case_spec 快照的旧版 plan，且首计划 "
+                    f"trial_id {first_planned[0]!r} 不在当前 spec 计划中（前缀/变体可能已变，"
+                    "无法验证协议事实未变）；请新开 run 目录，不得混写"
                 )
         # 预算与重试上限锁定在首次 plan；恢复时与账本一致，CLI 不许改
         if (

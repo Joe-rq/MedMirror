@@ -30,7 +30,7 @@ def valid_payload() -> dict:
             "extractor_version": EXTRACTOR_VERSION,
             "paths": {"western": ["西医"]},
         },
-        "notes": "测试样本",
+        "notes": "测试样本（合成）",
     }
 
 
@@ -106,6 +106,12 @@ class LoadCaseSpecTest(unittest.TestCase):
         payload = valid_payload()
         payload["extraction"]["extractor_version"] = "offline-rules-v1"
         with self.assertRaisesRegex(ValueError, "offline-rules-v1.*offline-rules-v2"):
+            self.load(payload)
+
+    def test_notes_without_synthetic_declaration_rejected(self):
+        """intent.md 红线机械把关（评审 P3）：notes 无合成声明标记即拒绝。"""
+        payload = {**valid_payload(), "notes": "常规病例文本"}
+        with self.assertRaisesRegex(ValueError, "合成病例声明"):
             self.load(payload)
 
     def test_missing_required_field_rejected(self):

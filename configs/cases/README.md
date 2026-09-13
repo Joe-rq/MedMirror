@@ -18,7 +18,7 @@
 | `variants` | {name: str} | 非空对象，名称与提示均非空 | 提示变体：变体名 → 完整提示文本 |
 | `extraction.extractor_version` | str | 须等于当前代码支持的提取器版本 | 词表与提取器语义绑定；不匹配拒绝加载 |
 | `extraction.paths` | {path: [term]} | 非空对象，词表非空列表且词项非空 | 路径词表：路径名 → 触发词列表 |
-| `notes` | str | 非空 | 病例声明（合成/来源/边界） |
+| `notes` | str | 非空，且须含「合成/非真实/synthetic」之一 | 病例声明（合成声明是硬校验——真实患者数据不入实验） |
 
 Schema 封闭：未知顶层键与 `extraction` 内未知键一律拒绝。加字段 = schema 变更，
 须显式评审，不默吞。

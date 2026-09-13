@@ -147,3 +147,5 @@ CaseSpec 声明式病例配置落地：`configs/cases/carotid_plaque_001.json`�
 ## MR #53 追加提交事故与补合（2026-09-13，分支 fix/issue-50-review-r1）
 
 MR #53 被主人合并于 ddc754a，但分支随后推送的评审修复 commit cf3e0af（codex R1 全闭环：3 P1 + 4 P2 + 1 P3 修复与 10 例新回归）未入 main——与 #46/#47 同款「追加 commit 挂在已关闭 MR」事故（第二次）。发现时 main 带 P1 缺陷：自定义词表穿参不完整（_families/_role_families/_sentence_relations 仍读全局默认词表，新病例替代/辅助/自服关系失效，踩「只抽病例不抽词表」红线）。处置照 issue #11 先例：从新 main cherry-pick 为 ee10e09 走本 PR 补合。双谱系评审改在本补合 PR 上继续（谱系 A 待主人指定 codex 模型）。教训再确认：**分支有追加 commit 时应等伙伴确认「分支已完备」再合并**。
+
+补记（同日）：MiniMax R1 判「可合并」（0 P0/P1/P2 + 5 P3，正向核验指纹字节相等与重放非假绿）；5 条 P3 已全部修复（老 plan 无快照时用首计划 trial_id 兜底、差异字段展开 extraction 一层、notes 合成声明前置加载层硬校验、onboarding 格式数刷新、本段补记 210→220 口径：评审 R1 闭环新增 10 例回归）。谱系 A 正式评审按主人指定模型 gpt-5.6-luna 执行。

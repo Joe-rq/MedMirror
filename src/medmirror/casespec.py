@@ -24,6 +24,8 @@ from typing import Any
 
 DEFAULT_CASE_ID = "carotid_plaque_001"
 _TRIAL_PREFIX_RE = re.compile(r"[a-z0-9][a-z0-9_-]*")
+# 合成病例声明标记（intent.md 红线：真实患者数据不入实验；加载层机械把关，评审 P3）
+_SYNTHETIC_MARKERS = ("合成", "非真实", "synthetic")
 
 _TOP_LEVEL_KEYS = {
     "case_id",
@@ -116,6 +118,11 @@ def load_case_spec(path: Path | str, *, supported_extractor_version: str) -> Cas
         value = raw.get(key)
         if not isinstance(value, str) or not value.strip():
             raise ValueError(f"CaseSpec 字段 {key} 缺失或为空字符串：{path}")
+    if not any(marker in raw["notes"] for marker in _SYNTHETIC_MARKERS):
+        raise ValueError(
+            f"CaseSpec notes 缺少合成病例声明（须含 {'/'.join(_SYNTHETIC_MARKERS)} 之一；"
+            f"真实患者数据不入实验，intent.md 红线）：{path}"
+        )
     if not _TRIAL_PREFIX_RE.fullmatch(raw["trial_prefix"]):
         raise ValueError(
             f"CaseSpec trial_prefix {raw['trial_prefix']!r} 不合规范"
