@@ -17,7 +17,7 @@
 
 - 第一层覆盖条目：默认全部 27 条（含 3 条截断单列标注）；实际覆盖待复核人开始时确认
 - 第二层必核子集：必核 10 条已定稿 FINAL（cand-01/02/03/05/07/10/11/12/14/15，见 form-candidates.md 挑选记录区）；发出材料时确认不调整
-- 发出材料形态：压缩包一份（主人 2026-09-12 自行打包发送）。**待核验**：若非 `scripts/export_review_pack.py` open 批导出产物，须确认包内未混入候选层内容（form-candidates/候选主张）——第一层开放式意见不得被候选主张锚定
+- 发出材料形态：压缩包一份（`MedMirror-复核材料第一批-20260912.zip`，14 个 docx：attachments ×10（9 组原文 + index）、background、boundaries、case-card、form-open）。**已核验（2026-09-13）**：文件集与 `scripts/export_review_pack.py` open 批导出形态一致；form-open/background 正文扫描仅含"本包不含候选清单/倾向"的防锚定声明性提及，无候选层实质内容，form-candidates 未随包——第一层开放式意见无锚定风险
 - 圈定人/日期：主人 / 材料 2026-09-12 发出，本记录 2026-09-13 补记
 
 ## 逐条状态
