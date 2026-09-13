@@ -10,7 +10,7 @@ related: [plan/001_autonomous-evaluation-loop, plan/002_prototype-calibration-ha
 
 # 黑客松后路线图：证据等级 → 规模 → 输出
 
-2026-09-13 黑客松作品已提交（GitHub 公开仓 https://github.com/Joe-rq/MedMirror ，main = e5c1c32，评委导航 `docs/reviews/judge-entry.md`）。评审期后项目价值锚点从"给评委看"换回 intent.md 的目标受众——评测研究者。对评测研究者而言，当前三个关键问题的答案是：提取器语义**已按缩窄口径定标**（1 条完整标注 + 9 条裁决 + 14 条抽查信任扩展，局限声明见 `specs/calibration/fp-fn-report.md`）、复核**未执行**、样本**撑不住稳定性结论**。因此后续主线不是加功能，而是把已有 27+4 条数据的证据等级提上去，再放大规模，再对外输出。
+2026-09-13 黑客松作品已提交（GitHub 公开仓 https://github.com/Joe-rq/MedMirror ，镜像——CNB 仓库为真相源，同步状态见 `state/board.md`；评委导航 `docs/reviews/judge-entry.md`）。评审期后项目价值锚点从"给评委看"换回 intent.md 的目标受众——评测研究者。对评测研究者而言，当前三个关键问题的答案是：提取器语义**已按缩窄口径定标**（1 条完整标注 + 9 条裁决 + 14 条抽查信任扩展，局限声明见 `specs/calibration/fp-fn-report.md`）、复核**未执行**、样本**撑不住稳定性结论**。因此后续主线不是加功能，而是把已有 27+4 条数据的证据等级提上去，再放大规模，再对外输出。
 
 主人 2026-09-13 确认三项前提：
 - **定位**（四项并存，主次按本路线图排）：论文/技术报告、开源工具、持续参赛、自用学习。
@@ -24,18 +24,18 @@ related: [plan/001_autonomous-evaluation-loop, plan/002_prototype-calibration-ha
 工程侧（已溢出，后续不再主动扩张）：
 - 四闸 CI 全绿（ruff format/check、pytest 236、check-manifests）；双谱系评审体系（GPT 系 codex + MiniMax/DeepSeek 系）多轮收敛惯例成型。
 - `src/medmirror/`：protocol（提取 offline-rules-v2）、runner（run 目录/恢复/max_attempts）、budget（reserve→settle/refund 三段账本）、followup（followup-rules-v1）、reporting（五类分母）。
-- 复核材料包两批导出就绪（`scripts/export_review_pack.py`，第一批开放式随时可发，第二批候选核对 10 条已 FINAL 待复核流程）。
+- 复核材料包两批导出就绪（`scripts/export_review_pack.py`，第一批开放式已于 2026-09-12 发出待意见回流，第二批候选核对 10 条已 FINAL 待第一层意见交回后发）。
 - 来源查证 18 条目三态判定完成（`docs/experiments/exp003-baseline/followup/source-verification.md`）；账单已核对 0.4746 元（`specs/calibration/bill-check.md`）。
 
 科学侧（剩余焦点在复核与发现包）：
-- #11：已按缩窄口径关闭（2026-09-12，`specs/calibration/fp-fn-report.md`）：1 条完整标注 + 9 条口头裁决 + 14 条抽查后接受机器结果（信任扩展，局限已声明）+ 3 条截断；主人 2026-09-13 拍板不补做。遗留：`specs/examples/standard-finding.md` 仍为 DRAFT 骨架（16 处占位，预填还是 offline-rules-v1 旧数值）。
+- #11：已按缩窄口径关闭（2026-09-12，`specs/calibration/fp-fn-report.md`）：1 条完整标注 + 9 条口头裁决 + 14 条抽查后接受机器结果（信任扩展，局限已声明）+ 3 条截断；主人 2026-09-13 拍板不补做。~~遗留：`specs/examples/standard-finding.md` 仍为 DRAFT 骨架~~ 已转正（2026-09-13，数值刷至 derived-v3、占位清零、主人拍板 4 项，见 1.3 行）。
 - #5：复核人未定——候选池 10 条必核子集无专业结论。
 - 单病例（合成）× 3 重复——不支撑模型间稳定性或 Bias 结论，仅描述性观察。
-- 预算：50 元总额已用约 0.47 元；开发工具费用口径仍未确认。
+- 预算：50 元总额已用 0.4746 元（三家控制台已核对口径，`specs/calibration/bill-check.md`）；开发工具费用口径仍未确认。
 
 ## 2. 目标
 
-1. 已有 27+4 条数据的复核闭环完成（定标已按缩窄口径完成），"待复核"标签清除或如实收敛；`specs/examples/standard-finding.md` 从 DRAFT 骨架转正为经主人确认的标准发现包。
+1. 已有 27+4 条数据的复核闭环完成（定标已按缩窄口径完成），"待复核"标签清除或如实收敛；~~`specs/examples/standard-finding.md` 从 DRAFT 骨架转正为经主人确认的标准发现包~~ ✅ 已转正（2026-09-13，见 1.3 行；复核闭环仍待 #5 意见回流）。
 2. 病例与协议模板化，新增 1–2 个病例场景以新协议版本完成一轮基线+追问。
 3. 产出一篇对外技术报告/文章与英文化快速上手文档，建立外部反馈 loop。
 
@@ -49,7 +49,7 @@ related: [plan/001_autonomous-evaluation-loop, plan/002_prototype-calibration-ha
 |---|------|------|------|
 | 1.1 | ~~27 条人工定标~~ 已完成：#11 按缩窄口径关闭（2026-09-12）；14 条信任扩展赛后不补做（主人 2026-09-13 拍板） | — | ✅ 关闭数据为 `fp-fn-report.md` |
 | 1.2 | ~~提取器语义回流~~ 已完成：v2 在缩窄定标下无强填态度错误，needs_review 保守策略经 9 条裁决验证 | — | ✅ #12 验收第 5 条据此通过 |
-| 1.3 | `specs/examples/standard-finding.md` 转正：伙伴将预填从 offline-rules-v1 刷新为 derived-v3（v2）数值并草拟引文/反例，主人确认研究问题表述与示范内容（#11 关闭时遗留的验收项） | 伙伴整理 + 主人拍板 | 16 处占位清零；数值与 derived-v3 一致；主人确认留痕 |
+| 1.3 | ~~`specs/examples/standard-finding.md` 转正~~ 已完成（2026-09-13）：预填刷至 derived-v3、引文脚本逐字验证、主人拍板 4 项全部采纳（MR #47 补合链，board 留痕） | — | ✅ 16 处占位清零；数值与 derived-v3 一致；拍板记录在文件尾部 |
 | 1.4 | #5 复核人：联系并发送第一批开放式材料；圈定复核范围 | 主人 | 材料发出并记录 `specs/review/record.md`；复核范围书面圈定 |
 | 1.5 | 复核意见回流→主人裁决→导出第二批（候选核对 10 条已 FINAL）→回收意见 | 主人+伙伴 | 候选池 10 条获得专业意见或如实记录"未获复核" |
 | 1.6 | issue 收尾：#39 表单字段确认后关闭；#3/#11 关闭口径与 board 对齐核验 | 双方 | 远程 issue 状态与 board 一致 |
@@ -59,17 +59,30 @@ related: [plan/001_autonomous-evaluation-loop, plan/002_prototype-calibration-ha
 | # | 步骤 | 涉及 | 验收 |
 |---|------|------|------|
 | 2.1 | 拍板新增 1–2 个病例场景（不同科室/决策类型/中西医张力点）；更新 intent 修订记录与协议版本（v1.3 → v2.0），走新版本不回改旧产物 | 主人拍板，伙伴起草 | intent/协议版本变更留痕；旧 run 目录零改动 |
-| 2.2 | 病例与协议模板化：病例、提示变体、提取词表抽为声明式配置，第三方可自带病例接入；复用 `protocol.py` 词表机制与 `runner.py` plan 生成（前半已随 #50 完成：CaseSpec 落地、exp003 重放逐字段零漂移、词表全链路穿参） | 伙伴 | 用模板重放 exp003 基线，产物与现产物字节一致或有逐项 diff 报告（✅ #50 机器证明）；新病例从模板到报告全链路跑通一次离线冒烟（待 2.1 拍板后随 2.3） |
+| 2.2 | 病例与协议模板化：病例、提示变体、提取词表抽为声明式配置，第三方可自带病例接入；复用 `protocol.py` 词表机制与 `runner.py` plan 生成（前半已随 #50 完成：CaseSpec 落地、exp003 重放逐字段零漂移、词表全链路穿参） | 伙伴 | 用模板重放 exp003 基线，产物与现产物字节一致或有逐项 diff 报告（✅ #50 机器证明）；新病例从模板到报告全链路跑通一次离线冒烟（待 2.1 拍板后随 2.3）；「新场景接入成本」按表下指标定义块实测登记（#55） |
 | 2.3 | 新病例基线+有界追问执行（沿用 budget 硬闸与恢复语义；先离线校验提取，再有限真实调用；建议 1.4 首批复核意见回流后再放大——复核可能暴露提取或材料缺陷，先修再扩） | 双方 | `reconcile_budget.py` 复算一致；报告生成；needs_review 队列如实入档 |
 | 2.4 | （条件触发）新病例表达形态超出 v2/v3 词表时分流入 needs_review，人工抽检后再决定提取器版本演进 | 伙伴 | 负例集回归全绿；抽检记录留痕 |
+
+**「新场景接入成本」指标定义（#55，2.2 验收附件）**
+
+- 起止点：病例 CaseSpec 落盘 → 该病例 derived 报告生成。
+- 测量环境：本机四闸环境；首次测量时登记硬件、Python 版本与逐步骤清单；计时以 shell `time` 或等价工具，从干净临时输出目录起测（避免历史产物缓存干扰）。
+- 重复 3 次取中位数（步骤数与耗时分别取）。
+- 阈值不空定：2.3 首个新病例实测后由主人定阈值，再约束后续病例接入。
 
 ### 阶段三：对外输出（与阶段二并行可开工）
 
 | # | 步骤 | 涉及 | 验收 |
 |---|------|------|------|
-| 3.1 | 技术报告/文章：方法闭环、0.5 元成本叙事、双谱系评审实践、来源查证发现（杂交著录、年份漂移） | 主人定稿 | 发布并链接入 `docs/` |
+| 3.1 | 技术报告/文章：方法闭环、可靠性证据链叙事（成本三口径作特性分列，不作卖点）、双谱系 AI 交叉评审实践、来源查证发现（著录错位模式 6+4/18）；素材稿 `report/001_tech-report-materials.md`（#52/#55，AI 侧已起草） | 主人定稿 | 发布并链接入 `docs/`；素材稿叙事 checklist 全绿（#55 验收①）；核心短语机械验收（#55 验收③，命令见阶段三表后代码块，期望 3） |
 | 3.2 | README 英文化 + 快速上手（clone → `uv sync` → 四闸 → 自带病例跑通） | 伙伴 | 匿名 clone 实测全流程一次通过 |
 | 3.3 | issue #6（P2 后置）按外部反馈决定是否启动 | 双方 | 有反馈依据再动 |
+
+核心短语机械验收命令（#55 验收③）：
+
+```bash
+grep -l "呈现差异评测工作流" README.md docs/report/001_tech-report-materials.md docs/reviews/judge-entry.md | wc -l   # 期望 3
+```
 
 ## 4. 风险与权衡
 
