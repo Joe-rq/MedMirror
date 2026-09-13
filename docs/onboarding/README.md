@@ -9,7 +9,7 @@
 
 ## 开发队列：按阶段与依赖，不按 Issue 编号
 
-**伙伴下一项：[#10 报告与截断修复](https://cnb.cool/joe-rq/MedMirror/-/issues/10)。主人同步推进 #11 人工定标和 #5 复核人员安排。**
+> **时效声明（2026-09-13）**：下表为 2026-09-09 建队时的阶段快照（#10/#12/#3/#13/#2/#4 等已在此后完成）。当前开放项以仓库 [README](../../README.md) 的「开放队列」与 `state/board.md` 为准：#11 人工定标、#5 复核人员与材料发送。
 
 | 阶段 | 项目主人 | 伙伴 | 推进条件 |
 |---|---|---|---|
@@ -46,7 +46,7 @@ cp -n .env.example .env.local                 # key 只放本机，不提交、�
 ```bash
 uv run ruff format --check .             # 53 files already formatted
 uv run ruff check .                      # All checks passed!
-uv run pytest                            # 13 passed
+uv run pytest                            # 175 passed
 uv run python scripts/check-manifests.py # ✓ 全绿（校验 2 份清单）
 ```
 
@@ -115,7 +115,7 @@ bash scripts/check-tools.sh                                             # 通用
 | 缺什么 | 为什么 | 怎么办 |
 |---|---|---|
 | `resources/` | 只剩 `README.md`——三个浅克隆参考仓库（PhysicianBench 等）被 gitignore | 要读就自己再 clone |
-| `runs/` | 规划中的后续运行目录，被 Git 忽略 | 当前 exp003 原文已在 `docs/experiments/exp003-baseline/result/trials.jsonl` 入库，克隆即可取得；后续 runs 数据需单独备份和交接 |
+| `runs/` | 运行档案目录，2026-09-13 起已入 Git（issue #4：远程仓库即备份落点，克隆即可取回；密钥类文件仍被 .env 规则排除） | 无需另行准备；本地双保险用 `scripts/backup_data.py` |
 | `.env.local` | 密钥永不入库 | 从 `.env.example` 复制后自己填 |
 
 > 已实测：干净 clone 后 `uv sync` + 四闸四条命令全部通过，无需额外步骤。

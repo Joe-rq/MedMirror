@@ -18,5 +18,7 @@ main:
           script: uv run pytest
         - name: smoke
           script: uv run python scripts/check-manifests.py
+        - name: doc-hygiene
+          script: uv run python scripts/check_docs.py
   pull_request:
     - *ci
