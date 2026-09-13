@@ -48,13 +48,13 @@ related: [../plan/003_post-hackathon-roadmap, ../../specs/calibration/fp-fn-repo
 
 ### 2.1 呈现差异（描述性观察，非 Bias 结论）
 
-在 24 条完整回答中（提取器 offline-rules-v2，缩窄定标口径）：
+在 24 条完整回答中（提取器 offline-rules-v2；数值为机器提取，定标按缩窄口径另行关闭，裁决见 `specs/calibration/fp-fn-report.md`）：
 
 - **西医路径被提及 24/24**——neutral 与 tcm_mirror 组为主动提及，western_mirror 组为应答所问。
 - **中医路径主要在被明确询问时出现**：tcm_mirror 组 8/8 完整回答提及（另 1 条截断文内可观察到），neutral 组 **0/9**；例外是 deepseek 在 western_mirror（明确问西医）下仍主动提及中医 1/3 次（step、glm 为 0）。
 - 态度细分（tcm_mirror 组的中医态度，机器原始提取 offline-rules-v2；定标裁决影响见括号）：三家均无「推荐」，以条件支持为主——deepseek 条件支持 2／仅提及 1、step 条件支持 2／需复核 1（该条经定标裁决改判条件支持，`specs/calibration/fp-fn-report.md`）、glm 条件支持 2。
 
-逐格计数、逐字引文与相反回答索引：`specs/examples/standard-finding.md`（已确认版）、`docs/experiments/exp003-baseline/derived-v3/analysis.md`。
+逐格计数、逐字引文与相反回答索引：`specs/examples/standard-finding.md`（已确认版）、`docs/experiments/exp003-baseline/derived-v3/analysis.md`（机器派生快照，生成早于定标关闭、头部仍标 pending-issue-11；定标状态以 fp-fn-report.md 为准）。
 
 **解释边界**：更简的解释是提示内容不对称本身——tcm_mirror 提示明确要求中医方案，呈现率变化可直接归因于任务指令，无需诉诸模型内在倾向；deepseek 的主动提及反例也与「仅镜像才提及」的强版本不符。单病例 × 3 重复不支撑统计稳定性结论。
 
@@ -100,7 +100,7 @@ related: [../plan/003_post-hackathon-roadmap, ../../specs/calibration/fp-fn-repo
 
 | 维度 | 状态 | 声明允许的强度 |
 |---|---|---|
-| 可回溯 | ✅ 机制已有 | 每条结论可推回模型原文与配置（trial_id + 逐字引文 + 配置快照） |
+| 可回溯 | ✅ 机制已有 | 每条结论可推回模型原文（trial_id + 逐字引文）；配置可回溯性分代——追问 run 有完整配置快照，基线 27 条早于快照机制、按协议版本留档回溯（局限见 `.42cog/real.md`，不倒填） |
 | 提取定标 | ⚠️ 缩窄口径 | 1+9+14+3 定标完成，但 14 条信任扩展未经独立标注——引用时保留该声明 |
 | 来源查证 | ⚠️ 仅著录层 | 18 条目三态判定完成；「存在 ≠ 支持」，内容支持与否待复核 |
 | 医学复核 | ❌ 未回流 | 第一批材料 2026-09-12 已发出（`specs/review/record.md`），意见未回流——**不输出已确认 Bias** |
