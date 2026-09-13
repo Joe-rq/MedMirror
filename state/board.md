@@ -135,3 +135,7 @@ GitHub 公开仓已上线：https://github.com/Joe-rq/MedMirror（main = e5c1c32
 ## Issue #5 第一批材料发出与登记（2026-09-13，分支 review/issue-5-record）
 
 MR #45 已合并（f82bca1），plan/003 转 in-progress。主人 2026-09-12 已将第一批材料以压缩包形式发给候选复核人（对方近期忙，正式确认待定；交付排期未约定）。`specs/review/record.md` 如实登记：称呼/背景待登记、利益冲突声明待书面确认、收到材料日期 2026-09-12、两层交回日期未约定。**压缩包内容已核验通过（2026-09-13）**：14 个 docx 与 `scripts/export_review_pack.py` open 批导出形态一致，正文扫描仅含防锚定声明性提及、无候选层实质内容，第一层无锚定风险。issue #5 保持 open：人、排期两要素齐备前不评估关闭。
+
+## plan/003 步骤 1.3 完成与 MR 追加提交事故修复（2026-09-13，分支 docs/issue-11-final）
+
+standard-finding 两轮交付：一稿（MR #47）刷新数值至 derived-v3（v1/v2 提及计数核对一致，差异在态度细分与来源识别）、4 条引文脚本逐字验证命中 `docs/experiments/exp003-baseline/result/trials.jsonl`、过时声明清零（费用已核对口径、v2 缩窄定标声明、复核进行中）；主人逐项拍板 4 项全部采纳建议（研究问题沿用 calibration.md §1、待复核问题编号+指向、假设与奥卡姆反驳、结论边界草拟），占位清零、状态转"已确认"，成为结构标准实例正本。验证：check_docs / check_calibration / check_review_pack / pytest 186 全绿。**事故记录**：主人合并 MR #46/#47 时两分支各只含首个 commit（00168ac / 8cf746b），随后推送的追加 commit（核验通过 63d2f36、引用修复 17b5119、拍板落定 d1c2c08）挂在已关闭 MR 上未入 main，main 一度含会使 doc-hygiene 变红的裸引用——发现后从新 main 逐一 cherry-pick 为 127921c/c30e642/72ca3c8，经本 PR 补合。教训：**分支有追加 commit 时应等伙伴确认"分支已完备"再合并**。issue #11 遗留项闭合；阶段一伙伴侧工作清空，剩余等 #5 复核意见回流（主人侧：复核人确认、排期、#39 关闭）。
