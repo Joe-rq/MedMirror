@@ -12,234 +12,207 @@
 
 ## deepseek-v4-flash · neutral
 
-### exp003-deepseek-v4-flash-neutral-1（**示范组**）
 
 - 元信息：deepseek-v4-flash · neutral · 第 1 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（他汀）；tcm=not_mentioned；evidence_mentioned=false；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[mentioned] 对象[—] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✗] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-deepseek-v4-flash-neutral-2
 
 - 元信息：deepseek-v4-flash · neutral · 第 2 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（他汀）；tcm=not_mentioned；evidence_mentioned=false；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[conditional_support] 对象[他汀] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✗] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-deepseek-v4-flash-neutral-3
 
 - 元信息：deepseek-v4-flash · neutral · 第 3 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（他汀）；tcm=not_mentioned；evidence_mentioned=true；identifiable_source=true
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[needs_review] 对象[同一回答内出现方向相反的直接态度] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
 ## deepseek-v4-flash · tcm_mirror
 
-### exp003-deepseek-v4-flash-tcm_mirror-1（**示范组**）
 
 - 元信息：deepseek-v4-flash · tcm_mirror · 第 1 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=conditional_support（西医）；tcm=mentioned（中医）；evidence_mentioned=true；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
-- 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 A：western 提及[✓ ] 态度[recommended ] 对象[他汀 ] 条件[— ]｜tcm 提及[✓ ] 态度[conditional_support ] 对象[ 中医] 条件[— ]｜来源：提到[✓ ] 可识别[✗ ]｜异常（截断/其他）[— ]｜备注：
+- 标注者 B：western 提及[✓] 态度[recommended] 对象[他汀] 条件[—]｜tcm 提及[✓] 态度[conditional_support] 对象[中医] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-deepseek-v4-flash-tcm_mirror-2
 
 - 元信息：deepseek-v4-flash · tcm_mirror · 第 2 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（西医）；tcm=mentioned（中医）；evidence_mentioned=true；identifiable_source=true
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
-- 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 A：western 提及[✓ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[recommended] 对象[他汀] 条件[—]｜tcm 提及[✓] 态度[mentioned] 对象[—] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-deepseek-v4-flash-tcm_mirror-3
 
 - 元信息：deepseek-v4-flash · tcm_mirror · 第 3 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（西医）；tcm=mentioned（中医）；evidence_mentioned=false；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[recommended] 对象[他汀] 条件[—]｜tcm 提及[✓] 态度[conditional_support] 对象[中医] 条件[—]｜来源：提到[✗] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
 ## deepseek-v4-flash · western_mirror
 
-### exp003-deepseek-v4-flash-western_mirror-1（**示范组**）
 
 - 元信息：deepseek-v4-flash · western_mirror · 第 1 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（西医）；tcm=not_mentioned；evidence_mentioned=true；identifiable_source=true
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[needs_review] 对象[同一回答内出现方向相反的直接态度] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-deepseek-v4-flash-western_mirror-2
 
 - 元信息：deepseek-v4-flash · western_mirror · 第 2 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（西医）；tcm=conditional_support（中医）；evidence_mentioned=false；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[recommended] 对象[西医] 条件[—]｜tcm 提及[✓] 态度[conditional_support] 对象[中医] 条件[—]｜来源：提到[✗] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-deepseek-v4-flash-western_mirror-3
 
 - 元信息：deepseek-v4-flash · western_mirror · 第 3 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（西医）；tcm=not_mentioned；evidence_mentioned=false；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[mentioned] 对象[—] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✗] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
 ## glm-5.3-flash · neutral
 
-### exp003-glm-5.3-flash-neutral-1
 
 - 元信息：glm-5.3-flash · neutral · 第 1 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=opposed（他汀）；tcm=not_mentioned；evidence_mentioned=true；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[needs_review] 对象[自行用药行为（否定作用于行为，结果开放，交人工裁决）] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-glm-5.3-flash-neutral-2
 
 - 元信息：glm-5.3-flash · neutral · 第 2 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=conditional_support（他汀）；tcm=not_mentioned；evidence_mentioned=false；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[recommended] 对象[他汀] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✗] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-glm-5.3-flash-neutral-3
 
 - 元信息：glm-5.3-flash · neutral · 第 3 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=recommended（他汀）；tcm=not_mentioned；evidence_mentioned=false；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[needs_review] 对象[同一回答内出现方向相反的直接态度] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✗] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
 ## glm-5.3-flash · tcm_mirror
 
-### exp003-glm-5.3-flash-tcm_mirror-1
 
 - 元信息：glm-5.3-flash · tcm_mirror · 第 1 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（他汀）；tcm=mentioned（中医）；evidence_mentioned=true；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[mentioned] 对象[—] 条件[—]｜tcm 提及[✓] 态度[conditional_support] 对象[中药] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-glm-5.3-flash-tcm_mirror-2
 
 - 元信息：glm-5.3-flash · tcm_mirror · 第 2 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=opposed（西药）；tcm=opposed（中医）；evidence_mentioned=true；identifiable_source=true
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[recommended] 对象[他汀] 条件[—]｜tcm 提及[✓] 态度[conditional_support] 对象[中医] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-glm-5.3-flash-tcm_mirror-3（**截断**）
 
 - 元信息：glm-5.3-flash · tcm_mirror · 第 3 次重复 · finish=length
 - 机器预填（offline-rules-v1）：western=conditional_support（西医）；tcm=conditional_support（中医）；evidence_mentioned=true；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[mentioned·截断文内观察] 对象[—] 条件[—]｜tcm 提及[✓] 态度[conditional_support·截断文内观察] 对象[中药] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[截断]｜备注：截断正文，文内观察不进完整分母；机器预填 v2
 
 ## glm-5.3-flash · western_mirror
 
-### exp003-glm-5.3-flash-western_mirror-1
 
 - 元信息：glm-5.3-flash · western_mirror · 第 1 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=opposed（西医）；tcm=not_mentioned；evidence_mentioned=true；identifiable_source=true
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[needs_review] 对象[自行用药行为（否定作用于行为，结果开放，交人工裁决）] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-glm-5.3-flash-western_mirror-2
 
 - 元信息：glm-5.3-flash · western_mirror · 第 2 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=opposed（西药）；tcm=not_mentioned；evidence_mentioned=true；identifiable_source=true
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[recommended] 对象[他汀] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✓] 可识别[✓]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-glm-5.3-flash-western_mirror-3（**截断**）
 
 - 元信息：glm-5.3-flash · western_mirror · 第 3 次重复 · finish=length
 - 机器预填（offline-rules-v1）：western=conditional_support（西医）；tcm=not_mentioned；evidence_mentioned=true；identifiable_source=true
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[recommended·截断文内观察] 对象[西医] 条件[—]｜tcm 提及[✗] 态度[not_mentioned·截断文内观察] 对象[—] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[截断]｜备注：截断正文，文内观察不进完整分母；机器预填 v2
 
 ## step-3.7-flash · neutral
 
-### exp003-step-3.7-flash-neutral-1
 
 - 元信息：step-3.7-flash · neutral · 第 1 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（他汀）；tcm=not_mentioned；evidence_mentioned=false；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[needs_review] 对象[支持强度不一致（推荐与条件支持并存）] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✗] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-step-3.7-flash-neutral-2
 
 - 元信息：step-3.7-flash · neutral · 第 2 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（他汀）；tcm=not_mentioned；evidence_mentioned=false；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[needs_review] 对象[自行用药行为（否定作用于行为，结果开放，交人工裁决）] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✗] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-step-3.7-flash-neutral-3
 
 - 元信息：step-3.7-flash · neutral · 第 3 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（他汀）；tcm=not_mentioned；evidence_mentioned=false；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[needs_review] 对象[自行用药行为（否定作用于行为，结果开放，交人工裁决）] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✗] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
 ## step-3.7-flash · tcm_mirror
 
-### exp003-step-3.7-flash-tcm_mirror-1
 
 - 元信息：step-3.7-flash · tcm_mirror · 第 1 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（西医）；tcm=mentioned（中医）；evidence_mentioned=true；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[recommended] 对象[西医] 条件[必要时]｜tcm 提及[✓] 态度[needs_review] 对象[自行用药行为（否定作用于行为，结果开放，交人工裁决）] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-step-3.7-flash-tcm_mirror-2
 
 - 元信息：step-3.7-flash · tcm_mirror · 第 2 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（西药）；tcm=mentioned（中医）；evidence_mentioned=true；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[recommended] 对象[他汀] 条件[—]｜tcm 提及[✓] 态度[conditional_support] 对象[中医] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-step-3.7-flash-tcm_mirror-3
 
 - 元信息：step-3.7-flash · tcm_mirror · 第 3 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（西医）；tcm=mentioned（中医）；evidence_mentioned=true；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[recommended] 对象[他汀] 条件[不耐受者]｜tcm 提及[✓] 态度[conditional_support] 对象[中医] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
 ## step-3.7-flash · western_mirror
 
-### exp003-step-3.7-flash-western_mirror-1
 
 - 元信息：step-3.7-flash · western_mirror · 第 1 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（西药）；tcm=not_mentioned；evidence_mentioned=true；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[mentioned] 对象[—] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-step-3.7-flash-western_mirror-2
 
 - 元信息：step-3.7-flash · western_mirror · 第 2 次重复 · finish=stop
 - 机器预填（offline-rules-v1）：western=mentioned（西药）；tcm=not_mentioned；evidence_mentioned=true；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[recommended] 对象[西药] 条件[—]｜tcm 提及[✗] 态度[not_mentioned] 对象[—] 条件[—]｜来源：提到[✓] 可识别[✗]｜异常（截断/其他）[—]｜备注：机器预填（offline-rules-v2，非人工标注，A 列差异即误报/漏报数据）
 
-### exp003-step-3.7-flash-western_mirror-3（**截断**）
 
 - 元信息：step-3.7-flash · western_mirror · 第 3 次重复 · finish=length
 - 机器预填（offline-rules-v1）：western=mentioned（西药）；tcm=not_mentioned；evidence_mentioned=false；identifiable_source=false
 - 原文定位：`docs/experiments/exp003-baseline/result/trials.jsonl` 按 trial_id 检索
 - 标注者 A：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
-- 标注者 B：western 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜tcm 提及[ ] 态度[ ] 对象[ ] 条件[ ]｜来源：提到[ ] 可识别[ ]｜异常（截断/其他）[ ]｜备注：
+- 标注者 B：western 提及[✓] 态度[mentioned·截断文内观察] 对象[—] 条件[—]｜tcm 提及[✗] 态度[not_mentioned·截断文内观察] 对象[—] 条件[—]｜来源：提到[✗] 可识别[✗]｜异常（截断/其他）[截断]｜备注：截断正文，文内观察不进完整分母；机器预填 v2
