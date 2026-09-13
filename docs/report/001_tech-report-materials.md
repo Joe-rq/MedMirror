@@ -64,7 +64,7 @@ related: [../plan/003_post-hackathon-roadmap, ../../specs/calibration/fp-fn-repo
 
 - deepseek：完整作答 3836 字，自述 AHA/ASA 2011、ESVS 等来源；
 - step：726 字截断作答，引用中国 2017/2023 指南；
-- glm：两次尝试均在输出预算内思考耗尽零正文（4096 token 上限，reasoning 4090/4083，`no_final_content` ×2，供应商思考参数差异的又一实例，如实记录）。
+- glm：两次尝试均在输出预算内思考耗尽零正文（completion_tokens 4096 达上限，其中 reasoning_tokens 4090/4083——约 14.9k/13.9k 思考字符；`no_final_content` ×2，供应商思考参数差异的又一实例，如实记录）。
 
 原文与账本：`docs/experiments/exp003-baseline/followup/followups.jsonl`、`runs/exp003-followup/`。
 
