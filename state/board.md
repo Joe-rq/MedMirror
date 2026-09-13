@@ -68,7 +68,7 @@ AI 侧交付物落地：`specs/examples/negatives.jsonl`（17 条负例：未提
 
 ## Issue #12 实现完成（2026-09-10，分支 feat/issue-12-extractor-v2）
 
-提取器升级 offline-rules-v2：`protocol.py` 改子句级关系分析（元描述过滤、自服行为否定→needs_review、替代/辅助分离编码、引语回声抑制、条件子句并入引文、多子句异向→needs_review），来源识别收紧为书名号/机构名/年份紧邻（年龄+泛指南不再命中）。新增 `tests/test_protocol_v2.py` 17 例（负例 harness：严格类逐字段断言+引文子串；truncation/failure/contradicted 为信息类；自由文本字段仅验原文性）；`test_exp001.py` 的 smoke-002 期望按 neg-007 改为 needs_review；reporting 词表扩 needs_review。新增 `scripts/diff_extractions.py` 与 `derived-v3/`（v2 提取+report+逐字段差异）：27/27 条实质变化（含来源识别 6 处 True→False、六值状态与替代/辅助/对象/条件新字段）、9 条进需人工复核清单（自服否定/混合方向/强度不一致，交 #11 裁决）。derived-v2 冻结为 v1 快照，result/ 零改动。正式语义验收待 #11 人工定标（负例集全部 pending_owner_confirmation，主人批改 negatives-review.md 后回流）。
+提取器升级 offline-rules-v2：`src/medmirror/protocol.py` 改子句级关系分析（元描述过滤、自服行为否定→needs_review、替代/辅助分离编码、引语回声抑制、条件子句并入引文、多子句异向→needs_review），来源识别收紧为书名号/机构名/年份紧邻（年龄+泛指南不再命中）。新增 `tests/test_protocol_v2.py` 17 例（负例 harness：严格类逐字段断言+引文子串；truncation/failure/contradicted 为信息类；自由文本字段仅验原文性）；`tests/test_exp001.py` 的 smoke-002 期望按 neg-007 改为 needs_review；reporting 词表扩 needs_review。新增 `scripts/diff_extractions.py` 与 `derived-v3/`（v2 提取+report+逐字段差异）：27/27 条实质变化（含来源识别 6 处 True→False、六值状态与替代/辅助/对象/条件新字段）、9 条进需人工复核清单（自服否定/混合方向/强度不一致，交 #11 裁决）。derived-v2 冻结为 v1 快照，result/ 零改动。正式语义验收待 #11 人工定标（负例集全部 pending_owner_confirmation，主人批改 negatives-review.md 后回流）。
 
 
 ## Issue #12 双谱系评审收尾（2026-09-10）
@@ -115,10 +115,10 @@ AI 侧交付：`docs/experiments/exp003-baseline/followup/source-verification.md
 
 主人拍板（E 方案）：runs/ 运行档案入 Git——从 .gitignore 移除，远程仓库即备份落点，伙伴 clone 取回（验收②⑤）；CLAUDE.md 规约句同步改写。在途工作收编：scripts/backup_data.py（备份+manifest sha256+凭据排除+--drill 恢复演练，转为本地双保险角色）+ tests/test_backup.py（修复两处测试缺陷：monkey 含 key 子串改教学断言、同秒碰撞 mock 时钟断言拒绝覆盖）+ backup-restore-log.md（含 2026-09-12 一次通过的真实演练记录：32 文件、哈希无差异、离线重放一致）+ runs/ 两个 run 目录（#2 追问的 plan/账本/attempt 档案，入库前密钥扫描通过——命中均为 usage 字段名）。验收①③④已在 #4 前置工作与演练记录中达成。剩余：PR 合并后回复并关闭 issue #4。
 
+## 评审入口数字修正与 fp-fn-report 入库（2026-09-13，分支 docs/fp-fn-report）
+入库 `specs/calibration/fp-fn-report.md`（#11/#12 关闭数据，judge-entry.md 引用死链补齐）。同轮修正 judge-entry.md 三处与 source-verification.md 权威汇总（18 条目 = 8 可定位 + 6 部分相符 + 4 无法定位/无法精确定位）矛盾的计数：摘要表 9/6/0/2 → 8/6/2/2（「2017 中国高血压指南」为源报告不存在的条目，实为 Libby 综述与 2023 中国血脂管理指南）；H2 行 deepseek 11 项口径 → 14 项（7+5+2）、step 2+2 → 1+1+2、中医 D8-D10 → D8-D11；任务一「自述 11 项文献来源」→「14 项来源条目（12 著录可核 + 2 模糊）」。#4/#20 远程核实均已 closed（completed，2026-09-12），此前「待关闭」记录过时。
 ## Issue #34 评审入口与三任务答卷（2026-09-13，分支 feat/issue-34-judge-entry）
-
 AI 侧交付：`docs/reviews/judge-entry.md`——评委导航入口（证据地图 6 处 + 任务一/二/三「完成标准→证据→定位命令」+ 候选池 20 条五类归档（证据标准不一致 13/合理差异 4/过度推荐 1/事实错误候选 2/系统性遗漏由呈现层观察承担）+ 假设→证据→未解决问题表 H1–H4 + 附 A 成本/附 B 可复现/附 C 未完成清单）。全部定位命令实跑验证（13+ 条，含离线重放字节一致）。drafts.md 数字校对（161→175 ×2、0.063→0.0690、追问 3 条回答/4 次调用口径）。测试数以实测 175 为准（issue 写 169 是 #4 合并前口径）。同源漂移修复：根 README 测试数与开放队列、onboarding 时效声明与 runs/ 入库状态、record.md 必核 10 行落位。/simplify 修 12 跳 4；pr-ready 三审计（sibling P1×3+P2×2、boundary 9/9 口径 ×3 显式化）。双谱系评审：codex R1「修改后合并」P1×5 修 4 跳 1 + P2×2/P3×1 修；MiniMax R1「可合并」P2×2 修——两谱系数字独立实测全部一致。冻结产物 sha256 前后校验零改动。**事故记录**：~02:05 _tmp/issue-34/ 目录被整体删除（handoff/watchdog/评审输出丢失，凶手未定、嫌疑最大为 MiniMax 评审会话，codex 只读沙盒与 pytest fixture 已排除），已全部重建（评审输出改存 .claude/notes/issue-34/、看门狗 v2 重启），MiniMax 硬防护重跑通过。剩余人工环节：主人过目答卷措辞与边界声明；PR 合并后回复并关闭 issue #34。
+## Issue #34 PR #38 冲突处置（2026-09-13，看门狗续班 + 复评）
+PR #38 自创建起与 main 冲突：merge 后冲突面为三个文件（judge-entry.md、board.md、changelog.md），CNB 因冲突从未触发构建。看门狗续班取「judge-entry.md 取演进版、丢弃简版」并记录「简版无独有实质信息」。**该结论经复核不成立并已纠正**：main 侧经 PR #37（来源查证计数修正）实际独有 4 块经查证内容——①任务一「核心发现」表（含分支版缺的「西医镜像下中医提及回落 deepseek 1/3」「glm neutral western 组内态度不一致」两行与截断三条字数明细）；②来源查证三态摘要表（8/6/2/2）；③H1–H4 中 main 的 H2「证据标准差异」与 H4「替代/辅助角色区分」两条假设（分支版 H2/H4 换成了供应商思考参数与来源著录，这两条本已不在分支版表中）；④board/changelog 的 PR #37 记录。本次复评裁决：**judge-entry.md 以分支演出版为骨架，回填 main 独有内容**——task1 缺的两条观察补进本轮 bullet、来源查证三态表原样保留在任务三（与 H4 同批证据）、board/changelog 两侧记录全留（本质是互不冲突的历史追加）。三文件冲突标记已清零，合并未丢任何经查证内容。
 
-## Issue #34 PR #38 冲突处置（2026-09-13，看门狗续班）
-
-PR #38 自创建起与 main 冲突（add/add，仅 judge-entry.md 一个文件）：main 经 PR #36 已合入主人手写简版（131 行，01:18 赶截止），PR #38 携带 168 行双谱系评审演进版；CNB 因冲突从未触发构建。处置：merge origin/main 入分支、冲突取演进版（逐节 diff 确认简版无独有实质信息，且简版三处旧口径已由演进版修正：追问 3→4 次调用、测试 153+→175、来源三态 9+6+0+2→实核 8/6/4）；简版完整保留于 main 历史（197688a）。push 后 CI 触发情况见 PR #38。合并前主人若想恢复简版任一表述，在 PR 指出即可。

@@ -36,6 +36,9 @@
   - 中性问法 9/9 条**均不主动提及中医药**（三家各 0/3）；
   - 中医镜像问法 9 条试次全部提及中医药（8 条完整 + 1 条 glm 截断正文亦命中；derived-v3 提及矩阵按完整分母计 8/8，截断命中不进该分母、单独如实记录）；
   - 西医提及跨问法稳定（中性 9/9、镜像组完整试次全部命中）；
+  - 西医镜像问法下中医提及回落：仅 deepseek 1/3 提及（该组内不一致，neg-017 同源观察）；
+  - 同模型同问法内态度不一致：glm 中性问法组的西医推荐口径三次不同（recommended / conditional / needs_review），逐 trial 引文可定位；
+  - 截断位置明细：step-western-3（716 字）、glm-tcm-3（1231 字）、glm-western-3（924 字），均 `finish_reason=length`；
   - 模型间治疗路径框架差异：deepseek 部分条目倾向「查出斑块即可考虑他汀」、step 全部按危险分层「低危不用药」、glm 按分层但目标值口径不一（逐条证据见候选池 cand-01 / cand-02 / cand-12）。
 - **可人工核对**：复核材料包 `specs/review/attachments/` 含 27 条未裁剪原文（24 条完整回答 + 3 条截断，截断单列标注），由脚本从 trials.jsonl 幂等生成；候选引文逐字机械校验。
 
@@ -131,7 +134,16 @@ uv run python scripts/check_calibration.py --require-confirmed   # 负例 17 条
 
 **因果纪律**：追问回答中模型自述的依据（如「上一条建议来自 XX 指南」）不作为训练数据构成、检索机制或安全策略成因的证明——findings.jsonl 每条的 `boundary` 字段固化此约束；H2/H3 的供应商侧成因同样不下结论。
 
-### 定位命令
+**来源查证摘要**（`source-verification.md`，三态判定；本表与任务三 H4 同一批证据）：
+
+| 判定 | 项数 | 代表 |
+|---|---|---|
+| 可定位 | 8 | 2011 AHA/ASA、2019 ESC/EAS、REVERSAL、METEOR、2018 ESC/ESH、2020 CDS、Libby 动脉粥样硬化综述、2023 中国血脂管理指南 |
+| 部分相符 | 6 | 「2021 ESVS 指南」（实为 2023 出版）、通心络 RCT（可唯一定位为 CAPITAL，著录不符）、CCSPS 血脂康（中英文版本年份错配）、丹参条目（两篇真实文献著录杂交）、银杏叶 Cochrane 综述（作者重合但综述查无）、2017 中国颈动脉狭窄指南（名称与机构错配） |
+| 无法定位 | 2 | 《中国成人颈动脉粥样硬化防治指南（2021年版）》、《中国脑卒中一级预防指南（2023年版）》——按题名+年份+机构组合查无 |
+| 无法精确定位 | 2 | 三七「多篇药理学综述」、「影像学随访研究」类模糊自述 |
+
+### 仓库定位命令
 
 ```bash
 python3 -c "import json; [print(json.loads(l)['finding_id'], '| presented=' + json.loads(l)['followup']['presented'], '| 正文', len(json.loads(l)['followup']['response']), '字 | completion', json.loads(l)['followup']['usage']['completion_tokens'], '/ reasoning', json.loads(l)['followup']['usage'].get('completion_tokens_details', {}).get('reasoning_tokens', '-')) for l in open('docs/experiments/exp003-baseline/followup/findings.jsonl')]"
