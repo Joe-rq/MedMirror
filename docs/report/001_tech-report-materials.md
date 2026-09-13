@@ -5,7 +5,7 @@ date: 2026-09-13
 title: 技术报告素材稿：医疗大模型呈现差异评测工作流的可靠性证据链
 status: draft
 tags: [narrative, reliability, cost]
-related: [../plan/003_post-hackathon-roadmap, ../specs/calibration/fp-fn-report, ../specs/calibration/bill-check]
+related: [../plan/003_post-hackathon-roadmap, ../../specs/calibration/fp-fn-report, ../../specs/calibration/bill-check]
 ---
 
 # 技术报告素材稿：医疗大模型呈现差异评测工作流的可靠性证据链
@@ -18,7 +18,7 @@ related: [../plan/003_post-hackathon-roadmap, ../specs/calibration/fp-fn-report,
 
 结构：**方法**（协议先行与执行保护）→ **发现**（呈现差异、追问、来源查证）→ **成本**（三口径分列）→ **局限**（可靠性证据维度状态逐项绑定）→ **复现**（clone 即验）。
 
-一句话导读：这套呈现差异评测工作流的价值不在便宜（成本只是特性，见第三节），而在每个结论都能推回模型原文、每次调用都有账本、每个数字都有口径——可靠性按证据维度的实际状态分档声明，不超出证据允许的范围。
+一句话导读：这套呈现差异评测工作流的价值不在便宜（成本只是特性，见第三节），而在每个结论都能推回模型原文、追问调用有预算账本、每个数字都有口径——可靠性按证据维度的实际状态分档声明，不超出证据允许的范围。
 
 ## 一、方法：协议先行，尺子不改在途中
 
@@ -30,7 +30,7 @@ related: [../plan/003_post-hackathon-roadmap, ../specs/calibration/fp-fn-report,
 
 ### 1.2 执行保护
 
-- 预算硬闸：reserve→settle/refund 三段账本；价格未登记的模型零调用；超支入账但不放行新调用（`src/medmirror/budget.py`，`runs/` 账本原件）。
+- 预算硬闸：reserve→settle/refund 三段账本；价格未登记的模型零调用；超支入账但不放行新调用（`src/medmirror/budget.py`）。追问调用有逐笔预算账本（`runs/` 原件）；基线 27 条早于该账本机制，费用按保留 usage 与登记价格复算（`scripts/reconcile_budget.py`）。
 - 运行记录保护：每次执行独立 run 目录（完整计划 + 脱敏配置快照 + 追加式 attempt 日志）；崩溃恢复不重复成功试次，换配置拒绝复用同目录（`src/medmirror/runner.py`）。
 - 有界追问：固定触发规则（中性组全未提及 + 镜像组可定位提及）、每模型 ≤2 次 / 全轮 ≤6 次、按实际调用计额（followup-rules-v1，`docs/experiments/exp003-baseline/followup/`）。
 
@@ -42,7 +42,7 @@ related: [../plan/003_post-hackathon-roadmap, ../specs/calibration/fp-fn-report,
 
 ### 1.4 评审
 
-工程与材料改动经**双谱系 AI 交叉评审**（GPT 系 codex + MiniMax/DeepSeek 系，多轮收敛至无 P0/P1/P2 才合并；评审者均为 AI，非人工独立评审，例外与放宽在 `state/board.md` 如实记录）。
+既有工程与材料改动经**双谱系 AI 交叉评审**（GPT 系 codex + MiniMax/DeepSeek 系，多轮收敛至无 P0/P1/P2 才合并；评审者均为 AI，非人工独立评审，例外与放宽在 `state/board.md` 如实记录）；本稿自身亦随 PR 走双谱系评审（评审状态见 PR 描述）。
 
 ## 二、发现
 
@@ -51,9 +51,8 @@ related: [../plan/003_post-hackathon-roadmap, ../specs/calibration/fp-fn-report,
 在 24 条完整回答中（提取器 offline-rules-v2，缩窄定标口径）：
 
 - **西医路径被提及 24/24**——所有模型、所有问法下均主动呈现。
-- **中医路径仅在被明确询问时出现**：tcm_mirror 组 8/8 完整回答提及（另 1 条截断文内可观察到）；neutral 组 **0/9**。
-- 不对称的例外：deepseek 在 western_mirror（明确问西医）下仍主动提及中医 1/3 次；step、glm 均为 0。
-- 态度细分（tcm_mirror 组的中医态度）：三家均无「推荐」，以条件支持为主——deepseek 条件支持 2／仅提及 1、step 条件支持 2／需复核 1、glm 条件支持 2。
+- **中医路径主要在被明确询问时出现**：tcm_mirror 组 8/8 完整回答提及（另 1 条截断文内可观察到），neutral 组 **0/9**；例外是 deepseek 在 western_mirror（明确问西医）下仍主动提及中医 1/3 次（step、glm 为 0）。
+- 态度细分（tcm_mirror 组的中医态度，机器原始提取 offline-rules-v2；定标裁决影响见括号）：三家均无「推荐」，以条件支持为主——deepseek 条件支持 2／仅提及 1、step 条件支持 2／需复核 1（该条经定标裁决改判条件支持，`specs/calibration/fp-fn-report.md`）、glm 条件支持 2。
 
 逐格计数、逐字引文与相反回答索引：`specs/examples/standard-finding.md`（已确认版）、`docs/experiments/exp003-baseline/derived-v3/analysis.md`。
 
@@ -91,9 +90,9 @@ related: [../plan/003_post-hackathon-roadmap, ../specs/calibration/fp-fn-report,
 |---|---:|---|---|
 | 基线估算 | 0.372007 | 27 条基线按登记价格多少钱 | `scripts/reconcile_budget.py` 逐笔复算 |
 | 追问实花 | 0.069029 | 有界追问 4 次调用实花多少 | `runs/` 预算账本逐笔 settle |
-| 已核对总额 | 0.4746 | 三家控制台 2026-09-09~13 实际消费（含历史协议调试重试） | `specs/calibration/bill-check.md`（主人登录控制台核对） |
+| 已核对总额 | 0.4746 | 三家控制台实际消费合计（主人 2026-09-12 登录核对，覆盖基线+追问+开发期调试重试） | `specs/calibration/bill-check.md` |
 
-路演场合宣称的「约 0.44 元」≈ 前两口径之和（0.441036），不含开发期调试调用。预算总额 50 元（`.42cog/real.md`）。
+路演场合宣称的「约 0.44 元」≈ 基线估算与追问实花之和（不含开发期调试调用；此为对历史说法的换算说明，非可引用口径）。预算总额 50 元（`.42cog/real.md`）。
 
 ## 四、局限：可靠性按证据维度状态声明
 
@@ -118,9 +117,9 @@ git clone https://github.com/Joe-rq/MedMirror && cd MedMirror
 uv sync && uv run pytest   # 236 项离线测试，无需 API 密钥
 ```
 
-- CI 闸门全绿（ruff format/check、pytest、check-manifests、doc-hygiene，定义见 `.cnb.yml`）；离线重放 exp003 产物与已发布报告**字节一致**。
+- CI 闸门全绿（定义见 `.cnb.yml`；文档卫生闸不覆盖 `docs/` 报告目录）；离线重放 exp003 产物与已发布报告**字节一致**。
 - 证据导航入口（每节 3 条命令内到达原始证据）：`docs/reviews/judge-entry.md`。
-- 新病例接入 = 填一份 CaseSpec 声明式配置（`configs/cases/README.md`，零改码）。
+- 新病例接入：配置层零改码——填一份 CaseSpec 声明式配置（`configs/cases/README.md`）；全链路执行入口与新病例冒烟待 2.3（当前经库级 API）。
 
 ---
 

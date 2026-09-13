@@ -10,7 +10,7 @@ related: [plan/001_autonomous-evaluation-loop, plan/002_prototype-calibration-ha
 
 # 黑客松后路线图：证据等级 → 规模 → 输出
 
-2026-09-13 黑客松作品已提交（GitHub 公开仓 https://github.com/Joe-rq/MedMirror ，main = e5c1c32，评委导航 `docs/reviews/judge-entry.md`）。评审期后项目价值锚点从"给评委看"换回 intent.md 的目标受众——评测研究者。对评测研究者而言，当前三个关键问题的答案是：提取器语义**已按缩窄口径定标**（1 条完整标注 + 9 条裁决 + 14 条抽查信任扩展，局限声明见 `specs/calibration/fp-fn-report.md`）、复核**未执行**、样本**撑不住稳定性结论**。因此后续主线不是加功能，而是把已有 27+4 条数据的证据等级提上去，再放大规模，再对外输出。
+2026-09-13 黑客松作品已提交（GitHub 公开仓 https://github.com/Joe-rq/MedMirror ，镜像——CNB 仓库为真相源，同步状态见 `state/board.md`；评委导航 `docs/reviews/judge-entry.md`）。评审期后项目价值锚点从"给评委看"换回 intent.md 的目标受众——评测研究者。对评测研究者而言，当前三个关键问题的答案是：提取器语义**已按缩窄口径定标**（1 条完整标注 + 9 条裁决 + 14 条抽查信任扩展，局限声明见 `specs/calibration/fp-fn-report.md`）、复核**未执行**、样本**撑不住稳定性结论**。因此后续主线不是加功能，而是把已有 27+4 条数据的证据等级提上去，再放大规模，再对外输出。
 
 主人 2026-09-13 确认三项前提：
 - **定位**（四项并存，主次按本路线图排）：论文/技术报告、开源工具、持续参赛、自用学习。
@@ -66,7 +66,7 @@ related: [plan/001_autonomous-evaluation-loop, plan/002_prototype-calibration-ha
 **「新场景接入成本」指标定义（#55，2.2 验收附件）**
 
 - 起止点：病例 CaseSpec 落盘 → 该病例 derived 报告生成。
-- 测量环境：本机四闸环境；首次测量时登记硬件、Python 版本与逐步骤清单。
+- 测量环境：本机四闸环境；首次测量时登记硬件、Python 版本与逐步骤清单；计时以 shell `time` 或等价工具，从干净临时输出目录起测（避免历史产物缓存干扰）。
 - 重复 3 次取中位数（步骤数与耗时分别取）。
 - 阈值不空定：2.3 首个新病例实测后由主人定阈值，再约束后续病例接入。
 
@@ -74,9 +74,15 @@ related: [plan/001_autonomous-evaluation-loop, plan/002_prototype-calibration-ha
 
 | # | 步骤 | 涉及 | 验收 |
 |---|------|------|------|
-| 3.1 | 技术报告/文章：方法闭环、可靠性证据链叙事（成本三口径作特性分列，不作卖点）、双谱系 AI 交叉评审实践、来源查证发现（著录错位模式 6+4/18）；素材稿 `report/001_tech-report-materials.md`（#52/#55，AI 侧已起草） | 主人定稿 | 发布并链接入 `docs/`；素材稿叙事 checklist 全绿（#55 验收①）；核心短语机械验收（#55 验收③）：`grep -l "呈现差异评测工作流" README.md docs/report/001_tech-report-materials.md docs/reviews/judge-entry.md \| wc -l` 期望 3 |
+| 3.1 | 技术报告/文章：方法闭环、可靠性证据链叙事（成本三口径作特性分列，不作卖点）、双谱系 AI 交叉评审实践、来源查证发现（著录错位模式 6+4/18）；素材稿 `report/001_tech-report-materials.md`（#52/#55，AI 侧已起草） | 主人定稿 | 发布并链接入 `docs/`；素材稿叙事 checklist 全绿（#55 验收①）；核心短语机械验收（#55 验收③，命令见阶段三表后代码块，期望 3） |
 | 3.2 | README 英文化 + 快速上手（clone → `uv sync` → 四闸 → 自带病例跑通） | 伙伴 | 匿名 clone 实测全流程一次通过 |
 | 3.3 | issue #6（P2 后置）按外部反馈决定是否启动 | 双方 | 有反馈依据再动 |
+
+核心短语机械验收命令（#55 验收③）：
+
+```bash
+grep -l "呈现差异评测工作流" README.md docs/report/001_tech-report-materials.md docs/reviews/judge-entry.md | wc -l   # 期望 3
+```
 
 ## 4. 风险与权衡
 
