@@ -9,3 +9,4 @@
 | — | 2026-09-09 | 在50元预算内如何确定首轮MedMirror实验协议、官方API接入与评分方案 → 取舍卡见 `docs/research/001_med-first-run/decision.md` | 历史记录 |
 
 | [002](002_prototype-calibration-handoff.md) | 2026-09-09 | 原型纠偏与双人开发交接 | draft |
+| [003](003_post-hackathon-roadmap.md) | 2026-09-13 | 黑客松后路线图：证据等级 → 规模 → 输出 | draft |
