@@ -125,3 +125,7 @@ PR #38 自创建起与 main 冲突：merge 后冲突面为三个文件（judge-e
 ## Issue #39 开源上线（2026-09-13，分支 docs/issue-39-judge-nav）
 
 GitHub 公开仓已上线：https://github.com/Joe-rq/MedMirror（main = e5c1c32，PR #40 + #41）。README 评委快速入口（导航→judge-entry→证据地图→四闸复现，命令实跑 186 passed）；测试数 175→186 同源刷新 5 处（board 历史快照不改写）；措辞中性化：评审声明去「独立/每个」误导并指向 state 日志例外记录、事故记录去指向性嫌疑表述（board/changelog 同源两处）；judge-entry 账单状态与 bill-check.md 已核对状态对齐。双谱系评审收敛：codex R1 P1×2+P2×2 全部修复；MiniMax R2 判可合并，另抓到 codex 漏判（changelog 条目复述被中性化原措辞）。事故如实记录：首次 push github 误推本地过期 main（e6cca90），约数分钟窗口匿名访问见旧 README，已更正并复扫密钥干净。匿名回读验证：仓库页/raw README/raw trials.jsonl 均 200。issue #39 待主人确认表单字段 10 后关闭。
+
+## 黑客松后路线讨论落 plan/003（2026-09-13，未提交）
+
+主人确认：定位四项并存（论文/技术报告、开源工具、持续参赛、自用学习），人工环节自行投入（#11 定标自己做、#5 复核人去找）。路线图定稿为 `docs/plan/003_post-hackathon-roadmap.md`（draft）：阶段一人工闭环（P0，定标未完成前禁止扩规模）→ 阶段二新病例 + 病例/协议模板化（研究问题变更，须主人拍板 + 协议 v2.0）→ 阶段三对外输出（技术报告、README 英文化）。工程侧不再主动扩张。本轮纯讨论与文档：plan/003 + 两处索引已写入本地，未提交、未推送、未调用 API。
