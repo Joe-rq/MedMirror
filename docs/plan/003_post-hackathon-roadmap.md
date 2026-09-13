@@ -3,7 +3,7 @@ type: plan
 number: "003"
 date: 2026-09-13
 title: 黑客松后路线图：证据等级 → 规模 → 输出
-status: draft
+status: in-progress
 tags: [roadmap, calibration, review, scaling, open-source]
 related: [plan/001_autonomous-evaluation-loop, plan/002_prototype-calibration-handoff, research/001_med-first-run]
 ---
