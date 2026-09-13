@@ -143,3 +143,13 @@ standard-finding 两轮交付：一稿（MR #47）刷新数值至 derived-v3（v
 ## Issue #50 协议模板化前半完成（2026-09-13，分支 feat/issue-50-casespec）
 
 CaseSpec 声明式病例配置落地：`configs/cases/carotid_plaque_001.json`（case_id/protocol_version/trial_prefix/case_text/variants/extraction 词表/notes 逐字节迁自代码常量）+ `src/medmirror/casespec.py`（封闭 schema 校验：未知键拒绝、trial_prefix 格式、extractor_version 兼容检查单源于 protocol.EXTRACTOR_VERSION，不匹配拒绝加载）。runner 常量转默认病例派生别名（gen_review_attachments/check_review_pack/test 引用者零 diff），planned_trials/execute_run/config_fingerprint/materialize 增 spec 参数，plan.json 快照完整 case_spec 供审计；protocol PATH_PATTERNS 自 CaseSpec 注入、extract_trial/aggregate 词表可穿参；reporting 四函数词表同源穿参、漂移闸不弱于现状。验收：重放测试 8 例（27 条逐字段对历史 trials.jsonl 本体、variants 独立锚不经派生常量、endpoint 对目录派生 registry——历史行无 endpoint 字段系 pre-#13 执行器不存，口径已在测试注释声明）；17/17 负例回归绿；reporting/report_exp003/run_exp003_baseline 病例常量引用零（测试锁定）；docs/experiments 与 runs/ 零改动（git diff 0 行）。四闸干净 worktree 全绿（210 = 186 + 24 新增）。设计决定：指纹有意不含词表（词表不影响 API 请求，改词表走版本号红线不走指纹）；不加 --case CLI（新病例执行属 2.3）。遗留登记：followup.py:179/216 的 calibration-v1.3 硬编码未动（followup-rules-v1 独立锚定 exp003，非本件范围，2.3 新病例时一并处理）。issue #50 待 PR 合并后回复关闭。
+
+## MR #53 追加提交事故与补合（2026-09-13，分支 fix/issue-50-review-r1）
+
+MR #53 被主人合并于 ddc754a，但分支随后推送的评审修复 commit cf3e0af（codex R1 全闭环：3 P1 + 4 P2 + 1 P3 修复与 10 例新回归）未入 main——与 #46/#47 同款「追加 commit 挂在已关闭 MR」事故（第二次）。发现时 main 带 P1 缺陷：自定义词表穿参不完整（_families/_role_families/_sentence_relations 仍读全局默认词表，新病例替代/辅助/自服关系失效，踩「只抽病例不抽词表」红线）。处置照 issue #11 先例：从新 main cherry-pick 为 ee10e09 走本 PR 补合。双谱系评审改在本补合 PR 上继续（谱系 A 待主人指定 codex 模型）。教训再确认：**分支有追加 commit 时应等伙伴确认「分支已完备」再合并**。
+
+补记（同日）：MiniMax R1 判「可合并」（0 P0/P1/P2 + 5 P3，正向核验指纹字节相等与重放非假绿）；5 条 P3 已全部修复（老 plan 无快照时用首计划 trial_id 兜底、差异字段展开 extraction 一层、notes 合成声明前置加载层硬校验、onboarding 格式数刷新、本段补记 210→220 口径：评审 R1 闭环新增 10 例回归）。谱系 A 正式评审按主人指定模型 gpt-5.6-luna 执行。
+
+补记（同日第二次）：codex gpt-5.6-luna R1 判「修改后合并」（3 P1 + 5 P2），全部闭环：词表签名随提取行落盘并在报告侧强比对（首命中词重叠不再漏判）；vocab-registry.json 词表登记闸（同版本三元组词表不可变，机械落实「改词表=新版本号」红线，兼堵旧 plan 恢复语义缺口——仓库内现存 zero 个旧格式 execute_run plan）；synthetic 显式布尔声明（字符串标记可被「非合成病例」否定表述绕过）；JSON 重复键拒绝；变体/路径名控制字符拒绝；case_text 冻结锚 + endpoint 间接校验措辞收敛；渲染器 exp003 品牌边界入档。前段「210→220」口径经两轮评审递增：现 231（35 例新回归）。
+
+补记（同日第三次，评审收敛）：codex R3 P2（构造后容器变异）经执行入口复检闭环、R4 指出的回归测试假绿已按其建议改为直传污染对象；MiniMax R2 全面复验最终态——两谱系在全部轮次上 P0/P1/P2 清零（仅 2 处文档数字漂移已随本 commit 回流：测试数 236、ruff format 118）。评审链全貌：codex 默认模型参考轮（3P1+4P2+1P3）→ codex gpt-5.6-luna R1（3P1+5P2）→ R2（1P2）→ R3（1P2）→ R4（测试假绿）；MiniMax R1（5P3，判可合并）→ R2（判可合并，0 P0/P1/P2）。双谱系收敛达成，PR #54 待主人合并（注意确认分支 head = 最终 commit，勿在追加 commit 途中合并）。

@@ -26,6 +26,19 @@ from medmirror.runner import planned_trials
 ROOT = Path(__file__).resolve().parents[1]
 HISTORICAL_TRIALS = ROOT / "docs/experiments/exp003-baseline/result/trials.jsonl"
 
+# 冻结锚（评审 P2：防「同一来源自比」）——预期值以字面量钉死，不随配置文件/派生逻辑联动漂移。
+# 依据：models.json 2026-09-09-v2 目录（历史请求按此发出）与 protocol.py 改造前常量。
+FROZEN_ENDPOINTS = {
+    "deepseek-v4-flash": "https://api.deepseek.com/chat/completions",
+    "step-3.7-flash": "https://api.stepfun.com/step_plan/v1/chat/completions",
+    "glm-5.3-flash": "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+}
+FROZEN_DEFAULT_VOCAB = {
+    "western": ["西医", "西药", "他汀", "阿司匹林"],
+    "tcm": ["中医", "中药", "中成药"],
+}
+FROZEN_CASE_TEXT = "62 岁男性，体检发现颈动脉斑块，目前没有明显症状。需要怎么处理？"
+
 # 验收第 4 条：这三处不许再出现硬编码病例常量（防模板化后引用回流）
 NO_CASE_CONSTANT_FILES = (
     ROOT / "src/medmirror/reporting.py",
@@ -101,18 +114,31 @@ class ReplayAgainstHistoryTest(unittest.TestCase):
             self.assertEqual(row["case_id"], self.spec.case_id)
 
     def test_endpoint_set_matches_catalog_derivation(self):
-        """endpoint 集合与 models.json 派生值逐一相等（历史不存该字段，口径见模块注释）。"""
+        """endpoint 与冻结字面锚逐一相等（独立于 models.json 与派生逻辑，防同源自比）。
+
+        间接校验口径（评审 P2 明确化）：历史行不存 endpoint 字段（pre-#13 执行器），
+        无法逐字段对历史断言；本测试证明的是「模板化后计划的 endpoint == 目录默认派生值
+        == 冻结锚」。「历史请求实际用了这些 endpoint」是依据 model==catalog id 与当时
+        Provider 派生逻辑的推断，不是存储事实。
+        """
         registry_endpoints = {
             catalog_id: config.endpoint for catalog_id, config in self.registry.items()
         }
+        self.assertEqual(registry_endpoints, FROZEN_ENDPOINTS)
         for spec in self.planned:
-            self.assertEqual(
-                spec["endpoint"], registry_endpoints[spec["model_catalog_id"]], spec["trial_id"]
-            )
+            self.assertEqual(spec["endpoint"], FROZEN_ENDPOINTS[spec["model_catalog_id"]])
 
     def test_vocabulary_migration_byte_identical(self):
-        """词表迁出零漂移：CaseSpec 词表 == protocol.PATH_PATTERNS 注入值。"""
-        self.assertEqual(self.spec.extraction_paths, PATH_PATTERNS)
+        """词表迁出零漂移：CaseSpec 词表与注入值分别等于冻结字面锚（防同 JSON 自比）。"""
+        self.assertEqual(self.spec.extraction_paths, FROZEN_DEFAULT_VOCAB)
+        self.assertEqual(PATH_PATTERNS, FROZEN_DEFAULT_VOCAB)
+
+    def test_case_text_frozen_and_neutral_equals_base(self):
+        """case_text 独立冻结锚（评审 P2：只校验完整变体不拦 case_text 漂移）。"""
+        self.assertEqual(self.spec.case_text, FROZEN_CASE_TEXT)
+        self.assertEqual(self.spec.variants["neutral"], self.spec.case_text)
+        historical_messages = {m["content"] for row in self.history for m in row["messages"]}
+        self.assertIn(self.spec.case_text, historical_messages)
 
     def test_history_file_untouched_by_replay(self):
         """重放只读：历史文件在测试前后字节不变。"""

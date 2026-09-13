@@ -75,6 +75,7 @@ def run_once(
     budget=100.0,
     prices=None,
     max_attempts=DEFAULT_MAX_ATTEMPTS,
+    spec=None,
 ):
     registry = registry or make_registry()
     transport = FakeTransport(resolver)
@@ -82,6 +83,7 @@ def run_once(
     stats = execute_run(
         run_dir=run_dir,
         registry=registry,
+        spec=spec,
         repeats=repeats,
         transport=transport,
         ledger=ledger,
@@ -185,6 +187,42 @@ class ResumeSemanticsTest(unittest.TestCase):
             run_once(run_dir, registry=make_registry(model_id="m-1"))
             with self.assertRaises(RuntimeError):
                 run_once(run_dir, registry=make_registry(model_id="m-2"))
+
+    def test_changed_case_facts_cannot_reuse_same_dir_even_if_fingerprint_matches(self):
+        """指纹有意不含词表/trial_prefix；协议事实变更由 case_spec 快照比对把关（评审 P1）。"""
+        import dataclasses
+        import tempfile
+
+        from medmirror.runner import DEFAULT_CASE
+
+        renamed = dataclasses.replace(DEFAULT_CASE, trial_prefix="exp004")
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp) / "run"
+            run_once(run_dir, registry=make_registry())
+            # 前置自证：仅换前缀时指纹确实相同（否则测的是指纹闸而非快照闸）
+            specs = planned_trials(make_registry(), 1)
+            self.assertEqual(
+                config_fingerprint(specs, request_params()),
+                config_fingerprint(specs, request_params(), renamed),
+            )
+            with self.assertRaisesRegex(RuntimeError, "协议事实.*trial_prefix"):
+                run_once(run_dir, registry=make_registry(), spec=renamed)
+
+    def test_changed_vocabulary_cannot_reuse_same_dir(self):
+        import dataclasses
+        import tempfile
+
+        from medmirror.runner import DEFAULT_CASE
+
+        retuned = dataclasses.replace(
+            DEFAULT_CASE,
+            paths={**DEFAULT_CASE.paths, "western": DEFAULT_CASE.paths["western"] + ["新词"]},
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp) / "run"
+            run_once(run_dir, registry=make_registry())
+            with self.assertRaisesRegex(RuntimeError, "协议事实"):
+                run_once(run_dir, registry=make_registry(), spec=retuned)
 
     def test_failed_result_is_not_reused_and_retry_caps_across_resume(self):
         import tempfile

@@ -66,6 +66,49 @@ def make_planned(catalog: str = "deepseek-v4-flash", variant: str = "neutral", c
     ]
 
 
+class VocabularyContentDriftTest(unittest.TestCase):
+    """评审 P1 回归：同键不同词的两份词表混用（先提取后报告）须被拦截。"""
+
+    def test_report_rejects_extraction_done_with_different_terms(self):
+        vocab_a = {"western": ["西医"], "tcm": ["中医"]}
+        vocab_b = {"western": ["阿司匹林"], "tcm": ["中医"]}
+        trials = [make_trial("exp003-d-1", response="建议使用西医治疗。")]
+        extractions = extract_sorted(trials, paths=vocab_a)
+        with self.assertRaisesRegex(ValueError, "词表签名"):
+            build_report(trials, extractions, make_planned(count=1), paths=vocab_b)
+
+    def test_overlapping_first_term_does_not_bypass_signature(self):
+        """评审 P1 场景：两词表首命中词重叠、第二词不同——签名守卫必须拦截。"""
+        vocab_a = {"western": ["西医", "西药"], "tcm": ["中医"]}
+        vocab_b = {"western": ["西医", "他汀"], "tcm": ["中医"]}
+        trials = [make_trial("exp003-d-1", response="可以考虑西医，建议使用西药治疗。")]
+        extractions = extract_sorted(trials, paths=vocab_a)
+        with self.assertRaisesRegex(ValueError, "词表签名"):
+            build_report(trials, extractions, make_planned(count=1), paths=vocab_b)
+
+    def test_digestless_rows_fall_back_to_term_check(self):
+        """无签名历史行走首命中词抽查（向后兼容路径不被签名缺失短路）。"""
+        vocab = {"western": ["西医"], "tcm": ["中医"]}
+        trials = [make_trial("exp003-d-1", response="建议使用西医治疗。")]
+        extractions = extract_sorted(trials, paths=vocab)
+        for row in extractions:
+            row.pop("paths_digest")
+        with self.assertRaisesRegex(ValueError, "命中词"):
+            build_report(
+                trials,
+                extractions,
+                make_planned(count=1),
+                paths={"western": ["他汀"], "tcm": ["中医"]},
+            )
+
+    def test_same_vocab_extraction_and_report_still_passes(self):
+        vocab = {"western": ["西医"], "tcm": ["中医"]}
+        trials = [make_trial("exp003-d-1", response="建议使用西医治疗。")]
+        extractions = extract_sorted(trials, paths=vocab)
+        report = build_report(trials, extractions, make_planned(count=1), paths=vocab)
+        self.assertEqual(report["planned_n"], 1)
+
+
 class ClassifyTrialTest(unittest.TestCase):
     def test_five_categories(self):
         answered = {"response": "建议使用他汀。"}
