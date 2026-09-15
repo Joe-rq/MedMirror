@@ -48,7 +48,7 @@
 ```bash
 sed -n '10,22p' docs/experiments/exp003-baseline/derived-v3/analysis.md   # 9 组 × 西医/中医提及矩阵
 sed -n '126,133p' docs/experiments/exp003-baseline/derived-v3/analysis.md # 截断 3 条明细（单列不进分母）
-uv run python scripts/report_exp003.py --input docs/experiments/exp003-baseline/result/trials.jsonl --output /tmp/replay-judge --repeats 3   # 无密钥离线重放；脚本产物（analysis.md/.json、extractions.jsonl）与 derived-v3 字节一致（目录内 extraction-diff.md 由 diff_extractions.py 另行生成，不在重放范围）
+uv run python scripts/report_exp003.py --input docs/experiments/exp003-baseline/result/trials.jsonl --output /tmp/replay-judge --repeats 3   # 无密钥离线重放；analysis.md/.json 与 derived-v3 字节一致（目录内 extraction-diff.md 由 diff_extractions.py 另行生成，不在重放范围）。extractions.jsonl 不在此列：每次回放自身确定，但自 #50 起每行附 paths_digest 词表签名（2026-09-13 引入），不与 2026-09-10 冻结的 derived-v3 快照字节相同
 ```
 
 ### 边界
@@ -163,8 +163,8 @@ cat runs/exp003-followup/20260912T060702265265Z-071414f9-68eeb993/budget.jsonl  
 
 ## 附 B：可复现性与工程护栏
 
-- **236 项离线测试**（`uv run pytest`）+ CI 四闸（ruff format / ruff check / pytest / check-manifests）全绿；无密钥、无网络可全量重放。
-- 派生报告**字节级可重放**（任务一定位命令 3）；复核包附件可幂等重生成并比对（`uv run python scripts/gen_review_attachments.py --output-dir /tmp/att-replay && diff -r /tmp/att-replay specs/review/attachments`，字节一致即通过；避免直接覆盖入库附件）。
+- **248 项离线测试**（`uv run pytest`）+ CI 四闸（ruff format / ruff check / pytest / check-manifests）全绿；无密钥、无网络可全量重放。
+- 派生报告（`analysis.md`/`.json`）**字节级可重放**（任务一定位命令 3；`extractions.jsonl` 的口径以该命令注释为准）；复核包附件可幂等重生成并比对（`uv run python scripts/gen_review_attachments.py --output-dir /tmp/att-replay && diff -r /tmp/att-replay specs/review/attachments`，字节一致即通过；避免直接覆盖入库附件）。
 - 运行记录保护：独立 run 目录、追加式 attempt、配置指纹恢复语义（恢复不重复成功调用、换配置拒绝同目录）。
 - 全部原始试次与运行档案入 Git；`scripts/backup_data.py` 提供本地双保险（manifest sha256 + 恢复演练，2026-09-12 演练 32 文件哈希无差异）。
 

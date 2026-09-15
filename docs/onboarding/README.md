@@ -44,9 +44,9 @@ cp -n .env.example .env.local                 # key 只放本机，不提交、�
 ## 2. 验收环境 = 本地跑一遍 CI 的四闸
 
 ```bash
-uv run ruff format --check .             # 118 files already formatted
+uv run ruff format --check .             # 122 files already formatted
 uv run ruff check .                      # All checks passed!
-uv run pytest                            # 236 passed
+uv run pytest                            # 248 passed
 uv run python scripts/check-manifests.py # ✓ 全绿（校验 2 份清单）
 ```
 

@@ -1,5 +1,7 @@
 # 病例声明式配置（CaseSpec）
 
+**[English](README.en.md)**
+
 一份 CaseSpec 描述一个病例的全部协议事实：病例文本、提示变体、trial_id 前缀、
 提取词表与版本钉子。自带病例接入 = 在本目录填一份 `<case_id>.json`，不改代码。
 
