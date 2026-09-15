@@ -16,8 +16,12 @@ board 反复记录过同源漂移（测试数 175→186→236 手工刷 5 处、
      （锚点见 TEST_COUNT_PATTERNS）。
 
 **可见性规则**：规则 1–3 只在去掉「围栏代码块（``` 与 ~~~，未闭合则视为到文末）/
-HTML 注释 / HTML 标签」之后的正文里找命中；规则 3 另去行内代码。规则 4 例外：
-测试数本来就写在快速上手代码块的注释里（读者可见），故保留代码块，只去 HTML 注释。
+HTML 注释（未闭合同样视为到文末）/ 显式隐藏的元素（style、script、hidden、
+display:none、visibility:hidden）/ 其余 HTML 标签及其属性」之后的正文里找命中；
+规则 3 另去行内代码。规则 4 例外：测试数本来就写在快速上手代码块的注释里
+（读者可见），故保留代码块，只去 HTML 注释。
+**残余边界（如实声明）**：不追求穷尽 HTML 隐藏手法——外链样式表定义的隐藏类、
+JS 运行时才隐藏的元素、SVG/`<template>` 等仍在射程外；这些靠人读对照兜底。
 
 **覆盖边界（如实声明）**：本闸只比对 README×2 与 CaseSpec×2 两份文档对，外加
 TEST_COUNT_PATTERNS 列出的六份文档里的测试数。它**不覆盖** plan/003、judge-entry、
@@ -85,6 +89,13 @@ TABLE_ROW_RE = re.compile(r"^[ \t]*\|.*\|\s*$")
 SEPARATOR_ROW_RE = re.compile(r"^[ \t]*\|?(\s*:?-{2,}:?\s*\|)+\s*$")
 FENCE_LINE_RE = re.compile(r"^[ \t]*([`~]{3,})(.*)$")
 HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+UNCLOSED_COMMENT_RE = re.compile(r"<!--.*\Z", re.DOTALL)
+# 显式隐藏的元素（含 style/script）：整块不算可见正文
+HTML_HIDDEN_ELEMENT_RE = re.compile(
+    r"<(div|span|p|section|details|style|script)\b[^>]*"
+    r"(?:hidden|display\s*:\s*none|visibility\s*:\s*hidden)[^>]*>.*?</\1\s*>",
+    re.DOTALL | re.IGNORECASE,
+)
 HTML_TAG_RE = re.compile(r"<[^>\n]*>")
 INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
@@ -107,9 +118,16 @@ def strip_code_fences(text: str) -> str:
     return "\n".join(out)
 
 
+def strip_html(text: str) -> str:
+    """去掉 HTML 注释（未闭合则视为到文末）与显式隐藏的元素，再去掉其余标签。"""
+    text = HTML_COMMENT_RE.sub("", text)
+    text = UNCLOSED_COMMENT_RE.sub("", text)
+    return HTML_TAG_RE.sub("", HTML_HIDDEN_ELEMENT_RE.sub("", text))
+
+
 def visible_text(text: str) -> str:
-    """可见正文：去掉代码块、HTML 注释与 HTML 标签（含其属性值）。"""
-    return HTML_TAG_RE.sub("", HTML_COMMENT_RE.sub("", strip_code_fences(text)))
+    """可见正文：去掉代码块、HTML 注释/隐藏元素/标签（含属性值）。"""
+    return strip_html(strip_code_fences(text))
 
 
 def visible_prose(text: str) -> str:
@@ -119,7 +137,7 @@ def visible_prose(text: str) -> str:
 
 def without_html_comments(text: str) -> str:
     """只去 HTML 注释（规则 4 用：代码块里的测试数是读者可见的）。"""
-    return HTML_COMMENT_RE.sub("", text)
+    return UNCLOSED_COMMENT_RE.sub("", HTML_COMMENT_RE.sub("", text))
 
 
 def markdown_links(text: str) -> list[str]:

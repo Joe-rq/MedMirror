@@ -172,6 +172,24 @@ class CheckEnDocsGateTest(unittest.TestCase):
             "缺声明锚点「no medical-bias verdict without professional review」",
         )
 
+    def test_unclosed_html_comment_hides_anchor(self):
+        """未闭合的 HTML 注释同样延续到文末（与未闭合围栏同款处理）。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            "<!-- no medical-bias verdict without professional review",
+            "缺声明锚点「no medical-bias verdict without professional review」",
+        )
+
+    def test_hidden_element_hides_anchor(self):
+        """display:none 之类显式隐藏元素里的声明，读者看不见。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            '<div style="display:none">no medical-bias verdict without professional review</div>',
+            "缺声明锚点「no medical-bias verdict without professional review」",
+        )
+
     def test_html_attribute_hides_anchor(self):
         """HTML 标签属性里的声明读者看不见。"""
         self.assert_gate_fails(
