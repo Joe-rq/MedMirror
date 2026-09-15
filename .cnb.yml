@@ -1,5 +1,6 @@
-# CI 四闸 —— 课程 cargo fmt/clippy/test 的 Python 版，外加一份包清单冒烟
+# CI 四闸 + 两道文档卫生闸 —— 课程 cargo fmt/clippy/test 的 Python 版，外加一份包清单冒烟
 # ruff format --check 查格式 · ruff check 查写法 · pytest 查逻辑 · check-manifests 查包清单
+# check_docs 查合并卫生与仓内引用 · check_en_docs 查中英文档一致（声明/字段表/互链/测试数）
 # 对应 .42cog/intent.md 的「规则层」：能用规则判的，绝不留给人判。
 main:
   push:
@@ -20,5 +21,7 @@ main:
           script: uv run python scripts/check-manifests.py
         - name: doc-hygiene
           script: uv run python scripts/check_docs.py
+        - name: en-docs
+          script: uv run python scripts/check_en_docs.py
   pull_request:
     - *ci

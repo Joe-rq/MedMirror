@@ -44,13 +44,15 @@ cp -n .env.example .env.local                 # key 只放本机，不提交、�
 ## 2. 验收环境 = 本地跑一遍 CI 的四闸
 
 ```bash
-uv run ruff format --check .             # 118 files already formatted
+uv run ruff format --check .             # 122 files already formatted
 uv run ruff check .                      # All checks passed!
-uv run pytest                            # 236 passed
+uv run pytest                            # 284 passed
 uv run python scripts/check-manifests.py # ✓ 全绿（校验 2 份清单）
+uv run python scripts/check_docs.py      # ✓ 文档卫生（合并冲突标记 / 仓内引用）
+uv run python scripts/check_en_docs.py   # ✓ 中英文档一致（声明 / 字段表 / 互链 / 测试数）
 ```
 
-四条全绿说明你的环境和 CI 同源。四闸定义在 `.cnb.yml`，push `main` 与提交 PR 时都会触发。
+四条全绿说明你的环境和 CI 同源；后两条是同一 CI 另跑的两道文档卫生闸——**改文档时必跑**（2026-09-15 起英文闸进 CI）。闸门定义在 `.cnb.yml`，push `main` 与提交 PR 时都会触发。
 
 ## 3. 开工前先读（项目自己的开工协议）
 
@@ -68,7 +70,7 @@ uv run python scripts/check-manifests.py # ✓ 全绿（校验 2 份清单）
 每个改动都走这条线，没有例外：
 
 ```
-issue（自己写）→ 分支 → PR → CI 四闸绿 → 人工合并 → 关 issue
+issue（自己写）→ 分支 → PR → CI 全绿（四闸 + 两道文档卫生闸）→ 人工合并 → 关 issue
 ```
 
 **开工第一步：读 issue。** 需求以 issue 为准，不凭记忆、不凭聊天记录：
@@ -118,7 +120,7 @@ bash scripts/check-tools.sh                                             # 通用
 | `runs/` | 运行档案目录，2026-09-13 起已入 Git（issue #4：远程仓库即备份落点，克隆即可取回；密钥类文件仍被 .env 规则排除） | 无需另行准备；本地双保险用 `scripts/backup_data.py` |
 | `.env.local` | 密钥永不入库 | 从 `.env.example` 复制后自己填 |
 
-> 已实测：干净 clone 后 `uv sync` + 四闸四条命令全部通过，无需额外步骤。
+> 已实测：干净 clone 后 `uv sync` + 四闸与两道文档卫生闸全部通过，无需额外步骤。
 
 ## 7. 边界（越线要担责）
 

@@ -1,5 +1,7 @@
 # 病例声明式配置（CaseSpec）
 
+**[English](README.en.md)**
+
 一份 CaseSpec 描述一个病例的全部协议事实：病例文本、提示变体、trial_id 前缀、
 提取词表与版本钉子。自带病例接入 = 在本目录填一份 `<case_id>.json`，不改代码。
 
@@ -28,18 +30,20 @@ Schema 封闭：未知顶层键与 `extraction` 内未知键一律拒绝；JSON 
 ## 词表登记（vocab-registry.json）
 
 `configs/cases/vocab-registry.json` 登记 `case_id|protocol_version|extractor_version →
-词表摘要（sha256）`。**cases 目录内**的 CaseSpec 加载时强制核对：
+词表摘要（sha256）`。**直接位于 `cases` 目录下**（不含子目录）的 CaseSpec 加载时强制核对：
 
 - 版本三元组未登记 → 拒绝（新增病例或升版本须显式追加登记，走评审）；
 - 已登记但词表摘要不一致 → 拒绝（同版本改词表违反「改词表=新版本号」红线）。
 
 改词表的正确路径：升 `protocol_version` 或换 `extractor_version` → 在登记文件新增一行。
-目录外的第三方自定义路径不受登记约束（自理纪律）。
+目录外的第三方自定义路径不受登记约束（自理纪律）；子目录里的 CaseSpec 同样不经登记闸
+（守卫按直接父目录判定，属已登记的实现边界）。
 
-## 协议红线（不可绕过）
+## 协议红线
 
 - **同病例改词表或变体 = 新 extractor/protocol 版本号**，不回改历史产物
-  （`.42cog/` 与 `specs/calibration.md` 的尺子纪律）。
+  （`.42cog/` 与 `specs/calibration.md` 的尺子纪律）。**机械覆盖范围**：登记闸只比对
+  **词表摘要**；**变体改动不进登记闸**，当前靠纪律与评审拦截（已登记的缺口）。
 - CaseSpec 钉的 `extractor_version` 与 `src/medmirror/protocol.py` 支持版本不一致时
   **拒绝加载**（报错含两版本具体值）；版本字符串单源在 `protocol.EXTRACTOR_VERSION`。
 - 合成病例声明必须如实：真实患者数据不入实验（intent.md 红线）。
