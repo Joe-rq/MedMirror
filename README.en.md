@@ -21,12 +21,13 @@ cd MedMirror
 uv sync                                  # installs Python 3.13 + pytest/ruff, pinned by uv.lock
 uv run ruff format --check .             # gate 1 · formatting
 uv run ruff check .                      # gate 2 · lint
-uv run pytest                            # gate 3 · 248 tests, no API key needed
+uv run pytest                            # gate 3 · 250 tests, no API key needed
 uv run python scripts/check-manifests.py # gate 4 · package manifests
-uv run python scripts/check_docs.py      # doc hygiene (CI runs it too)
+uv run python scripts/check_docs.py      # doc hygiene · repository references
+uv run python scripts/check_en_docs.py   # doc hygiene · Chinese/English consistency
 ```
 
-These four are exactly the CI gates; their definition is in `.cnb.yml`. Local green is a pre-commit check — remote CI still has to be confirmed, and research-level and medical-level acceptance is separate.
+CI runs the four gates plus both doc-hygiene checks; the definition is in `.cnb.yml`. Local green is a pre-commit check — remote CI still has to be confirmed, and research-level and medical-level acceptance is separate.
 
 ### Offline replay of the published report
 
@@ -46,9 +47,7 @@ for f in analysis.md analysis.json; do diff /tmp/replay-exp003/$f docs/experimen
 
 ## Bring your own case
 
-A case is described by one declarative **CaseSpec** file: create `configs/cases/<case_id>.json` and no code changes are needed — case text, prompt variants, `trial_id` prefix and the extraction vocabulary all live in that file. See the [CaseSpec reference](configs/cases/README.en.md) for the field table, the vocabulary-registry gate, and the protocol red lines.
-
-Current boundary: there is no `--case` execution CLI yet. Case onboarding today is configuration plus the library-level API; the end-to-end run for a new case is roadmap step 2.3 (`docs/plan/003_post-hackathon-roadmap.md`), gated on a new case being approved and on protocol v2.0.
+A case is described by one declarative **CaseSpec** file — `configs/cases/<case_id>.json`, no code changes needed: case text, prompt variants, `trial_id` prefix and the extraction vocabulary all live in that file. The [CaseSpec reference](configs/cases/README.en.md) carries the field table, the vocabulary-registry gate, the protocol red lines, and the boundary worth knowing up front: there is **no `--case` execution CLI yet**, so onboarding today is configuration plus the library-level API, and the end-to-end run for a new case is planned as roadmap step 2.3 (`docs/plan/003_post-hackathon-roadmap.md`).
 
 ## Evidence map
 
@@ -62,7 +61,7 @@ Current boundary: there is no `--case` execution CLI yet. Case onboarding today 
 | 6 | Extractor negative-example set (17 confirmed) | `specs/examples/negatives.jsonl` | `uv run python scripts/check_calibration.py --require-confirmed` |
 | 7 | Run archive (plans / budget ledgers / attempts) | `runs/` | `ls -R runs/` |
 
-The experiment record itself — protocol, provenance and the confirmed standard finding — is under `specs/` (`specs/calibration.md`, `specs/examples/standard-finding.md`); progress and decisions are in `state/board.md` and `state/changelog.md`.
+The canonical, fuller version of this map is `docs/reviews/judge-entry.md` §0 (Chinese only), which also carries the per-task answer sections. The experiment record itself — protocol, provenance and the confirmed standard finding — is under `specs/` (`specs/calibration.md`, `specs/examples/standard-finding.md`); progress and decisions are in `state/board.md` and `state/changelog.md`.
 
 ## Reproduction and cost
 

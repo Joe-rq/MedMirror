@@ -11,11 +11,19 @@ board 反复记录过同源漂移（测试数 175→186→236 手工刷 5 处、
   2. 字段表覆盖一致：两份 CaseSpec 文档的表格首列标识符集合必须相等
      （漏译字段会让读者按英文文档填配置直接失败）；
   3. 中英互链存在：两个文档对互为入口（入口被后续编辑吃掉即红灯）；
-  4. 测试数中英一致：中文「闸3 逻辑（N 用例）」与英文「N tests」的 N 必须相等。
+  4. 测试数处处一致：六份文档里手写的测试数必须同值
+     （中文「闸3 逻辑（N 用例）」/「N 项测试」与英文「N tests」等锚点见 TEST_COUNT_PATTERNS）。
+
+**覆盖边界（如实声明）**：本闸只比对 README×2 与 CaseSpec×2 两份文档对，外加
+TEST_COUNT_PATTERNS 列出的六份文档里的测试数。它**不覆盖** plan/003、judge-entry、
+素材稿、onboarding 里的其它手写数字（成本 0.3720/0.0690/0.4746、27/24/3、18 条 8/6/4…），
+也**不与代码 schema 对账**（CaseSpec 字段全集的正本在 `src/medmirror/casespec.py`）。
+CI 全绿只说明这四类规则在覆盖范围内成立，不等于全仓数字都没有漂移。
 
 **机械检查的边界（如实声明）**：本脚本不判断译文是否通顺、不判断中英两句话在语义上
 是否等价——那属语义判断，靠人读对照兜底。锚点是刻意钉死的字面串：改措辞会让本闸红灯，
 改完请同步更新本脚本的锚点表。这是有意的摩擦，防的是「顺手改一句就把声明改弱」。
+英文锚点是本 PR 的译法（canonical 正本在中文），改英文措辞同样要同步锚点表。
 
 用法：python3 scripts/check_en_docs.py [--root 仓库根]
 退出码 0 = 全绿，1 = 有错。
@@ -30,34 +38,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# 声明锚点：(声明名, 中文文件, 中文锚点, 英文文件, 英文锚点)
+# 根文档对（中文正本, 英文版）——规则 1、4 的默认比对对象
+README_PAIR = ("README.md", "README.en.md")
+
+# 声明锚点：(中文锚点, 英文锚点)；两份文件取自 README_PAIR
 DECLARATIONS = [
-    (
-        "不输出未经专业复核的医学 Bias 结论",
-        "README.md",
-        "不输出未经专业复核的医学 Bias 结论",
-        "README.en.md",
-        "no medical bias verdict",
-    ),
-    (
-        "14 条信任扩展未经独立标注",
-        "README.md",
-        "14 条信任扩展未经独立标注",
-        "README.en.md",
-        "were accepted without independent annotation",
-    ),
-    (
-        "专业复核未回流",
-        "README.md",
-        "专业复核未回流",
-        "README.en.md",
-        "professional review has not returned",
-    ),
+    ("不输出未经专业复核的医学 Bias 结论", "no medical bias verdict"),
+    ("14 条信任扩展未经独立标注", "were accepted without independent annotation"),
+    ("专业复核未回流", "professional review has not returned"),
 ]
 
 # 中英文档对：(中文正本, 英文版)——规则 3（互链）作用于每一对
 DOC_PAIRS = [
-    ("README.md", "README.en.md"),
+    README_PAIR,
     ("configs/cases/README.md", "configs/cases/README.en.md"),
 ]
 
@@ -66,10 +59,15 @@ FIELD_TABLE_PAIRS = [
     ("configs/cases/README.md", "configs/cases/README.en.md"),
 ]
 
-# 测试数锚点：两侧各须命中，且数值相等（改措辞即红灯，同步改这里）
-TEST_COUNT_PATTERNS = {
-    "README.md": r"闸3 逻辑（(\d+) 用例）",
-    "README.en.md": r"(\d+) tests",
+# 测试数锚点：逐文件列出该文件里测试数的写法（改措辞即红灯，同步改这里）。
+# 全表命中的数值必须彼此相等——加一份新文档就是加一行，比较逻辑不用改。
+TEST_COUNT_PATTERNS: dict[str, list[str]] = {
+    "README.md": [r"闸3 逻辑（(\d+) 用例）", r"(\d+) 项(?:离线)?测试"],
+    "README.en.md": [r"(\d+) tests"],
+    "docs/onboarding/README.md": [r"#\s*(\d+) passed"],
+    "docs/plan/003_post-hackathon-roadmap.md": [r"pytest (\d+)"],
+    "docs/report/001_tech-report-materials.md": [r"(\d+) 项离线测试"],
+    "docs/reviews/judge-entry.md": [r"\*\*(\d+) 项离线测试\*\*"],
 }
 
 # 字段表首列的标识符（如 | `case_id` | str | ... |）
@@ -77,6 +75,7 @@ FIELD_ROW_RE = re.compile(r"^\|\s*`([A-Za-z_][\w.]*)`\s*\|")
 
 
 def load_texts(root: Path, errors: list[str]) -> dict[str, str]:
+    # 不变式：各规则表的文件都落在本加载集内（FIELD_TABLE_PAIRS 是 DOC_PAIRS 的子集）
     rels = sorted({p for pair in DOC_PAIRS for p in pair} | set(TEST_COUNT_PATTERNS))
     texts: dict[str, str] = {}
     for rel in rels:
@@ -89,18 +88,16 @@ def load_texts(root: Path, errors: list[str]) -> dict[str, str]:
 
 
 def check_declarations(texts: dict[str, str], errors: list[str]) -> int:
-    ok = 0
-    for name, zh_rel, zh_anchor, en_rel, en_anchor in DECLARATIONS:
+    zh_rel, en_rel = README_PAIR
+    for zh_anchor, en_anchor in DECLARATIONS:
         if zh_rel in texts and zh_anchor not in texts[zh_rel]:
-            errors.append(f"{zh_rel}: 缺声明锚点「{zh_anchor}」（{name}）——中文正本先被动过")
+            errors.append(f"{zh_rel}: 缺声明锚点「{zh_anchor}」——中文正本先被动过")
         if en_rel in texts and en_anchor not in texts[en_rel]:
             errors.append(
-                f"{en_rel}: 缺声明锚点「{en_anchor}」（{name}）"
+                f"{en_rel}: 缺声明锚点「{en_anchor}」（对应中文「{zh_anchor}」）"
                 "——该声明在英文版里丢失或被写弱（验收：对外声明合规）"
             )
-        if zh_rel in texts and en_rel in texts:
-            ok += 1
-    return ok
+    return len(DECLARATIONS)
 
 
 def field_idents(text: str) -> set[str]:
@@ -147,30 +144,27 @@ def check_links(texts: dict[str, str], errors: list[str]) -> int:
     return ok
 
 
-def check_test_counts(texts: dict[str, str], errors: list[str]) -> tuple[int, int]:
-    found: dict[str, set[int]] = {}
-    for rel, pattern in TEST_COUNT_PATTERNS.items():
+def check_test_counts(texts: dict[str, str], errors: list[str]) -> int:
+    """全表命中的测试数必须彼此相等；一致则返回该数值，否则返回 0。"""
+    values: set[int] = set()
+    for rel, patterns in TEST_COUNT_PATTERNS.items():
         if rel not in texts:
             continue
-        values = {int(m) for m in re.findall(pattern, texts[rel])}
-        if len(values) != 1:
+        hits = {int(m) for pattern in patterns for m in re.findall(pattern, texts[rel])}
+        if len(hits) != 1:
             errors.append(
-                f"{rel}: 测试数锚点（{pattern}）命中 {len(values)} 个值 {sorted(values)}"
+                f"{rel}: 测试数锚点命中 {len(hits)} 个值 {sorted(hits)}"
                 "——本文件内部就不自洽，或措辞已变，请同步锚点表"
             )
             continue
-        found[rel] = values
-    if len(found) != len(TEST_COUNT_PATTERNS):
-        return 0, 0
-    zh_rel, en_rel = "README.md", "README.en.md"
-    zh_n, en_n = found[zh_rel].pop(), found[en_rel].pop()
-    if zh_n != en_n:
+        values |= hits
+    if len(values) != 1:
         errors.append(
-            f"测试数中英不一致：{zh_rel} 写 {zh_n}、{en_rel} 写 {en_n}"
-            "——同源刷新漏了一处（board 记录的旧病）"
+            f"测试数各处不一致：{sorted(values)}"
+            f"（{len(TEST_COUNT_PATTERNS)} 份文档）——同源刷新漏了一处（board 记录的旧病）"
         )
-        return 0, zh_n
-    return 1, zh_n
+        return 0
+    return next(iter(values))
 
 
 def main() -> int:
@@ -181,15 +175,11 @@ def main() -> int:
 
     errors: list[str] = []
     texts = load_texts(root, errors)
-    if not texts:
-        for e in errors:
-            print(f"✗ {e}")
-        return 1
 
     decls = check_declarations(texts, errors)
     fields = check_field_tables(texts, errors)
     links = check_links(texts, errors)
-    _, test_n = check_test_counts(texts, errors)
+    test_n = check_test_counts(texts, errors)
 
     if errors:
         for e in errors:
@@ -198,7 +188,7 @@ def main() -> int:
         return 1
     print(
         f"✓ 中英文档一致：{decls} 条声明锚点成对，{fields} 个字段标识符一致，"
-        f"{links} 对互链，测试数 {test_n}"
+        f"{links} 对互链，测试数 {test_n}（{len(TEST_COUNT_PATTERNS)} 份文档同值）"
     )
     return 0
 
