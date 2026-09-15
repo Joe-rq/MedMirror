@@ -88,7 +88,7 @@ TEST_COUNT_PATTERNS: dict[str, list[str]] = {
     "docs/reviews/judge-entry.md": [r"\*\*(\d+) 项离线测试\*\*"],
 }
 
-FENCE_LINE_RE = re.compile(r"^[ \t]*([`~]{3,})(.*)$")
+FENCE_LINE_RE = re.compile(r"^ {0,3}([`~]{3,})(.*)$")
 INDENT_CODE_RE = re.compile(r"^(?: {4,}|\t)")
 HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
 UNCLOSED_COMMENT_RE = re.compile(r"<!--.*\Z", re.DOTALL)
@@ -104,6 +104,8 @@ CODE_SPAN_RE = re.compile(r"(`+)(?:[^`]|(?!\1)`)*?\1")
 LINK_TARGET_RE = re.compile(r"\]\([^)\s]*\)")
 MD_LINK_RE = re.compile(r"(?<![!\\])\[[^\]]*\]\(([^)\s]+)\)")
 QUOTE_PREFIX_RE = re.compile(r"^[ \t]*>+[ \t]?")
+# Markdown 引用式注释（[//]: # (...) / [comment]: # (...)）——渲染不可见
+MD_COMMENT_LINE_RE = re.compile(r"^[ \t]*\[(?://|comment)\]:.*$", re.MULTILINE)
 # 字段名：表格首列的反引号标识符（GFM 首尾竖线可省）
 FIELD_ROW_RE = re.compile(r"^[ \t]*\|?[ \t]*`([A-Za-z_][\w.]*)`[ \t]*\|")
 SEPARATOR_ROW_RE = re.compile(
@@ -140,6 +142,7 @@ def strip_hidden_html(text: str) -> str:
     """去掉 HTML 注释、style/script 块、显式隐藏元素（未闭合者到文末），再去掉其余标签。"""
     text = HTML_COMMENT_RE.sub("", text)
     text = UNCLOSED_COMMENT_RE.sub("", text)
+    text = MD_COMMENT_LINE_RE.sub("", text)
     text = SCRIPT_STYLE_RE.sub("", text)
     # 未闭合的 style/script 同样延续到文末（浏览器不会渲染其内容）
     text = UNCLOSED_SCRIPT_STYLE_RE.sub("", text)

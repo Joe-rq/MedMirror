@@ -456,6 +456,33 @@ class CheckEnDocsGateTest(unittest.TestCase):
                     "缺声明锚点「no medical-bias verdict without professional review」",
                 )
 
+    def test_indented_closing_fence_does_not_close(self):
+        """4 空格缩进的围栏行属缩进代码块，不是闭合线（CommonMark，R5 补）。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            "```text\n    ```\nno medical-bias verdict without professional review\n```",
+            "缺声明锚点「no medical-bias verdict without professional review」",
+        )
+
+    def test_markdown_reference_comment_hides_anchor(self):
+        """`[//]: # (...)` 是 Markdown 注释惯例，渲染不可见（R5 补）。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            "[//]: # (no medical-bias verdict without professional review)",
+            "缺声明锚点「no medical-bias verdict without professional review」",
+        )
+
+    def test_markdown_reference_comment_hides_test_count(self):
+        """测试数同样不能靠 Markdown 注释维持假绿（R5 补）。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "uv run pytest  # 236 tests",
+            "[//]: # (236 tests)",
+            "测试数锚点命中 0 个值",
+        )
+
     def test_duplicate_field_name_fails(self):
         """同名字段出现两次（内容可不同）：集合比较看不见，须单独拦（R4 补）。"""
         self.assert_gate_fails(
