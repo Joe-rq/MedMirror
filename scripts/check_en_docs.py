@@ -7,16 +7,17 @@ board 反复记录过同源漂移（测试数 175→186→236 手工刷 5 处、
 翻译时把「不输出未经专业复核的医学 Bias 结论」「14 条信任扩展未经独立标注」
 「专业复核未回流」写弱或写没，肉眼很难发现。能用规则判的，绝不留给人判：
 
-  1. 声明锚点成对：三条硬声明的中英锚点必须各自逐字出现在对应文档的**可见正文**里；
+  1. 声明锚点成对：硬声明的中英锚点必须各自逐字出现在对应文档的**可见正文**里；
   2. 字段表覆盖一致：两份 CaseSpec 文档的表格首列标识符集合必须相等
      （漏译字段会让读者按英文文档填配置直接失败）；
-  3. 中英互链存在：两个文档对互为入口（入口被后续编辑吃掉即红灯）；
+  3. 中英互链存在：两个文档对互为入口，且必须是**真 Markdown 链接**
+     （反引号里的 `](x.md)` 不是链接，点不动）；
   4. 测试数处处一致：六份文档里手写的测试数必须同值
-     （中文「闸3 逻辑（N 用例）」/「N 项测试」与英文「N tests」等锚点见 TEST_COUNT_PATTERNS）。
+     （锚点见 TEST_COUNT_PATTERNS）。
 
-**可见性规则（评审 P2 修正）**：规则 1–3 只在**去掉围栏代码块与 HTML 注释之后**的正文里
-找命中——否则把声明正文删掉、只在 ``` 块或 `<!-- -->` 里留一句，闸会假装通过。
-规则 4 例外：测试数本来就写在快速上手代码块的注释里（读者可见），故用原文匹配。
+**可见性规则**：规则 1–3 只在去掉「围栏代码块（``` 与 ~~~，未闭合则视为到文末）/
+HTML 注释 / HTML 标签」之后的正文里找命中；规则 3 另去行内代码。规则 4 例外：
+测试数本来就写在快速上手代码块的注释里（读者可见），故保留代码块，只去 HTML 注释。
 
 **覆盖边界（如实声明）**：本闸只比对 README×2 与 CaseSpec×2 两份文档对，外加
 TEST_COUNT_PATTERNS 列出的六份文档里的测试数。它**不覆盖** plan/003、judge-entry、
@@ -30,8 +31,6 @@ TEST_COUNT_PATTERNS 列出的六份文档里的测试数。它**不覆盖** plan
 是否等价——那属语义判断，靠人读对照兜底。锚点是刻意钉死的字面串：改措辞会让本闸红灯，
 改完请同步更新本脚本的锚点表。这是有意的摩擦，防的是「顺手改一句就把声明改弱」。
 英文锚点是本 PR 的译法（canonical 正本在中文），改英文措辞同样要同步锚点表。
-围栏计数为奇数（有未闭合的 ```）时，其后正文会被整段当作代码块——结果是红灯而非假绿，
-先修文档格式。
 
 用法：python3 scripts/check_en_docs.py [--root 仓库根]
 退出码 0 = 全绿，1 = 有错。
@@ -46,14 +45,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# 根文档对（中文正本, 英文版）——规则 1、4 的默认比对对象
+# 根文档对（中文正本, 英文版）
 README_PAIR = ("README.md", "README.en.md")
 
 # 声明锚点：(中文锚点, 英文锚点)；两份文件取自 README_PAIR
 DECLARATIONS = [
-    ("不输出未经专业复核的医学 Bias 结论", "no medical bias verdict"),
+    ("不输出未经专业复核的医学 Bias 结论", "no medical-bias verdict without professional review"),
     ("14 条信任扩展未经独立标注", "were accepted without independent annotation"),
     ("专业复核未回流", "professional review has not returned"),
+    ("不是医学等价对照", "not medically equivalent controls"),
 ]
 
 # 中英文档对：(中文正本, 英文版)——规则 3（互链）作用于每一对
@@ -78,38 +78,73 @@ TEST_COUNT_PATTERNS: dict[str, list[str]] = {
     "docs/reviews/judge-entry.md": [r"\*\*(\d+) 项离线测试\*\*"],
 }
 
-# 字段表首列的标识符（如 | `case_id` | str | ... |）
-FIELD_ROW_RE = re.compile(r"^\|\s*`([A-Za-z_][\w.]*)`\s*\|")
-# 表格行 / 表头分隔行（|---|---|）
-TABLE_ROW_RE = re.compile(r"^\|.*\|\s*$")
-SEPARATOR_ROW_RE = re.compile(r"^\|(\s*:?-{2,}:?\s*\|)+\s*$")
-# 围栏代码块与 HTML 注释——不算可见正文
-FENCE_RE = re.compile(r"^[ \t]*```.*?^[ \t]*```", re.DOTALL | re.MULTILINE)
+# 字段表首列标识符（首尾竖线在 GFM 里可省，如 `case_text | str | ...`）
+FIELD_ROW_RE = re.compile(r"^[ \t]*\|?[ \t]*`([A-Za-z_][\w.]*)`[ \t]*\|")
+# 带首竖线的表格行 / 表头分隔行
+TABLE_ROW_RE = re.compile(r"^[ \t]*\|.*\|\s*$")
+SEPARATOR_ROW_RE = re.compile(r"^[ \t]*\|?(\s*:?-{2,}:?\s*\|)+\s*$")
+FENCE_LINE_RE = re.compile(r"^[ \t]*([`~]{3,})(.*)$")
 HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+HTML_TAG_RE = re.compile(r"<[^>\n]*>")
+INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
+MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+
+
+def strip_code_fences(text: str) -> str:
+    """去掉围栏代码块（``` 与 ~~~）；未闭合的围栏视为延续到文末。"""
+    out: list[str] = []
+    fence: tuple[str, int] | None = None
+    for line in text.splitlines():
+        m = FENCE_LINE_RE.match(line)
+        if fence is None:
+            if m:
+                fence = (m.group(1)[0], len(m.group(1)))
+                continue
+            out.append(line)
+            continue
+        if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= fence[1]:
+            fence = None
+    return "\n".join(out)
 
 
 def visible_text(text: str) -> str:
-    """去掉围栏代码块与 HTML 注释：声明、互链、字段表只认可见正文里的命中。"""
-    return HTML_COMMENT_RE.sub("", FENCE_RE.sub("", text))
+    """可见正文：去掉代码块、HTML 注释与 HTML 标签（含其属性值）。"""
+    return HTML_TAG_RE.sub("", HTML_COMMENT_RE.sub("", strip_code_fences(text)))
+
+
+def visible_prose(text: str) -> str:
+    """可见正文再去行内代码——互链必须是真链接。"""
+    return INLINE_CODE_RE.sub("", visible_text(text))
+
+
+def without_html_comments(text: str) -> str:
+    """只去 HTML 注释（规则 4 用：代码块里的测试数是读者可见的）。"""
+    return HTML_COMMENT_RE.sub("", text)
+
+
+def markdown_links(text: str) -> list[str]:
+    return MD_LINK_RE.findall(visible_prose(text))
 
 
 def unparsed_table_cells(text: str) -> list[int]:
-    """列出「像表格行、但首列不是反引号字段名」的行号（跳过分隔行与表头行）。
+    """列出「在表格里、但首列不是反引号字段名」的行号（跳过分隔行与表头行）。
 
-    这类行对规则 2 隐形：中文正本加一行 `| **severity_note** | ... |`、英文版不补，
+    这类行对规则 2 隐形：中文正本加一行 `| **severity_note** | ... |` 或
+    `severity_note | str | ... |`（GFM 允许省首尾竖线）、英文版不补，
     两侧解析结果都不含它，闸会假装一致。所以宁可红灯要求改成 `| `name` | ... |`。
     """
     lines = text.splitlines()
+    piped = [bool(TABLE_ROW_RE.match(ln)) for ln in lines]
     separators = {i for i, ln in enumerate(lines) if SEPARATOR_ROW_RE.match(ln)}
     headers = {i - 1 for i in separators if i >= 1}
-    return [
-        i + 1
-        for i, ln in enumerate(lines)
-        if i not in separators
-        and i not in headers
-        and TABLE_ROW_RE.match(ln)
-        and not FIELD_ROW_RE.match(ln)
-    ]
+    bad: list[int] = []
+    for i, ln in enumerate(lines):
+        if "|" not in ln or i in separators or i in headers:
+            continue
+        adjacent = piped[i] or (i > 0 and piped[i - 1]) or (i + 1 < len(lines) and piped[i + 1])
+        if adjacent and not FIELD_ROW_RE.match(ln):
+            bad.append(i + 1)
+    return bad
 
 
 def load_texts(root: Path, errors: list[str]) -> dict[str, str]:
@@ -180,12 +215,12 @@ def check_links(texts: dict[str, str], errors: list[str]) -> int:
     for zh_rel, en_rel in DOC_PAIRS:
         if zh_rel not in texts or en_rel not in texts:
             continue
-        zh_link, en_link = f"]({Path(en_rel).name})", f"]({Path(zh_rel).name})"
-        if zh_link not in visible_text(texts[zh_rel]):
-            errors.append(f"{zh_rel}: 缺英文版入口链接（{en_rel}）")
-        if en_link not in visible_text(texts[en_rel]):
-            errors.append(f"{en_rel}: 缺中文版入口链接（{zh_rel}）")
-        if zh_link in visible_text(texts[zh_rel]) and en_link in visible_text(texts[en_rel]):
+        zh_links, en_links = markdown_links(texts[zh_rel]), markdown_links(texts[en_rel])
+        if Path(en_rel).name not in zh_links:
+            errors.append(f"{zh_rel}: 缺英文版入口链接（{en_rel}）——须是真 Markdown 链接")
+        if Path(zh_rel).name not in en_links:
+            errors.append(f"{en_rel}: 缺中文版入口链接（{zh_rel}）——须是真 Markdown 链接")
+        if Path(en_rel).name in zh_links and Path(zh_rel).name in en_links:
             ok += 1
     return ok
 
@@ -196,7 +231,8 @@ def check_test_counts(texts: dict[str, str], errors: list[str]) -> int:
     for rel, patterns in TEST_COUNT_PATTERNS.items():
         if rel not in texts:
             continue
-        hits = {int(m) for pattern in patterns for m in re.findall(pattern, texts[rel])}
+        body = without_html_comments(texts[rel])
+        hits = {int(m) for pattern in patterns for m in re.findall(pattern, body)}
         if len(hits) != 1:
             errors.append(
                 f"{rel}: 测试数锚点命中 {len(hits)} 个值 {sorted(hits)}"

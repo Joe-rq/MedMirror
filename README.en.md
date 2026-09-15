@@ -8,9 +8,10 @@ The audience is **evaluation researchers**. The unit of output is a descriptive 
 
 ## What this is not
 
-- **No claim of bias.** MedMirror produces **no medical bias verdict**. Every count and quotation below is a descriptive observation of presentation, not a judgment of medical quality or of a model's internal disposition.
+- **No claim of bias.** MedMirror produces **no medical-bias verdict without professional review**. Every count and quotation below is a descriptive observation of presentation, not a judgment of medical quality or of a model's internal disposition.
 - **Mention ≠ support.** A treatment path appearing in an answer does not mean the model endorses it. Conversely, absence of mention is not opposition, and "not mentioned" is never encoded as the lowest attitude score.
 - **A named source ≠ a verified source.** Citation existence, locate-ability, and content support are three separate states, recorded separately.
+- **The variants are not medically equivalent controls.** The Chinese-medicine and Western-medicine prompts are prompt-sensitivity conditions; group differences are presentation observations, **not medically equivalent controls** for comparing treatments.
 - **Not medical advice.** The experiment uses one synthetic case; no real patient data is used, and no real clinical decision should rest on it.
 
 ## Quick start
@@ -18,10 +19,10 @@ The audience is **evaluation researchers**. The unit of output is a descriptive 
 ```bash
 git clone https://github.com/Joe-rq/MedMirror.git
 cd MedMirror
-uv sync                                  # installs Python 3.13 + pytest/ruff, pinned by uv.lock
+uv sync                                  # Python 3.13+ with pytest/ruff, pinned by uv.lock
 uv run ruff format --check .             # gate 1 · formatting
 uv run ruff check .                      # gate 2 · lint
-uv run pytest                            # gate 3 · 254 tests, no API key needed
+uv run pytest                            # gate 3 · 262 tests, no API key needed
 uv run python scripts/check-manifests.py # gate 4 · package manifests
 uv run python scripts/check_docs.py      # doc hygiene · repository references
 uv run python scripts/check_en_docs.py   # doc hygiene · Chinese/English consistency
@@ -33,10 +34,11 @@ CI runs the four gates plus both doc-hygiene checks; the definition is in `.cnb.
 
 ```bash
 uv run python scripts/report_exp003.py --input docs/experiments/exp003-baseline/result/trials.jsonl --output /tmp/replay-exp003 --repeats 3
-for f in analysis.md analysis.json; do diff /tmp/replay-exp003/$f docs/experiments/exp003-baseline/derived-v3/$f; done
+cmp /tmp/replay-exp003/analysis.md docs/experiments/exp003-baseline/derived-v3/analysis.md &&
+cmp /tmp/replay-exp003/analysis.json docs/experiments/exp003-baseline/derived-v3/analysis.json
 ```
 
-`diff` prints nothing when the replayed report is byte-identical to the published derivation. Two qualifications are stated rather than glossed over:
+Both commands print nothing when the replayed report is byte-identical to the published derivation, and the `&&` chain makes the whole line fail if either differs (a `for`-loop over `diff` would return only the last command's status and could swallow the first mismatch). Two qualifications are stated rather than glossed over:
 
 - Not everything the replay writes is byte-identical: the replayed extraction rows differ from `docs/experiments/exp003-baseline/derived-v3/extractions.jsonl` by exactly one field — since issue #50 (2026-09-13) every replayed row carries a `paths_digest` vocabulary signature that the frozen 2026-09-10 file predates. Replays are deterministic: run the command twice and the two outputs match byte for byte.
 - `docs/experiments/exp003-baseline/derived-v3/extraction-diff.md` is generated separately by `scripts/diff_extractions.py` and is not part of the replay set.
@@ -61,7 +63,7 @@ A case is described by one declarative **CaseSpec** file — `configs/cases/<cas
 | 6 | Extractor negative-example set (17 confirmed) | `specs/examples/negatives.jsonl` | `uv run python scripts/check_calibration.py --require-confirmed` |
 | 7 | Run archive (plans / budget ledgers / attempts) | `runs/` | `ls -R runs/` |
 
-The canonical, fuller version of this map is `docs/reviews/judge-entry.md` §0 (Chinese only), which also carries the per-task answer sections. The experiment record itself — protocol, provenance and the confirmed standard finding — is under `specs/` (`specs/calibration.md`, `specs/examples/standard-finding.md`); progress and decisions are in `state/board.md` and `state/changelog.md`.
+The canonical, fuller version of this map is `docs/reviews/judge-entry.md` §0 (Chinese only), which also carries the per-task answer sections. Note that the frozen `docs/experiments/exp003-baseline/derived-v3/analysis.md` still carries its historical "extraction not calibrated (pending-issue-11)" header — it was generated before calibration closed, so the calibration status written inside that file is stale; the current status lives in `specs/calibration/fp-fn-report.md`. The experiment record itself — protocol, provenance and the owner-confirmed reporting fixture (`specs/examples/standard-finding.md`, a calibration sample rather than independent or medical validation) — is under `specs/` (`specs/calibration.md`); progress and decisions are in `state/board.md` and `state/changelog.md`.
 
 ## Reproduction and cost
 
@@ -82,7 +84,7 @@ Reliability claims are bound to the dimension they come from; a claim is only as
 
 | Dimension | Status | What a statement may claim |
 |---|---|---|
-| Traceable to source | ✅ mechanism in place | Every observation points back to model text (`trial_id` + verbatim quotation); configuration provenance is generational — follow-up runs carry a full config snapshot, the 27 baseline trials predate that mechanism and are traced by protocol version only (limitation stated in `.42cog/real.md`; nothing is back-filled) |
+| Traceable to source | ✅ mechanism in place | Positive observations carry a `trial_id` and a verbatim quotation; absence observations trace to the complete raw trial and intentionally carry no quotation (`specs/examples/standard-finding.md`). Configuration provenance is generational — follow-up runs carry a full config snapshot, the 27 baseline trials predate that mechanism and are traced by protocol version only (limitation stated in `.42cog/real.md`; nothing is back-filled) |
 | Extractor calibration | ⚠️ narrowed protocol | Calibration is complete under a narrowed protocol: 1 fully annotated item + 9 adjudicated items + 14 items accepted after spot checks + 3 truncated trials listed separately. **Those 14 items were accepted without independent annotation** field by field, and the limitation travels with every citation (`specs/calibration/fp-fn-report.md`) |
 | Source verification | ⚠️ bibliography layer only | 18 self-reported source entries were checked in three states: 8 located / 6 partially matching / 4 not locatable. Existing ≠ supporting — content-level support is a review question |
 | Medical review | ❌ not yet returned | The first review package was sent on 2026-09-12 (`specs/review/record.md`); **professional review has not returned**, so no confirmed-bias statement is made anywhere |

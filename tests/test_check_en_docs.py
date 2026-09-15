@@ -4,6 +4,9 @@
 最容易做假（翻译时把 Bias/定标局限/复核状态写弱或写没，肉眼难发现），
 且中英双份文档是下一个同源漂移源（board 记录过测试数手工刷 5 处）。
 本闸拦四类可判定的错：锚点缺失、字段漏译、入口断链、测试数不一致。
+
+「可见性」是本闸的主要攻防面：声明必须出现在读者看得见的正文里，
+代码块（含未闭合的、波浪线的）、HTML 注释、HTML 属性、行内代码里的命中都不算。
 """
 
 import subprocess
@@ -22,6 +25,7 @@ FIXTURE = {
         "不输出未经专业复核的医学 Bias 结论\n\n"
         "14 条信任扩展未经独立标注\n\n"
         "专业复核未回流\n\n"
+        "中／西医变体是提示敏感性条件，不是医学等价对照\n\n"
         "236 项测试（无需 API 密钥）\n\n"
         "236 项离线测试\n\n"
         "uv run pytest  # 闸3 逻辑（236 用例）\n"
@@ -29,9 +33,10 @@ FIXTURE = {
     "README.en.md": (
         "# MedMirror\n\n"
         "**[中文版（Chinese）](README.md)**\n\n"
-        "no medical bias verdict\n\n"
+        "no medical-bias verdict without professional review\n\n"
         "were accepted without independent annotation\n\n"
         "professional review has not returned\n\n"
+        "prompt-sensitivity conditions, not medically equivalent controls\n\n"
         "uv run pytest  # 236 tests\n"
     ),
     "configs/cases/README.md": (
@@ -57,6 +62,8 @@ FIXTURE = {
     "docs/report/001_tech-report-materials.md": "uv sync && uv run pytest  # 236 项离线测试\n",
     "docs/reviews/judge-entry.md": "- **236 项离线测试** + CI 四闸全绿\n",
 }
+
+BOLD_BIAS = "**no medical-bias verdict without professional review**"
 
 
 def run_gate(root: Path) -> subprocess.CompletedProcess[str]:
@@ -89,6 +96,12 @@ class CheckEnDocsGateTest(unittest.TestCase):
         for frag in fragments:
             self.assertIn(frag, r.stdout)
 
+    def assert_gate_fails_body(self, rel: str, body: str, *fragments: str) -> None:
+        r = run_gate(self._repo_copy({rel: body}))
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        for frag in fragments:
+            self.assertIn(frag, r.stdout)
+
     def test_committed_repo_passes(self):
         r = run_gate(ROOT)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
@@ -98,7 +111,7 @@ class CheckEnDocsGateTest(unittest.TestCase):
         """沙箱正例先自证——不然反例红灯可能来自 fixture 本身不合规。"""
         r = run_gate(self._repo_copy())
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        self.assertIn("3 条声明锚点成对", r.stdout)
+        self.assertIn("4 条声明锚点成对", r.stdout)
         self.assertIn("4 个字段标识符一致", r.stdout)
         self.assertIn("2 对互链", r.stdout)
         self.assertIn("测试数 236（6 份文档同值）", r.stdout)
@@ -107,9 +120,9 @@ class CheckEnDocsGateTest(unittest.TestCase):
         """声明在翻译中被写弱/写没——本闸存在的主要理由。"""
         self.assert_gate_fails(
             "README.en.md",
-            "no medical bias verdict",
+            "no medical-bias verdict without professional review",
             "descriptive results",
-            "缺声明锚点「no medical bias verdict」",
+            "缺声明锚点「no medical-bias verdict without professional review」",
             "对外声明合规",
         )
 
@@ -121,6 +134,61 @@ class CheckEnDocsGateTest(unittest.TestCase):
             "",
             "缺声明锚点「专业复核未回流」",
             "中文正本先被动过",
+        )
+
+    def test_variant_boundary_missing_fails(self):
+        """「中／西医变体不是医学等价对照」两侧成对——英文入口漏了它同样红灯。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "prompt-sensitivity conditions, not medically equivalent controls\n",
+            "",
+            "缺声明锚点「not medically equivalent controls」",
+        )
+
+    def test_anchor_in_code_fence_does_not_count(self):
+        """把声明从正文挪进围栏代码块：读者看不见，闸必须仍红灯。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            "```text\nno medical-bias verdict without professional review\n```",
+            "缺声明锚点「no medical-bias verdict without professional review」",
+        )
+
+    def test_unclosed_fence_hides_anchor(self):
+        """未闭合的围栏按 CommonMark 延续到文末——其后正文不算可见（docstring 已声明）。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            "```text\nno medical-bias verdict without professional review",
+            "缺声明锚点「no medical-bias verdict without professional review」",
+        )
+
+    def test_tilde_fence_hides_anchor(self):
+        """~~~ 围栏与 ``` 同等对待。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            "~~~\nno medical-bias verdict without professional review\n~~~",
+            "缺声明锚点「no medical-bias verdict without professional review」",
+        )
+
+    def test_html_attribute_hides_anchor(self):
+        """HTML 标签属性里的声明读者看不见。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            '<span aria-label="no medical-bias verdict without professional review"></span>',
+            "缺声明锚点「no medical-bias verdict without professional review」",
+        )
+
+    def test_anchor_in_html_comment_does_not_count(self):
+        """HTML 注释里留一句声明，也不该算数。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            "we report descriptive observations only\n\n"
+            "<!-- no medical-bias verdict without professional review -->",
+            "缺声明锚点「no medical-bias verdict without professional review」",
         )
 
     def test_missing_translated_field_fails(self):
@@ -160,6 +228,49 @@ class CheckEnDocsGateTest(unittest.TestCase):
             "缺中文版入口链接（README.md）",
         )
 
+    def test_cross_link_in_code_fence_does_not_count(self):
+        """入口链接藏在代码块里，读者点不到——同样红灯。"""
+        self.assert_gate_fails(
+            "README.md",
+            "**[English](README.en.md)**",
+            "```\n[English](README.en.md)\n```",
+            "缺英文版入口链接（README.en.md）",
+        )
+
+    def test_inline_code_link_is_not_a_link(self):
+        """行内代码里的 `](README.en.md)` 不是链接，点不动——不算入口。"""
+        self.assert_gate_fails(
+            "README.md",
+            "**[English](README.en.md)**",
+            "`](README.en.md)`",
+            "缺英文版入口链接（README.en.md）",
+        )
+
+    def test_unparsed_table_row_fails(self):
+        """正本加一行非反引号格式的字段行、英文版不补：两侧都解析不到，必须红灯而非静默放过。"""
+        self.assert_gate_fails(
+            "configs/cases/README.md",
+            "| `notes` | str | 病例说明 |",
+            "| `notes` | str | 病例说明 |\n| **severity_note** | str | 新增字段 |",
+            "像表格行但首列不是反引号字段名",
+        )
+
+    def test_table_row_without_leading_pipe_is_visible(self):
+        """GFM 允许省首尾竖线——这类行必须仍被规则 2 看见（英文版不补即红灯）。"""
+        self.assert_gate_fails(
+            "configs/cases/README.md",
+            "| `notes` | str | 病例说明 |",
+            "| `notes` | str | 病例说明 |\n`case_text` | str | 隐藏字段 |",
+            "字段表与 configs/cases/README.md 不一致",
+            "英文版缺 case_text",
+        )
+
+    def test_prose_with_pipe_is_not_a_table(self):
+        """带竖线的普通句子不该被误判成表格行（沙箱自证：正例仍绿）。"""
+        body = FIXTURE["configs/cases/README.md"] + "\n说明：字段与类型用 `|` 分隔。\n"
+        r = run_gate(self._repo_copy({"configs/cases/README.md": body}))
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
     def test_test_count_drift_across_files_fails(self):
         """跨文件漂移：只刷了一处、漏了另外五份——board 记录的旧病。"""
         self.assert_gate_fails(
@@ -187,6 +298,15 @@ class CheckEnDocsGateTest(unittest.TestCase):
             "命中 2 个值",
         )
 
+    def test_test_count_in_html_comment_does_not_count(self):
+        """把测试数挪进 HTML 注释，读者看不见——规则 4 也去注释。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "uv run pytest  # 236 tests",
+            "<!-- 236 tests -->",
+            "测试数锚点命中 0 个值",
+        )
+
     def test_missing_english_file_fails(self):
         """英文文档没入库即红灯（成对入库是硬要求）。"""
         root = self._repo_copy()
@@ -206,43 +326,6 @@ class CheckEnDocsGateTest(unittest.TestCase):
             "| `notes` | str | 病例说明 |\n",
             "字段表已删除\n",
             "未解析到字段表首列标识符",
-        )
-
-    def test_anchor_in_code_fence_does_not_count(self):
-        """把声明从正文挪进围栏代码块：读者看不见，闸必须仍红灯（评审 P2）。"""
-        body = FIXTURE["README.en.md"].replace(
-            "no medical bias verdict", "```text\nno medical bias verdict\n```"
-        )
-        r = run_gate(self._repo_copy({"README.en.md": body}))
-        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
-        self.assertIn("缺声明锚点「no medical bias verdict」", r.stdout)
-
-    def test_anchor_in_html_comment_does_not_count(self):
-        """HTML 注释里留一句声明，也不该算数。"""
-        body = FIXTURE["README.en.md"].replace(
-            "no medical bias verdict",
-            "we report descriptive observations only\n\n<!-- no medical bias verdict -->",
-        )
-        r = run_gate(self._repo_copy({"README.en.md": body}))
-        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
-        self.assertIn("缺声明锚点「no medical bias verdict」", r.stdout)
-
-    def test_cross_link_in_code_fence_does_not_count(self):
-        """入口链接藏在代码块里，读者点不到——同样红灯。"""
-        body = FIXTURE["README.md"].replace(
-            "**[English](README.en.md)**", "```\n[English](README.en.md)\n```"
-        )
-        r = run_gate(self._repo_copy({"README.md": body}))
-        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
-        self.assertIn("缺英文版入口链接（README.en.md）", r.stdout)
-
-    def test_unparsed_table_row_fails(self):
-        """正本加了非反引号格式的字段行、英文版不补：两侧都解析不到，必须红灯而非静默放过。"""
-        self.assert_gate_fails(
-            "configs/cases/README.md",
-            "| `notes` | str | 病例说明 |",
-            "| `notes` | str | 病例说明 |\n| **severity_note** | str | 新增字段 |",
-            "像表格行但首列不是反引号字段名",
         )
 
     def test_empty_root_fails(self):

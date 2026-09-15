@@ -46,7 +46,7 @@ cp -n .env.example .env.local                 # key 只放本机，不提交、�
 ```bash
 uv run ruff format --check .             # 122 files already formatted
 uv run ruff check .                      # All checks passed!
-uv run pytest                            # 254 passed
+uv run pytest                            # 262 passed
 uv run python scripts/check-manifests.py # ✓ 全绿（校验 2 份清单）
 uv run python scripts/check_docs.py      # ✓ 文档卫生（合并冲突标记 / 仓内引用）
 uv run python scripts/check_en_docs.py   # ✓ 中英文档一致（声明 / 字段表 / 互链 / 测试数）
@@ -120,7 +120,7 @@ bash scripts/check-tools.sh                                             # 通用
 | `runs/` | 运行档案目录，2026-09-13 起已入 Git（issue #4：远程仓库即备份落点，克隆即可取回；密钥类文件仍被 .env 规则排除） | 无需另行准备；本地双保险用 `scripts/backup_data.py` |
 | `.env.local` | 密钥永不入库 | 从 `.env.example` 复制后自己填 |
 
-> 已实测：干净 clone 后 `uv sync` + 四闸四条命令全部通过，无需额外步骤。
+> 已实测：干净 clone 后 `uv sync` + 四闸与两道文档卫生闸全部通过，无需额外步骤。
 
 ## 7. 边界（越线要担责）
 

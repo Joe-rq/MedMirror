@@ -34,7 +34,8 @@ review — nothing is swallowed silently.
 ## Vocabulary registry (vocab-registry.json)
 
 `configs/cases/vocab-registry.json` registers `case_id|protocol_version|extractor_version →
-vocabulary digest (sha256)`. For a CaseSpec **inside the cases directory**, loading enforces:
+vocabulary digest (sha256)`. For a CaseSpec **directly under the cases directory** (not in a
+subdirectory), loading enforces:
 
 - unregistered version triple → refused (a new case or a version bump must append a registration
   line explicitly, through review);
@@ -43,7 +44,9 @@ vocabulary digest (sha256)`. For a CaseSpec **inside the cases directory**, load
 
 The correct way to change a vocabulary: raise `protocol_version` or switch `extractor_version`,
 then add a line to the registry file. Third-party custom paths outside this directory are not
-subject to the registry (self-discipline applies).
+subject to the registry (self-discipline applies); a CaseSpec placed in a subdirectory takes the
+same route — the guard checks the direct parent directory, which is a known implementation
+boundary.
 
 ## Protocol red lines (not bypassable)
 

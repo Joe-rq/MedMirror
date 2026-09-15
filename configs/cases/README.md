@@ -30,13 +30,14 @@ Schema 封闭：未知顶层键与 `extraction` 内未知键一律拒绝；JSON 
 ## 词表登记（vocab-registry.json）
 
 `configs/cases/vocab-registry.json` 登记 `case_id|protocol_version|extractor_version →
-词表摘要（sha256）`。**cases 目录内**的 CaseSpec 加载时强制核对：
+词表摘要（sha256）`。**直接位于 `cases` 目录下**（不含子目录）的 CaseSpec 加载时强制核对：
 
 - 版本三元组未登记 → 拒绝（新增病例或升版本须显式追加登记，走评审）；
 - 已登记但词表摘要不一致 → 拒绝（同版本改词表违反「改词表=新版本号」红线）。
 
 改词表的正确路径：升 `protocol_version` 或换 `extractor_version` → 在登记文件新增一行。
-目录外的第三方自定义路径不受登记约束（自理纪律）。
+目录外的第三方自定义路径不受登记约束（自理纪律）；子目录里的 CaseSpec 同样不经登记闸
+（守卫按直接父目录判定，属已登记的实现边界）。
 
 ## 协议红线（不可绕过）
 
