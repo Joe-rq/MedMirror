@@ -21,7 +21,8 @@ HTML 注释（未闭合同样到文末）、显式隐藏的 HTML 元素（任意
 display:none / visibility:hidden，含未闭合到文末；`<style>`、`<script>` 一律整块不可见）。
 规则 1、3 另剥离行内代码 span（含多反引号形式）——被引号包起来的一句声明是「被引用」，
 不是「在说」；规则 2 的字段名本就写在行内代码里，不剥离。规则 4 例外：测试数写在
-快速上手代码块的注释里（读者可见），故保留代码块，只去注释、隐藏元素与标签。
+快速上手代码块的注释里（读者可见），故保留代码块，只去注释、隐藏元素、标签与链接目标。
+引用块前缀不改变块级判定（`> ``` 与 `>     代码` 同样是代码块）。
 
 **残余边界（如实声明）**：本闸不做完整 Markdown/HTML 解析（本仓不引入依赖）。已覆盖
 上述常见遮蔽手法；外链样式表定义的隐藏类、JS 运行时才隐藏的元素，以及把声明藏进图片
@@ -100,12 +101,15 @@ HIDDEN_OPEN_RE = re.compile(
 )
 HTML_TAG_RE = re.compile(r"<[^>\n]*>")
 CODE_SPAN_RE = re.compile(r"(`+)(?:[^`]|(?!\1)`)*?\1")
-# 链接目标：](...) —— 锚点匹配时整段去掉，只留链接文字
-LINK_TARGET_RE = re.compile(r"\]\([^)\s]*\)")
+# 链接目标连同可选 title：](url "title") —— 锚点匹配时整段去掉，只留链接文字
+LINK_TARGET_RE = re.compile(r"\]\([^)\s]*(?:\s+(?:\"[^\"]*\"|'[^']*'|\([^)]*\)))?\)")
 MD_LINK_RE = re.compile(r"(?<![!\\])\[[^\]]*\]\(([^)\s]+)\)")
 QUOTE_PREFIX_RE = re.compile(r"^[ \t]*>+[ \t]?")
-# Markdown 引用式注释（[//]: # (...) / [comment]: # (...)）——渲染不可见
-MD_COMMENT_LINE_RE = re.compile(r"^[ \t]*\[(?://|comment)\]:.*$", re.MULTILINE)
+# Markdown 引用式注释（[//]: # (...) / [comment]: # (...)）——渲染不可见；
+# 允许引用块与列表前缀（`> [//]: # (…)`、`- [comment]: # (…)`，评审 R6）
+MD_COMMENT_LINE_RE = re.compile(
+    r"^[ \t]*(?:>+[ \t]?|[-*+][ \t]|\d+\.[ \t])*\[(?://|comment)\]:[^\n]*$", re.MULTILINE
+)
 # 字段名：表格首列的反引号标识符（GFM 首尾竖线可省）
 FIELD_ROW_RE = re.compile(r"^[ \t]*\|?[ \t]*`([A-Za-z_][\w.]*)`[ \t]*\|")
 SEPARATOR_ROW_RE = re.compile(
@@ -118,12 +122,14 @@ def strip_code_blocks(text: str) -> str:
     out: list[str] = []
     fence: tuple[str, int] | None = None
     for line in text.splitlines():
-        m = FENCE_LINE_RE.match(line)
+        # 引用块前缀不改变块级判定：`> ``` 与 `>     代码` 同样是代码块（评审 R6）
+        probe = QUOTE_PREFIX_RE.sub("", line)
+        m = FENCE_LINE_RE.match(probe)
         if fence is None:
             if m:
                 fence = (m.group(1)[0], len(m.group(1)))
                 continue
-            if INDENT_CODE_RE.match(line):
+            if INDENT_CODE_RE.match(probe):
                 continue
             out.append(line)
             continue
@@ -187,8 +193,9 @@ def anchor_body(text: str) -> str:
 
 
 def without_html(text: str) -> str:
-    """只去注释/隐藏元素/标签，保留代码块（规则 4 用：代码块注释里的测试数读者可见）。"""
-    return strip_hidden_html(text)
+    """规则 4 的匹配域：保留代码块（代码块注释里的测试数读者可见），
+    但去掉注释 / 隐藏元素 / 标签与链接目标——写进链接 title 或 URL 的不算（评审 R6）。"""
+    return LINK_TARGET_RE.sub("]", strip_hidden_html(text))
 
 
 def markdown_links(text: str) -> list[str]:

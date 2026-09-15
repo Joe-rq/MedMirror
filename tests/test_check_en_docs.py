@@ -483,6 +483,44 @@ class CheckEnDocsGateTest(unittest.TestCase):
             "测试数锚点命中 0 个值",
         )
 
+    def test_blockquote_indented_code_hides_anchor(self):
+        """引用块内的缩进代码同样是代码块（渲染为 blockquote>pre，R6 补）。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            ">     no medical-bias verdict without professional review",
+            "缺声明锚点「no medical-bias verdict without professional review」",
+        )
+
+    def test_prefixed_reference_comment_hides_anchor(self):
+        """带引用块/列表前缀的 Markdown 引用式注释同样不可见（R6 补）。"""
+        for wrap in ("> [//]: # ({})", "- [comment]: # ({})", "1. [//]: # ({})"):
+            with self.subTest(wrap=wrap):
+                self.assert_gate_fails(
+                    "README.en.md",
+                    "no medical-bias verdict without professional review",
+                    wrap.format("no medical-bias verdict without professional review"),
+                    "缺声明锚点「no medical-bias verdict without professional review」",
+                )
+
+    def test_link_title_hides_anchor(self):
+        """链接 title（`[x](url "…")`）读者要点开才见，不算「文档在声明」（R6 补）。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            'see [x](https://e.org "no medical-bias verdict without professional review")',
+            "缺声明锚点「no medical-bias verdict without professional review」",
+        )
+
+    def test_link_title_hides_test_count(self):
+        """测试数藏在链接 title 里同样不算（R6 补）。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "uv run pytest  # 236 tests",
+            'see [x](https://e.org "236 tests")',
+            "测试数锚点命中 0 个值",
+        )
+
     def test_duplicate_field_name_fails(self):
         """同名字段出现两次（内容可不同）：集合比较看不见，须单独拦（R4 补）。"""
         self.assert_gate_fails(
