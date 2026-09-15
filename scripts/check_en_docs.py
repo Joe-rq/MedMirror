@@ -138,11 +138,21 @@ def strip_hidden_html(text: str) -> str:
         m = HIDDEN_OPEN_RE.search(text)
         if not m:
             break
-        tail = text[m.end() :]
-        close = re.search(rf"</{re.escape(m.group(1))}\s*>", tail, re.IGNORECASE)
-        # 找不到闭合标签 = 该元素延续到文末（与围栏/注释同款处理）
-        text = text[: m.start()] + (tail[close.end() :] if close else "")
+        text = text[: m.start()] + _rest_after_element(text, m)
     return HTML_TAG_RE.sub("", text)
+
+
+def _rest_after_element(text: str, opening: re.Match[str]) -> str:
+    """返回隐藏元素之后的部分；按同名标签计数配对，未闭合则到文末（嵌套安全）。"""
+    name = re.escape(opening.group(1))
+    pattern = re.compile(rf"<(/?){name}\b[^>]*>", re.IGNORECASE)
+    depth, end = 1, None
+    for mm in pattern.finditer(text[opening.end() :]):
+        depth += -1 if mm.group(1) else 1
+        if depth == 0:
+            end = opening.end() + mm.end()
+            break
+    return text[end:] if end is not None else ""
 
 
 def visible_text(text: str) -> str:
@@ -188,16 +198,36 @@ def is_separator_row(line: str) -> bool:
     return bool(cells) and all(re.fullmatch(r":?-{2,}:?", c) for c in cells)
 
 
+def table_block_flags(lines: list[str]) -> list[bool]:
+    """标记表格块内的行：以「表头 + 分隔行」起，到空行为止（GFM 表格块）。
+
+    整块都算表格上下文——块内连续多行即使都省掉首尾竖线也不会漏检
+    （评审 R3：逐行邻接判定会漏掉块内第二行起的省竖线写法）。
+    """
+    flags = [False] * len(lines)
+    i = 0
+    while i < len(lines):
+        if not is_separator_row(lines[i]):
+            i += 1
+            continue
+        start = i - 1 if i > 0 else i
+        j = i + 1
+        while j < len(lines) and lines[j].strip():
+            j += 1
+        for k in range(start, j):
+            flags[k] = True
+        i = j
+    return flags
+
+
 def table_field_idents(text: str) -> set[str]:
-    """只认「表格里」的字段名——表外的 `` `x` | y `` 不算字段（防伪字段补集合）。"""
+    """只认「表格块内」的字段名——表外的 `` `x` | y `` 不算字段（防伪字段补集合）。"""
     lines = table_lines(visible_text(text))
     separators = {i for i, ln in enumerate(lines) if is_separator_row(ln)}
-    tableish = [is_table_row(ln) or i in separators for i, ln in enumerate(lines)]
+    in_block = table_block_flags(lines)
     idents: set[str] = set()
     for i, ln in enumerate(lines):
-        if i in separators:
-            continue
-        if not (tableish[i] or (i and tableish[i - 1]) or (i + 1 < len(lines) and tableish[i + 1])):
+        if not in_block[i] or i in separators:
             continue
         m = FIELD_ROW_RE.match(ln)
         if m:
@@ -215,16 +245,12 @@ def unparsed_table_cells(text: str) -> list[int]:
     lines = table_lines(visible_text(text))
     separators = {i for i, ln in enumerate(lines) if is_separator_row(ln)}
     headers = {i - 1 for i in separators if i >= 1}
-    # 表格上下文：本身像表格行，或紧邻表格行 / 分隔行（覆盖两侧都省竖线的行）
-    tableish = [is_table_row(ln) or i in separators for i, ln in enumerate(lines)]
+    in_block = table_block_flags(lines)
     bad: list[int] = []
     for i, ln in enumerate(lines):
-        if "|" not in ln or i in separators or i in headers:
+        if "|" not in ln or not in_block[i] or i in separators or i in headers:
             continue
-        adjacent = (
-            tableish[i] or (i > 0 and tableish[i - 1]) or (i + 1 < len(lines) and tableish[i + 1])
-        )
-        if adjacent and not FIELD_ROW_RE.match(ln):
+        if not FIELD_ROW_RE.match(ln):
             bad.append(i + 1)
     return bad
 

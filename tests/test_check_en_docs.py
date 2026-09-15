@@ -418,6 +418,24 @@ class CheckEnDocsGateTest(unittest.TestCase):
             "未解析到字段表首列标识符",
         )
 
+    def test_nested_hidden_element_hides_anchor(self):
+        """嵌套同名标签：内层闭合标签不能当作外层结束（R3 补）。"""
+        for body in (
+            "<div hidden><div>inner</div>no medical-bias verdict without professional review</div>",
+            "<div hidden><div>inner</div>no medical-bias verdict without professional review",
+        ):
+            with self.subTest(body=body):
+                self.assertNotIn("no medical-bias verdict", ced.anchor_body(body))
+
+    def test_consecutive_rows_without_edge_pipes_fail(self):
+        """块内连续多行都省竖线时，第二行也不能漏检（R3 补）。"""
+        self.assert_gate_fails(
+            "configs/cases/README.md",
+            "| 字段 | 类型 | 说明 |\n|---|---|---|",
+            "字段 | 类型 | 说明\n--- | ---\n`case_id` | str\n**severity_two** | str",
+            "像表格行但首列不是反引号字段名",
+        )
+
     def test_link_target_is_not_anchor_text(self):
         """声明不应由链接目标（URL）提供——读者要点开才看得到（R2 谱系 B 补）。
 
