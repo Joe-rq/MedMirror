@@ -21,7 +21,7 @@ cd MedMirror
 uv sync                                  # installs Python 3.13 + pytest/ruff, pinned by uv.lock
 uv run ruff format --check .             # gate 1 · formatting
 uv run ruff check .                      # gate 2 · lint
-uv run pytest                            # gate 3 · 250 tests, no API key needed
+uv run pytest                            # gate 3 · 254 tests, no API key needed
 uv run python scripts/check-manifests.py # gate 4 · package manifests
 uv run python scripts/check_docs.py      # doc hygiene · repository references
 uv run python scripts/check_en_docs.py   # doc hygiene · Chinese/English consistency
@@ -83,7 +83,7 @@ Reliability claims are bound to the dimension they come from; a claim is only as
 | Dimension | Status | What a statement may claim |
 |---|---|---|
 | Traceable to source | ✅ mechanism in place | Every observation points back to model text (`trial_id` + verbatim quotation); configuration provenance is generational — follow-up runs carry a full config snapshot, the 27 baseline trials predate that mechanism and are traced by protocol version only (limitation stated in `.42cog/real.md`; nothing is back-filled) |
-| Extractor calibration | ⚠️ narrowed protocol | Calibration is complete under a narrowed protocol: 1 fully annotated item, 9 adjudicated items, 14 items accepted after spot checks. **Those 14 items were accepted without independent annotation** field by field, and the limitation travels with every citation (`specs/calibration/fp-fn-report.md`) |
+| Extractor calibration | ⚠️ narrowed protocol | Calibration is complete under a narrowed protocol: 1 fully annotated item + 9 adjudicated items + 14 items accepted after spot checks + 3 truncated trials listed separately. **Those 14 items were accepted without independent annotation** field by field, and the limitation travels with every citation (`specs/calibration/fp-fn-report.md`) |
 | Source verification | ⚠️ bibliography layer only | 18 self-reported source entries were checked in three states: 8 located / 6 partially matching / 4 not locatable. Existing ≠ supporting — content-level support is a review question |
 | Medical review | ❌ not yet returned | The first review package was sent on 2026-09-12 (`specs/review/record.md`); **professional review has not returned**, so no confirmed-bias statement is made anywhere |
 | Sample size | ❌ small | 27 baseline trials + 4 follow-up calls (3 results), one synthetic case, 3 repeats per cell — a descriptive observation, not evidence of stability across models or of a systematic effect |
@@ -92,7 +92,7 @@ The extractor is a deterministic rule engine (`offline-rules-v2`); its counts ar
 
 ## Language note
 
-Parts of this repository are documented in Chinese only: `docs/onboarding/`, `docs/reviews/judge-entry.md`, `specs/`, `state/` and `.42cog/`. This file and the [CaseSpec reference](configs/cases/README.en.md) are the English entry points; Chinese-only documents are marked as such when linked from here.
+Most of this repository is documented in Chinese only: `.42cog/`, `specs/`, `state/`, `docs/` (`onboarding`, `reviews`, `plan`, `report`, `experiments`, `research`), `vault/`, `notes/`, `skills/` and `scripts/README.md`. The two English entry points are this file and the [CaseSpec reference](configs/cases/README.en.md) — every link above that leaves them lands in Chinese-only documentation, and the source of truth for all quoted boundaries stays the Chinese text.
 
 The canonical phrasing of the boundary above is carried in the Chinese README as 「不输出未经专业复核的医学 Bias 结论」, alongside the narrowed-calibration limitation and the pending review status.
 

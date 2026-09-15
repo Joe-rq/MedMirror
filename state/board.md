@@ -169,3 +169,15 @@ MR #53 被主人合并于 ddc754a，但分支随后推送的评审修复 commit 
 ## MR #56 追加提交事故与补合（2026-09-13，第三次同款）
 
 MR #56 被主人合并于 4040d9e（含至 00ae71a 的 CI 修复），随后推送的 standard-finding「仅」→「主要」修复 d0bab28 挂在已关闭 MR 上未入 main——与 #46/#47、#53 同款事故第三次。直接成因：AI 误读 `mergeable_state: merged` 为「可合并」（实为「已合并」），在用户合并与 AI 推送竞态窗口里追加了 commit。处置照 #53 先例：cherry-pick 至 fix/issue-55-standard-finding 走补合 MR。教训固化：①`mergeable_state: merged` = 已合并，`mergeable` = 可合并，推送追加 commit 前必须重读 MR 状态；②「等分支完备再合并」纪律已两次写进教训仍复发——AI 侧新增自查项：**每次 push 前 `cnb pulls get-pull` 确认 MR 仍 open**。
+
+## Issue #51 英文入口与 CaseSpec 英文化（2026-09-15，分支 docs/issue-51-en-readme）
+
+AI 侧交付：`README.en.md`（国际评测研究者第一入口：定位 + 四条硬边界 + 快速上手 + 自带病例 + 证据地图 + 复现与成本三口径 + 五维度可靠性状态 + 语言与仓库角色标注）、`configs/cases/README.en.md`（CaseSpec 接入文档逐节对译，字段表首列保持代码原形）、两份中文正本各加一行英文入口；`scripts/check_en_docs.py`（四条规则：声明锚点成对 / 字段表覆盖一致 / 互链存在 / 测试数处处一致）+ 18 例回归，进 CI（拆为 `doc-hygiene` 与 `en-docs` 两个 stage：`&&` 串联会让前一条红盖住后一条，失败归属不可辨）。四闸 254 + check_calibration + 两条文档闸全绿；干净 clone 实名实测四闸与回放。
+
+**验收①实测中发现一条不实声明并处置（主人 2026-09-15 裁决：收窄声明）**：匿名 clone 内跑离线重放，`docs/experiments/exp003-baseline/derived-v3/analysis.md`、`docs/experiments/exp003-baseline/derived-v3/analysis.json` 与冻结快照字节一致，但 `docs/experiments/exp003-baseline/derived-v3/extractions.jsonl` 27/27 行多一个字段 `paths_digest`——该字段由 #50 评审轮为「提取词表与报告词表必须同源」的强比对引入（2026-09-13），而冻结的 derived-v3 快照生成于 2026-09-10，早于它。故 judge-entry 定位命令注释与附 B、素材稿 §五、英文 README 三处「字节一致」声明在 main 上已部分为假。处置：不改冻结产物（尺子纪律）、不撤守卫（降低评审标准），只把声明改精确。**遗留交主人**：`scripts/report_exp003.py` 的 `DEFAULT_OUTPUT` 就是派生目录且 `FROZEN_DERIVED` 未含 v3——照文档不带 `--output` 跑一次即覆盖比对基准，该声明结构上不可证伪；修法（v3 并入冻结守卫 + 重放测试约 17 行）属 #50 后续工程，不在本件范围。
+
+**验收②机械化**：三条硬声明（不输出未经专业复核的医学 Bias 结论 / 14 条信任扩展未经独立标注 / 专业复核未回流）钉成中英锚点对，只在**去掉围栏代码块与 HTML 注释后**的可见正文里认命中（评审 P2：原文删掉、只在注释或代码块里留串也算通过）；字段表另加「像表格行但首列非反引号字段名」即红灯（否则两侧同时隐形）；测试数扩到 6 份文档 8 处同值。
+
+**自审链**：/simplify 四角度（Reuse/Simplification/Efficiency/Altitude）→ 三角度独立命中同一处真问题（闸只覆盖 8 处里的 2 处），全部闭环；pr-ready 三视角（sibling/concurrency/boundary）P1×1 + P2×13，处置见下：onboarding 的「四条=CI 同源」在本次改动后字面失效（加两条文档卫生闸并改句）、跨语言五维度表漏「+3 截断」（补齐）、英文 README 中文-only 清单不完整（补全并改掉未兑现的承诺）、判官入口 CI 清单（补一句）、锚点可见性与字段表隐形两处闸门硬化（含 4 例新回归）。双谱系评审（codex gpt-5.6-luna + MiniMax-M3）结果续记于 PR。
+
+**同源刷新**：测试数 236→254（8 处 6 份文档，此后由新闸机械守卫）、ruff 格式数 118→122、board/changelog 本条。

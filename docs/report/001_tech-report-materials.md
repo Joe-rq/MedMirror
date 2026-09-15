@@ -114,7 +114,7 @@ related: [../plan/003_post-hackathon-roadmap, ../../specs/calibration/fp-fn-repo
 
 ```bash
 git clone https://github.com/Joe-rq/MedMirror && cd MedMirror
-uv sync && uv run pytest   # 250 项离线测试，无需 API 密钥
+uv sync && uv run pytest   # 254 项离线测试，无需 API 密钥
 ```
 
 - CI 闸门全绿（定义见 `.cnb.yml`；文档卫生闸不覆盖 `docs/` 报告目录）；离线重放 exp003：派生报告（`analysis.md`/`.json`）与已发布版本**字节一致**；`extractions.jsonl` 逐次回放自身确定，因后续版本新增 `paths_digest` 词表签名字段，不与早期冻结快照字节相同。

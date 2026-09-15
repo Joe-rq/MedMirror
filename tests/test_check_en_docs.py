@@ -40,6 +40,7 @@ FIXTURE = {
         "| 字段 | 类型 | 说明 |\n|---|---|---|\n"
         "| `case_id` | str | 唯一标识 |\n"
         "| `synthetic` | bool | 合成声明 |\n"
+        "| `extraction.paths` | {path: [term]} | 路径词表 |\n"
         "| `notes` | str | 病例说明 |\n"
     ),
     "configs/cases/README.en.md": (
@@ -48,6 +49,7 @@ FIXTURE = {
         "| Field | Type | Notes |\n|---|---|---|\n"
         "| `case_id` | str | unique id |\n"
         "| `synthetic` | bool | synthetic declaration |\n"
+        "| `extraction.paths` | {path: [term]} | path vocabulary |\n"
         "| `notes` | str | case description |\n"
     ),
     "docs/onboarding/README.md": "uv run pytest  # 236 passed\n",
@@ -97,7 +99,7 @@ class CheckEnDocsGateTest(unittest.TestCase):
         r = run_gate(self._repo_copy())
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         self.assertIn("3 条声明锚点成对", r.stdout)
-        self.assertIn("3 个字段标识符一致", r.stdout)
+        self.assertIn("4 个字段标识符一致", r.stdout)
         self.assertIn("2 对互链", r.stdout)
         self.assertIn("测试数 236（6 份文档同值）", r.stdout)
 
@@ -200,9 +202,47 @@ class CheckEnDocsGateTest(unittest.TestCase):
             "| 字段 | 类型 | 说明 |\n|---|---|---|\n"
             "| `case_id` | str | 唯一标识 |\n"
             "| `synthetic` | bool | 合成声明 |\n"
+            "| `extraction.paths` | {path: [term]} | 路径词表 |\n"
             "| `notes` | str | 病例说明 |\n",
             "字段表已删除\n",
             "未解析到字段表首列标识符",
+        )
+
+    def test_anchor_in_code_fence_does_not_count(self):
+        """把声明从正文挪进围栏代码块：读者看不见，闸必须仍红灯（评审 P2）。"""
+        body = FIXTURE["README.en.md"].replace(
+            "no medical bias verdict", "```text\nno medical bias verdict\n```"
+        )
+        r = run_gate(self._repo_copy({"README.en.md": body}))
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("缺声明锚点「no medical bias verdict」", r.stdout)
+
+    def test_anchor_in_html_comment_does_not_count(self):
+        """HTML 注释里留一句声明，也不该算数。"""
+        body = FIXTURE["README.en.md"].replace(
+            "no medical bias verdict",
+            "we report descriptive observations only\n\n<!-- no medical bias verdict -->",
+        )
+        r = run_gate(self._repo_copy({"README.en.md": body}))
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("缺声明锚点「no medical bias verdict」", r.stdout)
+
+    def test_cross_link_in_code_fence_does_not_count(self):
+        """入口链接藏在代码块里，读者点不到——同样红灯。"""
+        body = FIXTURE["README.md"].replace(
+            "**[English](README.en.md)**", "```\n[English](README.en.md)\n```"
+        )
+        r = run_gate(self._repo_copy({"README.md": body}))
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("缺英文版入口链接（README.en.md）", r.stdout)
+
+    def test_unparsed_table_row_fails(self):
+        """正本加了非反引号格式的字段行、英文版不补：两侧都解析不到，必须红灯而非静默放过。"""
+        self.assert_gate_fails(
+            "configs/cases/README.md",
+            "| `notes` | str | 病例说明 |",
+            "| `notes` | str | 病例说明 |\n| **severity_note** | str | 新增字段 |",
+            "像表格行但首列不是反引号字段名",
         )
 
     def test_empty_root_fails(self):
