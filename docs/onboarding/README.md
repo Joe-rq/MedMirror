@@ -46,7 +46,7 @@ cp -n .env.example .env.local                 # key 只放本机，不提交、�
 ```bash
 uv run ruff format --check .             # 122 files already formatted
 uv run ruff check .                      # All checks passed!
-uv run pytest                            # 264 passed
+uv run pytest                            # 271 passed
 uv run python scripts/check-manifests.py # ✓ 全绿（校验 2 份清单）
 uv run python scripts/check_docs.py      # ✓ 文档卫生（合并冲突标记 / 仓内引用）
 uv run python scripts/check_en_docs.py   # ✓ 中英文档一致（声明 / 字段表 / 互链 / 测试数）
@@ -70,7 +70,7 @@ uv run python scripts/check_en_docs.py   # ✓ 中英文档一致（声明 / 字
 每个改动都走这条线，没有例外：
 
 ```
-issue（自己写）→ 分支 → PR → CI 四闸绿 → 人工合并 → 关 issue
+issue（自己写）→ 分支 → PR → CI 全绿（四闸 + 两道文档卫生闸）→ 人工合并 → 关 issue
 ```
 
 **开工第一步：读 issue。** 需求以 issue 为准，不凭记忆、不凭聊天记录：

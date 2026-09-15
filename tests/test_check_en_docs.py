@@ -190,6 +190,49 @@ class CheckEnDocsGateTest(unittest.TestCase):
             "缺声明锚点「no medical-bias verdict without professional review」",
         )
 
+    def test_hidden_element_variants_hide_anchor(self):
+        """style/script 块与任意标签上的 hidden 都算不可见（R2 补）。"""
+        for wrap in ("<style>{}</style>", "<script>{}</script>", "<article hidden>{}</article>"):
+            with self.subTest(wrap=wrap):
+                body = FIXTURE["README.en.md"].replace(
+                    "no medical-bias verdict without professional review",
+                    wrap.format("no medical-bias verdict without professional review"),
+                )
+                r = run_gate(self._repo_copy({"README.en.md": body}))
+                self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+                self.assertIn("缺声明锚点「no medical-bias verdict", r.stdout)
+
+    def test_inline_code_hides_anchor(self):
+        """声明被塞进行内代码：是被引用，不是「在说」——不算数（R2 补）。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            "`no medical-bias verdict without professional review`",
+            "缺声明锚点「no medical-bias verdict without professional review」",
+        )
+
+    def test_indented_code_hides_anchor(self):
+        """4 空格缩进在 Markdown 里是代码块（R2 补）。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            "    no medical-bias verdict without professional review",
+            "缺声明锚点「no medical-bias verdict without professional review」",
+        )
+
+    def test_image_and_escaped_links_do_not_count(self):
+        """图片、转义方括号、双反引号代码 span 都不是入口链接（R2 补）。"""
+        for wrap in (
+            "![English](README.en.md)",
+            "\\[English](README.en.md)",
+            "``[English](README.en.md)``",
+        ):
+            with self.subTest(wrap=wrap):
+                body = FIXTURE["README.md"].replace("**[English](README.en.md)**", wrap)
+                r = run_gate(self._repo_copy({"README.md": body}))
+                self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+                self.assertIn("缺英文版入口链接（README.en.md）", r.stdout)
+
     def test_html_attribute_hides_anchor(self):
         """HTML 标签属性里的声明读者看不见。"""
         self.assert_gate_fails(
@@ -281,6 +324,33 @@ class CheckEnDocsGateTest(unittest.TestCase):
             "| `notes` | str | 病例说明 |\n`case_text` | str | 隐藏字段 |",
             "字段表与 configs/cases/README.md 不一致",
             "英文版缺 case_text",
+        )
+
+    def test_table_row_without_any_edge_pipe_fails(self):
+        """两侧都省竖线的合法 GFM 表格行同样不能隐形（R2 补）。"""
+        self.assert_gate_fails(
+            "configs/cases/README.md",
+            "| 字段 | 类型 | 说明 |\n|---|---|---|",
+            "字段 | 类型 | 说明\n--- | --- | ---\n**severity_note** | str | 新增字段",
+            "像表格行但首列不是反引号字段名",
+        )
+
+    def test_blockquote_table_row_fails(self):
+        """引用块里的表格同样是表格（R2 补）。"""
+        self.assert_gate_fails(
+            "configs/cases/README.md",
+            "| `notes` | str | 病例说明 |",
+            "| `notes` | str | 病例说明 |\n> | **severity_note** | str | 新增字段 |",
+            "像表格行但首列不是反引号字段名",
+        )
+
+    def test_pseudo_field_outside_table_is_not_a_field(self):
+        """表外的 `` `x` | y `` 不算字段——否则可用伪字段补齐集合蒙混过关（R2 补）。"""
+        self.assert_gate_fails(
+            "configs/cases/README.md",
+            "| `notes` | str | 病例说明 |\n",
+            "",
+            "字段表与 configs/cases/README.md 不一致",
         )
 
     def test_prose_with_pipe_is_not_a_table(self):

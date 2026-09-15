@@ -11,7 +11,7 @@ MedMirror 是一套可复用的医疗大模型呈现差异评测工作流（CLI�
 - 📋 [评委导航入口：三任务答卷 + 证据地图（每节 3 条命令内直达原始证据）](docs/reviews/judge-entry.md)
 - 📊 [基线分组报告](docs/experiments/exp003-baseline/derived-v3/analysis.md) · [追问来源查证](docs/experiments/exp003-baseline/followup/source-verification.md) · [实验说明](docs/experiments/exp003-baseline/README.md)
 - 🗄️ 原始回答与运行档案：[trials.jsonl](docs/experiments/exp003-baseline/result/trials.jsonl)（27 条原文）、[runs/](runs/)（计划 / 预算账本 / attempt 全记录）
-- ✅ 离线复现：`uv sync && uv run pytest`（264 项测试，无需 API 密钥）；全部四闸命令见[下文](#环境与四闸)
+- ✅ 离线复现：`uv sync && uv run pytest`（271 项测试，无需 API 密钥）；全部四闸命令见[下文](#环境与四闸)
 
 ## 目录
 
@@ -30,7 +30,7 @@ MedMirror 是一套可复用的医疗大模型呈现差异评测工作流（CLI�
 - **受控评测**：协议 v1.3（1 合成病例 × 3 问法 × 3 模型 × 3 重复；中／西医变体是提示敏感性条件，不是医学等价对照）；提取器 offline-rules-v2（六值态度 + 逐字引文 + 来源三态分离；已按缩窄口径定标，14 条信任扩展局限随行）
 - **有界追问**（followup-rules-v1）：固定触发规则（中性全未提及 + 镜像完整可定位提及）、每模型 ≤2 / 全轮 ≤6、按实际调用计额、预算硬闸、崩溃可恢复——真实观察：deepseek 完整作答并自述 AHA/ASA 2011 等来源、step 截断作答引中国指南、glm 两次思考耗尽零正文（供应商差异实证）
 - **可复核发现包**：`specs/review/` 两层复核表（判定后置：先开放式后候选核对，引文逐字机械校验）、Word 分发闸门、候选池 20 条（分布备注已逐断言机器复算）；追问自述来源的文献存在性查证（`docs/experiments/exp003-baseline/followup/source-verification.md`，18 条目三态：8 可定位/6 部分相符/4 无法定位）
-- **工程底座**：264 项离线测试 + CI 四闸 + 预算账本（reserve→settle/refund）+ 独立 run 目录恢复语义；PR 经双谱系 AI 交叉评审（GPT 系 + MiniMax/DeepSeek 系；评审者均为 AI，非人工独立评审，例外与放宽在 state 日志如实记录）
+- **工程底座**：271 项离线测试 + CI 四闸 + 预算账本（reserve→settle/refund）+ 独立 run 目录恢复语义；PR 经双谱系 AI 交叉评审（GPT 系 + MiniMax/DeepSeek 系；评审者均为 AI，非人工独立评审，例外与放宽在 state 日志如实记录）
 
 **提取定标已按缩窄口径完成（14 条信任扩展未经独立标注，局限随行）；专业复核未回流，不输出医学 Bias 结论。** 剩余人工环节：#5 联系复核人（候选池必核子集 10 条已定稿 FINAL，#29 查证产物已过目关闭）。
 
@@ -45,7 +45,7 @@ uv sync                                  # 自动装 Python 3.13 与 pytest/ruff
 cp .env.example .env.local               # 再填三家 key，禁止提交
 uv run ruff format --check .             # 闸1 格式
 uv run ruff check .                      # 闸2 写法
-uv run pytest                            # 闸3 逻辑（264 用例）
+uv run pytest                            # 闸3 逻辑（271 用例）
 uv run python scripts/check-manifests.py # 闸4 包清单冒烟
 uv run python scripts/check_docs.py      # 文档卫生 · 仓库内引用
 uv run python scripts/check_en_docs.py   # 文档卫生 · 中英一致性
@@ -57,7 +57,7 @@ uv run python scripts/check_en_docs.py   # 文档卫生 · 中英一致性
 
 main 已设分支保护（禁止直推 + 需通过状态检查），每个改动都走：
 
-**issue（自己写）→ 分支 → PR → CI 四闸绿 → 人工合并 → 关 issue**
+**issue（自己写）→ 分支 → PR → CI 全绿（四闸 + 两道文档卫生闸）→ 人工合并 → 关 issue**
 
 完整接手清单、工具链与边界见 [docs/onboarding/README.md](docs/onboarding/README.md)。
 

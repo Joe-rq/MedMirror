@@ -48,11 +48,13 @@ subject to the registry (self-discipline applies); a CaseSpec placed in a subdir
 same route — the guard checks the direct parent directory, which is a known implementation
 boundary.
 
-## Protocol red lines (not bypassable)
+## Protocol red lines
 
 - **Changing the vocabulary or variants of an existing case = a new extractor/protocol version
   number**, and historical artifacts are never rewritten (the measuring-stick discipline of
-  `.42cog/` and `specs/calibration.md`).
+  `.42cog/` and `specs/calibration.md`). **What is gated mechanically**: the registry digests the
+  **vocabulary** only. Variant changes are **not** covered by the registry gate today — they are
+  held by discipline and by review (a logged gap).
 - When the `extractor_version` pinned by a CaseSpec does not match the version supported by
   `src/medmirror/protocol.py`, loading is **refused** (the error carries both version values); the
   version string has a single source in `protocol.EXTRACTOR_VERSION`.

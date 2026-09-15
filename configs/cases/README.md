@@ -39,10 +39,11 @@ Schema 封闭：未知顶层键与 `extraction` 内未知键一律拒绝；JSON 
 目录外的第三方自定义路径不受登记约束（自理纪律）；子目录里的 CaseSpec 同样不经登记闸
 （守卫按直接父目录判定，属已登记的实现边界）。
 
-## 协议红线（不可绕过）
+## 协议红线
 
 - **同病例改词表或变体 = 新 extractor/protocol 版本号**，不回改历史产物
-  （`.42cog/` 与 `specs/calibration.md` 的尺子纪律）。
+  （`.42cog/` 与 `specs/calibration.md` 的尺子纪律）。**机械覆盖范围**：登记闸只比对
+  **词表摘要**；**变体改动不进登记闸**，当前靠纪律与评审拦截（已登记的缺口）。
 - CaseSpec 钉的 `extractor_version` 与 `src/medmirror/protocol.py` 支持版本不一致时
   **拒绝加载**（报错含两版本具体值）；版本字符串单源在 `protocol.EXTRACTOR_VERSION`。
 - 合成病例声明必须如实：真实患者数据不入实验（intent.md 红线）。

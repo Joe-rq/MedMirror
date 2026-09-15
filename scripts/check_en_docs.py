@@ -11,30 +11,33 @@ board 反复记录过同源漂移（测试数 175→186→236 手工刷 5 处、
   2. 字段表覆盖一致：两份 CaseSpec 文档的表格首列标识符集合必须相等
      （漏译字段会让读者按英文文档填配置直接失败）；
   3. 中英互链存在：两个文档对互为入口，且必须是**真 Markdown 链接**
-     （反引号里的 `](x.md)` 不是链接，点不动）；
+     （反引号里的 `](x.md)`、图片、转义方括号都不是入口）；
   4. 测试数处处一致：六份文档里手写的测试数必须同值
      （锚点见 TEST_COUNT_PATTERNS）。
 
-**可见性规则**：规则 1–3 只在去掉「围栏代码块（``` 与 ~~~，未闭合则视为到文末）/
-HTML 注释（未闭合同样视为到文末）/ 显式隐藏的元素（style、script、hidden、
-display:none、visibility:hidden）/ 其余 HTML 标签及其属性」之后的正文里找命中；
-规则 3 另去行内代码。规则 4 例外：测试数本来就写在快速上手代码块的注释里
-（读者可见），故保留代码块，只去 HTML 注释。
-**残余边界（如实声明）**：不追求穷尽 HTML 隐藏手法——外链样式表定义的隐藏类、
-JS 运行时才隐藏的元素、SVG/`<template>` 等仍在射程外；这些靠人读对照兜底。
+**可见性判定（块级状态机 + 行内剥离）**：规则 1–3 只在「可见正文」里找命中。
+不可见的块：围栏代码块（``` 与 ~~~，未闭合视为到文末）、缩进代码块（4 空格或 Tab 起）、
+HTML 注释（未闭合同样到文末）、显式隐藏的 HTML 元素（任意标签带 hidden /
+display:none / visibility:hidden，含未闭合到文末；`<style>`、`<script>` 一律整块不可见）。
+规则 1、3 另剥离行内代码 span（含多反引号形式）——被引号包起来的一句声明是「被引用」，
+不是「在说」；规则 2 的字段名本就写在行内代码里，不剥离。规则 4 例外：测试数写在
+快速上手代码块的注释里（读者可见），故保留代码块，只去注释、隐藏元素与标签。
+
+**残余边界（如实声明）**：本闸不做完整 Markdown/HTML 解析（本仓不引入依赖）。已覆盖
+上述常见遮蔽手法；外链样式表定义的隐藏类、JS 运行时才隐藏的元素、SVG 与 `<template>`
+内容、以及把声明藏进图片 alt 之类的极端手法**仍在射程外**——那些靠人读对照兜底。
+CI 全绿 = 这四类规则在覆盖范围内成立，不等于「声明一定可见、数字一定为真、全仓无漂移」。
 
 **覆盖边界（如实声明）**：本闸只比对 README×2 与 CaseSpec×2 两份文档对，外加
 TEST_COUNT_PATTERNS 列出的六份文档里的测试数。它**不覆盖** plan/003、judge-entry、
 素材稿、onboarding 里的其它手写数字（成本 0.3720/0.0690/0.4746、27/24/3、18 条 8/6/4…），
 也**不与代码 schema 对账**（CaseSpec 字段全集的正本在 `src/medmirror/casespec.py`）。
-规则 4 只保证「各处写法一致」，**不保证这个数就是真实用例数**（真值以 `uv run pytest` 为准）——
-六份文档一起写旧值仍然全绿。CI 全绿只说明这四类规则在覆盖范围内成立，
-不等于全仓数字都没有漂移。
+规则 4 只保证「各处写法一致」，**不保证这个数就是真实用例数**（真值以 `uv run pytest` 为准）。
 
-**机械检查的边界（如实声明）**：本脚本不判断译文是否通顺、不判断中英两句话在语义上
-是否等价——那属语义判断，靠人读对照兜底。锚点是刻意钉死的字面串：改措辞会让本闸红灯，
-改完请同步更新本脚本的锚点表。这是有意的摩擦，防的是「顺手改一句就把声明改弱」。
-英文锚点是本 PR 的译法（canonical 正本在中文），改英文措辞同样要同步锚点表。
+**机械检查的边界**：本脚本不判断译文是否通顺、不判断中英两句话在语义上是否等价——
+那属语义判断，靠人读对照兜底。锚点是刻意钉死的字面串：改措辞会让本闸红灯，改完请同步
+更新本脚本的锚点表。这是有意的摩擦，防的是「顺手改一句就把声明改弱」。英文锚点是本
+PR 的译法（canonical 正本在中文），改英文措辞同样要同步锚点表。
 
 用法：python3 scripts/check_en_docs.py [--root 仓库根]
 退出码 0 = 全绿，1 = 有错。
@@ -82,27 +85,28 @@ TEST_COUNT_PATTERNS: dict[str, list[str]] = {
     "docs/reviews/judge-entry.md": [r"\*\*(\d+) 项离线测试\*\*"],
 }
 
-# 字段表首列标识符（首尾竖线在 GFM 里可省，如 `case_text | str | ...`）
-FIELD_ROW_RE = re.compile(r"^[ \t]*\|?[ \t]*`([A-Za-z_][\w.]*)`[ \t]*\|")
-# 带首竖线的表格行 / 表头分隔行
-TABLE_ROW_RE = re.compile(r"^[ \t]*\|.*\|\s*$")
-SEPARATOR_ROW_RE = re.compile(r"^[ \t]*\|?(\s*:?-{2,}:?\s*\|)+\s*$")
-FENCE_LINE_RE = re.compile(r"^[ \t]*([`~]{3,})(.*)$")
+FENCE_LINE_RE = re.compile(r"^[ \t]*([`~]{3,})")
+INDENT_CODE_RE = re.compile(r"^(?: {4,}|\t)")
 HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
 UNCLOSED_COMMENT_RE = re.compile(r"<!--.*\Z", re.DOTALL)
-# 显式隐藏的元素（含 style/script）：整块不算可见正文
-HTML_HIDDEN_ELEMENT_RE = re.compile(
-    r"<(div|span|p|section|details|style|script)\b[^>]*"
-    r"(?:hidden|display\s*:\s*none|visibility\s*:\s*hidden)[^>]*>.*?</\1\s*>",
-    re.DOTALL | re.IGNORECASE,
+SCRIPT_STYLE_RE = re.compile(r"<(style|script)\b.*?</\1\s*>", re.DOTALL | re.IGNORECASE)
+HIDDEN_OPEN_RE = re.compile(
+    r"<([a-zA-Z][\w-]*)\b[^>]*(?:hidden\b|display\s*:\s*none|visibility\s*:\s*hidden)[^>]*>",
+    re.IGNORECASE,
 )
 HTML_TAG_RE = re.compile(r"<[^>\n]*>")
-INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
-MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+CODE_SPAN_RE = re.compile(r"(`+)(?:[^`]|(?!\1)`)*?\1")
+MD_LINK_RE = re.compile(r"(?<![!\\])\[[^\]]*\]\(([^)\s]+)\)")
+QUOTE_PREFIX_RE = re.compile(r"^[ \t]*>+[ \t]?")
+# 字段名：表格首列的反引号标识符（GFM 首尾竖线可省）
+FIELD_ROW_RE = re.compile(r"^[ \t]*\|?[ \t]*`([A-Za-z_][\w.]*)`[ \t]*\|")
+SEPARATOR_ROW_RE = re.compile(
+    r"^[ \t]*\|?(\s*:?-{2,}:?\s*\|)+\s*$|^[ \t]*:?-{2,}:?(\s*\|\s*:?-{2,}:?)+[ \t]*\|?[ \t]*$"
+)
 
 
-def strip_code_fences(text: str) -> str:
-    """去掉围栏代码块（``` 与 ~~~）；未闭合的围栏视为延续到文末。"""
+def strip_code_blocks(text: str) -> str:
+    """去掉围栏代码块（```/~~~，未闭合到文末）与缩进代码块（4 空格 / Tab 起）。"""
     out: list[str] = []
     fence: tuple[str, int] | None = None
     for line in text.splitlines():
@@ -111,6 +115,8 @@ def strip_code_fences(text: str) -> str:
             if m:
                 fence = (m.group(1)[0], len(m.group(1)))
                 continue
+            if INDENT_CODE_RE.match(line):
+                continue
             out.append(line)
             continue
         if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= fence[1]:
@@ -118,48 +124,92 @@ def strip_code_fences(text: str) -> str:
     return "\n".join(out)
 
 
-def strip_html(text: str) -> str:
-    """去掉 HTML 注释（未闭合则视为到文末）与显式隐藏的元素，再去掉其余标签。"""
+def strip_hidden_html(text: str) -> str:
+    """去掉 HTML 注释、style/script 块、显式隐藏元素（未闭合者到文末），再去掉其余标签。"""
     text = HTML_COMMENT_RE.sub("", text)
     text = UNCLOSED_COMMENT_RE.sub("", text)
-    return HTML_TAG_RE.sub("", HTML_HIDDEN_ELEMENT_RE.sub("", text))
+    text = SCRIPT_STYLE_RE.sub("", text)
+    while True:
+        m = HIDDEN_OPEN_RE.search(text)
+        if not m:
+            break
+        tail = text[m.end() :]
+        close = re.search(rf"</{re.escape(m.group(1))}\s*>", tail, re.IGNORECASE)
+        # 找不到闭合标签 = 该元素延续到文末（与围栏/注释同款处理）
+        text = text[: m.start()] + (tail[close.end() :] if close else "")
+    return HTML_TAG_RE.sub("", text)
 
 
 def visible_text(text: str) -> str:
-    """可见正文：去掉代码块、HTML 注释/隐藏元素/标签（含属性值）。"""
-    return strip_html(strip_code_fences(text))
+    """可见正文（块级）：去掉代码块、HTML 注释/隐藏元素/标签。"""
+    return strip_hidden_html(strip_code_blocks(text))
 
 
 def visible_prose(text: str) -> str:
-    """可见正文再去行内代码——互链必须是真链接。"""
-    return INLINE_CODE_RE.sub("", visible_text(text))
+    """可见正文再去行内代码——「被引号包起来的声明」与伪链接都不算数。"""
+    return CODE_SPAN_RE.sub("", visible_text(text))
 
 
-def without_html_comments(text: str) -> str:
-    """只去 HTML 注释（规则 4 用：代码块里的测试数是读者可见的）。"""
-    return UNCLOSED_COMMENT_RE.sub("", HTML_COMMENT_RE.sub("", text))
+def without_html(text: str) -> str:
+    """只去注释/隐藏元素/标签，保留代码块（规则 4 用：代码块注释里的测试数读者可见）。"""
+    return strip_hidden_html(text)
 
 
 def markdown_links(text: str) -> list[str]:
+    """可见正文里的真 Markdown 链接目标（排除图片、转义方括号、代码 span）。"""
     return MD_LINK_RE.findall(visible_prose(text))
+
+
+def table_lines(text: str) -> list[str]:
+    """剥掉引用块前缀后的行（引用块里的表格同样是表格）。"""
+    return [QUOTE_PREFIX_RE.sub("", ln) for ln in text.splitlines()]
+
+
+def is_table_row(line: str) -> bool:
+    return line.count("|") >= 2 and (line.lstrip().startswith("|") or line.rstrip().endswith("|"))
+
+
+def is_separator_row(line: str) -> bool:
+    cells = [c.strip() for c in line.strip().strip("|").split("|")]
+    return bool(cells) and all(re.fullmatch(r":?-{2,}:?", c) for c in cells)
+
+
+def table_field_idents(text: str) -> set[str]:
+    """只认「表格里」的字段名——表外的 `` `x` | y `` 不算字段（防伪字段补集合）。"""
+    lines = table_lines(visible_text(text))
+    separators = {i for i, ln in enumerate(lines) if is_separator_row(ln)}
+    tableish = [is_table_row(ln) or i in separators for i, ln in enumerate(lines)]
+    idents: set[str] = set()
+    for i, ln in enumerate(lines):
+        if i in separators:
+            continue
+        if not (tableish[i] or (i and tableish[i - 1]) or (i + 1 < len(lines) and tableish[i + 1])):
+            continue
+        m = FIELD_ROW_RE.match(ln)
+        if m:
+            idents.add(m.group(1))
+    return idents
 
 
 def unparsed_table_cells(text: str) -> list[int]:
     """列出「在表格里、但首列不是反引号字段名」的行号（跳过分隔行与表头行）。
 
     这类行对规则 2 隐形：中文正本加一行 `| **severity_note** | ... |` 或
-    `severity_note | str | ... |`（GFM 允许省首尾竖线）、英文版不补，
+    `severity_note | str | ...`（GFM 允许省首尾竖线，甚至两侧都省）、英文版不补，
     两侧解析结果都不含它，闸会假装一致。所以宁可红灯要求改成 `| `name` | ... |`。
     """
-    lines = text.splitlines()
-    piped = [bool(TABLE_ROW_RE.match(ln)) for ln in lines]
-    separators = {i for i, ln in enumerate(lines) if SEPARATOR_ROW_RE.match(ln)}
+    lines = table_lines(visible_text(text))
+    separators = {i for i, ln in enumerate(lines) if is_separator_row(ln)}
     headers = {i - 1 for i in separators if i >= 1}
+    # 表格上下文：本身像表格行，或紧邻表格行 / 分隔行（覆盖两侧都省竖线的行）
+    tableish = [is_table_row(ln) or i in separators for i, ln in enumerate(lines)]
     bad: list[int] = []
     for i, ln in enumerate(lines):
         if "|" not in ln or i in separators or i in headers:
             continue
-        adjacent = piped[i] or (i > 0 and piped[i - 1]) or (i + 1 < len(lines) and piped[i + 1])
+        adjacent = (
+            tableish[i] or (i > 0 and tableish[i - 1]) or (i + 1 < len(lines) and tableish[i + 1])
+        )
         if adjacent and not FIELD_ROW_RE.match(ln):
             bad.append(i + 1)
     return bad
@@ -181,18 +231,14 @@ def load_texts(root: Path, errors: list[str]) -> dict[str, str]:
 def check_declarations(texts: dict[str, str], errors: list[str]) -> int:
     zh_rel, en_rel = README_PAIR
     for zh_anchor, en_anchor in DECLARATIONS:
-        if zh_rel in texts and zh_anchor not in visible_text(texts[zh_rel]):
+        if zh_rel in texts and zh_anchor not in visible_prose(texts[zh_rel]):
             errors.append(f"{zh_rel}: 缺声明锚点「{zh_anchor}」——中文正本先被动过")
-        if en_rel in texts and en_anchor not in visible_text(texts[en_rel]):
+        if en_rel in texts and en_anchor not in visible_prose(texts[en_rel]):
             errors.append(
                 f"{en_rel}: 缺声明锚点「{en_anchor}」（对应中文「{zh_anchor}」）"
                 "——该声明在英文版里丢失或被写弱（验收：对外声明合规）"
             )
     return len(DECLARATIONS)
-
-
-def field_idents(text: str) -> set[str]:
-    return {m.group(1) for line in text.splitlines() if (m := FIELD_ROW_RE.match(line))}
 
 
 def check_field_tables(texts: dict[str, str], errors: list[str]) -> int:
@@ -201,14 +247,14 @@ def check_field_tables(texts: dict[str, str], errors: list[str]) -> int:
         if zh_rel not in texts or en_rel not in texts:
             continue
         for rel in (zh_rel, en_rel):
-            bad = unparsed_table_cells(visible_text(texts[rel]))
+            bad = unparsed_table_cells(texts[rel])
             if bad:
                 errors.append(
                     f"{rel}: 第 {'、'.join(map(str, bad))} 行像表格行但首列不是反引号字段名"
                     "——规则 2 看不见它，两侧不一致也能蒙混过关；改成 | `name` | … | 或移出表格"
                 )
-        zh = field_idents(visible_text(texts[zh_rel]))
-        en = field_idents(visible_text(texts[en_rel]))
+        zh = table_field_idents(texts[zh_rel])
+        en = table_field_idents(texts[en_rel])
         if not zh:
             errors.append(f"{zh_rel}: 未解析到字段表首列标识符——字段表被改写？")
             continue
@@ -249,7 +295,7 @@ def check_test_counts(texts: dict[str, str], errors: list[str]) -> int:
     for rel, patterns in TEST_COUNT_PATTERNS.items():
         if rel not in texts:
             continue
-        body = without_html_comments(texts[rel])
+        body = without_html(texts[rel])
         hits = {int(m) for pattern in patterns for m in re.findall(pattern, body)}
         if len(hits) != 1:
             errors.append(

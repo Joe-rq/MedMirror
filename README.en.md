@@ -22,7 +22,7 @@ cd MedMirror
 uv sync                                  # Python 3.13+ with pytest/ruff, pinned by uv.lock
 uv run ruff format --check .             # gate 1 · formatting
 uv run ruff check .                      # gate 2 · lint
-uv run pytest                            # gate 3 · 264 tests, no API key needed
+uv run pytest                            # gate 3 · 271 tests, no API key needed
 uv run python scripts/check-manifests.py # gate 4 · package manifests
 uv run python scripts/check_docs.py      # doc hygiene · repository references
 uv run python scripts/check_en_docs.py   # doc hygiene · Chinese/English consistency
@@ -38,7 +38,7 @@ cmp /tmp/replay-exp003/analysis.md docs/experiments/exp003-baseline/derived-v3/a
 cmp /tmp/replay-exp003/analysis.json docs/experiments/exp003-baseline/derived-v3/analysis.json
 ```
 
-Both commands print nothing when the replayed report is byte-identical to the published derivation, and the `&&` chain makes the whole line fail if either differs (a `for`-loop over `diff` would return only the last command's status and could swallow the first mismatch). Two qualifications are stated rather than glossed over:
+The replay command prints a short summary (plan counts and output directory); the two `cmp` commands print nothing when the replayed report matches the published derivation, and the `&&` chain makes the whole line fail if either differs (a `for`-loop over `diff` would return only the last command's status and could swallow the first mismatch). Two qualifications are stated rather than glossed over:
 
 - Not everything the replay writes is byte-identical: the replayed extraction rows differ from `docs/experiments/exp003-baseline/derived-v3/extractions.jsonl` by exactly one field — since issue #50 (2026-09-13) every replayed row carries a `paths_digest` vocabulary signature that the frozen 2026-09-10 file predates. Replays are deterministic: run the command twice and the two outputs match byte for byte.
 - `docs/experiments/exp003-baseline/derived-v3/extraction-diff.md` is generated separately by `scripts/diff_extractions.py` and is not part of the replay set.
