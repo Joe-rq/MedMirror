@@ -24,9 +24,12 @@ display:none / visibility:hidden，含未闭合到文末；`<style>`、`<script>
 快速上手代码块的注释里（读者可见），故保留代码块，只去注释、隐藏元素与标签。
 
 **残余边界（如实声明）**：本闸不做完整 Markdown/HTML 解析（本仓不引入依赖）。已覆盖
-上述常见遮蔽手法；外链样式表定义的隐藏类、JS 运行时才隐藏的元素、SVG 与 `<template>`
-内容、以及把声明藏进图片 alt 之类的极端手法**仍在射程外**——那些靠人读对照兜底。
-CI 全绿 = 这四类规则在覆盖范围内成立，不等于「声明一定可见、数字一定为真、全仓无漂移」。
+上述常见遮蔽手法；外链样式表定义的隐藏类、JS 运行时才隐藏的元素，以及把声明藏进图片
+alt 之类的极端手法**仍在射程外**——那些靠人读对照兜底。另两处**已知的行为边界**（不是
+「处理不了」，而是按本脚本的口径算作可见）：`<template>` / `<svg>` 的标签会被剥掉、
+**内容留在可见区**（浏览器未必渲染它）；锚点**跨行拆开**算不命中（渲染后读者能拼起来，
+本闸不拼）。CI 全绿 = 这四类规则在覆盖范围内成立，不等于「声明一定可见、数字一定为真、
+全仓无漂移」。
 
 **覆盖边界（如实声明）**：本闸只比对 README×2 与 CaseSpec×2 两份文档对，外加
 TEST_COUNT_PATTERNS 列出的六份文档里的测试数。它**不覆盖** plan/003、judge-entry、
@@ -96,6 +99,8 @@ HIDDEN_OPEN_RE = re.compile(
 )
 HTML_TAG_RE = re.compile(r"<[^>\n]*>")
 CODE_SPAN_RE = re.compile(r"(`+)(?:[^`]|(?!\1)`)*?\1")
+# 链接目标：](...) —— 锚点匹配时整段去掉，只留链接文字
+LINK_TARGET_RE = re.compile(r"\]\([^)\s]*\)")
 MD_LINK_RE = re.compile(r"(?<![!\\])\[[^\]]*\]\(([^)\s]+)\)")
 QUOTE_PREFIX_RE = re.compile(r"^[ \t]*>+[ \t]?")
 # 字段名：表格首列的反引号标识符（GFM 首尾竖线可省）
@@ -148,6 +153,15 @@ def visible_text(text: str) -> str:
 def visible_prose(text: str) -> str:
     """可见正文再去行内代码——「被引号包起来的声明」与伪链接都不算数。"""
     return CODE_SPAN_RE.sub("", visible_text(text))
+
+
+def anchor_body(text: str) -> str:
+    """声明锚点的匹配域：可见正文去掉行内代码**与链接目标**。
+
+    链接目标（`[说明](https://…/no-medical-bias-verdict…)`）读者要点开才看得到，
+    不能当作「文档在声明」；只留链接文字参与锚点匹配（评审 P2）。
+    """
+    return LINK_TARGET_RE.sub("]", visible_prose(text))
 
 
 def without_html(text: str) -> str:
@@ -231,9 +245,9 @@ def load_texts(root: Path, errors: list[str]) -> dict[str, str]:
 def check_declarations(texts: dict[str, str], errors: list[str]) -> int:
     zh_rel, en_rel = README_PAIR
     for zh_anchor, en_anchor in DECLARATIONS:
-        if zh_rel in texts and zh_anchor not in visible_prose(texts[zh_rel]):
+        if zh_rel in texts and zh_anchor not in anchor_body(texts[zh_rel]):
             errors.append(f"{zh_rel}: 缺声明锚点「{zh_anchor}」——中文正本先被动过")
-        if en_rel in texts and en_anchor not in visible_prose(texts[en_rel]):
+        if en_rel in texts and en_anchor not in anchor_body(texts[en_rel]):
             errors.append(
                 f"{en_rel}: 缺声明锚点「{en_anchor}」（对应中文「{zh_anchor}」）"
                 "——该声明在英文版里丢失或被写弱（验收：对外声明合规）"

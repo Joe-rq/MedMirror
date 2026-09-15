@@ -22,7 +22,7 @@ cd MedMirror
 uv sync                                  # Python 3.13+ with pytest/ruff, pinned by uv.lock
 uv run ruff format --check .             # gate 1 · formatting
 uv run ruff check .                      # gate 2 · lint
-uv run pytest                            # gate 3 · 271 tests, no API key needed
+uv run pytest                            # gate 3 · 272 tests, no API key needed
 uv run python scripts/check-manifests.py # gate 4 · package manifests
 uv run python scripts/check_docs.py      # doc hygiene · repository references
 uv run python scripts/check_en_docs.py   # doc hygiene · Chinese/English consistency

@@ -15,6 +15,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import check_en_docs as ced
+
 ROOT = Path(__file__).resolve().parents[1]
 
 # 沙箱最小正例：覆盖闸门读的全部八份文档，声明锚点、字段表、互链、测试数齐全
@@ -415,6 +417,17 @@ class CheckEnDocsGateTest(unittest.TestCase):
             "字段表已删除\n",
             "未解析到字段表首列标识符",
         )
+
+    def test_link_target_is_not_anchor_text(self):
+        """声明不应由链接目标（URL）提供——读者要点开才看得到（R2 谱系 B 补）。
+
+        锚点都含空格，合法 URL 装不下完整锚点，所以这里直接测机制而非造文档场景。
+        """
+        body = "see [x](https://example.org/no-medical-bias-verdict)"
+        self.assertNotIn("no-medical-bias-verdict", ced.anchor_body(body))
+        self.assertIn("see [x]", ced.anchor_body(body))
+        # 链接文字仍参与匹配（可见），对照
+        self.assertIn("descriptive", ced.anchor_body("see [descriptive](https://e.org/x)"))
 
     def test_empty_root_fails(self):
         """--root 指错地方不能静默通过。"""
