@@ -436,6 +436,35 @@ class CheckEnDocsGateTest(unittest.TestCase):
             "像表格行但首列不是反引号字段名",
         )
 
+    def test_fence_with_trailing_text_is_not_a_closing_fence(self):
+        """闭合围栏行内不得再有内容（CommonMark）——否则其后正文会被误当可见（R4 补）。"""
+        self.assert_gate_fails(
+            "README.en.md",
+            "no medical-bias verdict without professional review",
+            "```text\n```not-close\nno medical-bias verdict without professional review\n```",
+            "缺声明锚点「no medical-bias verdict without professional review」",
+        )
+
+    def test_unclosed_script_style_hides_anchor(self):
+        """未闭合的 script/style 同样延续到文末（R4 补）。"""
+        for wrap in ("<script>{}", "<style>{}"):
+            with self.subTest(wrap=wrap):
+                self.assert_gate_fails(
+                    "README.en.md",
+                    "no medical-bias verdict without professional review",
+                    wrap.format("no medical-bias verdict without professional review"),
+                    "缺声明锚点「no medical-bias verdict without professional review」",
+                )
+
+    def test_duplicate_field_name_fails(self):
+        """同名字段出现两次（内容可不同）：集合比较看不见，须单独拦（R4 补）。"""
+        self.assert_gate_fails(
+            "configs/cases/README.md",
+            "| `notes` | str | 病例说明 |",
+            "| `notes` | str | 病例说明 |\n| `notes` | bool | 另一套约束 |",
+            "字段名重复出现 notes",
+        )
+
     def test_link_target_is_not_anchor_text(self):
         """声明不应由链接目标（URL）提供——读者要点开才看得到（R2 谱系 B 补）。
 

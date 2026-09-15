@@ -22,7 +22,7 @@ related: [plan/001_autonomous-evaluation-loop, plan/002_prototype-calibration-ha
 ## 1. 现状（2026-09-13 建；2026-09-15 复核）
 
 工程侧（已溢出，后续不再主动扩张）：
-- 四闸 CI 全绿（ruff format/check、pytest 274、check-manifests）；双谱系评审体系（GPT 系 codex + MiniMax/DeepSeek 系）多轮收敛惯例成型。
+- 四闸 CI 全绿（ruff format/check、pytest 277、check-manifests）；双谱系评审体系（GPT 系 codex + MiniMax/DeepSeek 系）多轮收敛惯例成型。
 - `src/medmirror/`：protocol（提取 offline-rules-v2）、runner（run 目录/恢复/max_attempts）、budget（reserve→settle/refund 三段账本）、followup（followup-rules-v1）、reporting（五类分母）。
 - 复核材料包两批导出就绪（`scripts/export_review_pack.py`，第一批开放式已于 2026-09-12 发出待意见回流，第二批候选核对 10 条已 FINAL 待第一层意见交回后发）。
 - 来源查证 18 条目三态判定完成（`docs/experiments/exp003-baseline/followup/source-verification.md`）；账单已核对 0.4746 元（`specs/calibration/bill-check.md`）。

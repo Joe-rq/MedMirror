@@ -46,7 +46,7 @@ cp -n .env.example .env.local                 # key 只放本机，不提交、�
 ```bash
 uv run ruff format --check .             # 122 files already formatted
 uv run ruff check .                      # All checks passed!
-uv run pytest                            # 274 passed
+uv run pytest                            # 277 passed
 uv run python scripts/check-manifests.py # ✓ 全绿（校验 2 份清单）
 uv run python scripts/check_docs.py      # ✓ 文档卫生（合并冲突标记 / 仓内引用）
 uv run python scripts/check_en_docs.py   # ✓ 中英文档一致（声明 / 字段表 / 互链 / 测试数）

@@ -88,11 +88,12 @@ TEST_COUNT_PATTERNS: dict[str, list[str]] = {
     "docs/reviews/judge-entry.md": [r"\*\*(\d+) 项离线测试\*\*"],
 }
 
-FENCE_LINE_RE = re.compile(r"^[ \t]*([`~]{3,})")
+FENCE_LINE_RE = re.compile(r"^[ \t]*([`~]{3,})(.*)$")
 INDENT_CODE_RE = re.compile(r"^(?: {4,}|\t)")
 HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
 UNCLOSED_COMMENT_RE = re.compile(r"<!--.*\Z", re.DOTALL)
 SCRIPT_STYLE_RE = re.compile(r"<(style|script)\b.*?</\1\s*>", re.DOTALL | re.IGNORECASE)
+UNCLOSED_SCRIPT_STYLE_RE = re.compile(r"<(style|script)\b[^>]*>.*\Z", re.DOTALL | re.IGNORECASE)
 HIDDEN_OPEN_RE = re.compile(
     r"<([a-zA-Z][\w-]*)\b[^>]*(?:hidden\b|display\s*:\s*none|visibility\s*:\s*hidden)[^>]*>",
     re.IGNORECASE,
@@ -124,7 +125,13 @@ def strip_code_blocks(text: str) -> str:
                 continue
             out.append(line)
             continue
-        if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= fence[1]:
+        # 闭合围栏：同字符、不短于开启行、且行内其余内容为空（CommonMark）
+        if (
+            m
+            and m.group(1)[0] == fence[0]
+            and len(m.group(1)) >= fence[1]
+            and not m.group(2).strip()
+        ):
             fence = None
     return "\n".join(out)
 
@@ -134,6 +141,8 @@ def strip_hidden_html(text: str) -> str:
     text = HTML_COMMENT_RE.sub("", text)
     text = UNCLOSED_COMMENT_RE.sub("", text)
     text = SCRIPT_STYLE_RE.sub("", text)
+    # 未闭合的 style/script 同样延续到文末（浏览器不会渲染其内容）
+    text = UNCLOSED_SCRIPT_STYLE_RE.sub("", text)
     while True:
         m = HIDDEN_OPEN_RE.search(text)
         if not m:
@@ -220,19 +229,29 @@ def table_block_flags(lines: list[str]) -> list[bool]:
     return flags
 
 
-def table_field_idents(text: str) -> set[str]:
+def duplicates(names: list[str]) -> list[str]:
+    seen, dupes = set(), []
+    for n in names:
+        if n in seen and n not in dupes:
+            dupes.append(n)
+        seen.add(n)
+    return dupes
+
+
+def table_field_idents(text: str, keep_order: bool = False):
+    """表格块内出现的字段名；keep_order=True 时返回出现序列表（查重复用）。"""
     """只认「表格块内」的字段名——表外的 `` `x` | y `` 不算字段（防伪字段补集合）。"""
     lines = table_lines(visible_text(text))
     separators = {i for i, ln in enumerate(lines) if is_separator_row(ln)}
     in_block = table_block_flags(lines)
-    idents: set[str] = set()
+    names: list[str] = []
     for i, ln in enumerate(lines):
         if not in_block[i] or i in separators:
             continue
         m = FIELD_ROW_RE.match(ln)
         if m:
-            idents.add(m.group(1))
-    return idents
+            names.append(m.group(1))
+    return names if keep_order else set(names)
 
 
 def unparsed_table_cells(text: str) -> list[int]:
@@ -292,6 +311,13 @@ def check_field_tables(texts: dict[str, str], errors: list[str]) -> int:
                 errors.append(
                     f"{rel}: 第 {'、'.join(map(str, bad))} 行像表格行但首列不是反引号字段名"
                     "——规则 2 看不见它，两侧不一致也能蒙混过关；改成 | `name` | … | 或移出表格"
+                )
+        for rel in (zh_rel, en_rel):
+            dupes = duplicates(table_field_idents(texts[rel], keep_order=True))
+            if dupes:
+                errors.append(
+                    f"{rel}: 字段名重复出现 {'、'.join(dupes)}"
+                    "——集合比较看不见重复行，同名两行可以携带不同约束而闸不报"
                 )
         zh = table_field_idents(texts[zh_rel])
         en = table_field_idents(texts[en_rel])
